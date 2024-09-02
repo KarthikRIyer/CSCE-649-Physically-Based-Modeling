@@ -19,8 +19,9 @@ void main()
 	vec3 h = normalize(l + v);
 	vec4 colorT = texture(kdTex, vTex.st).rgba;
 	vec3 colorA = ka;
-	vec3 colorD = max(dot(l, n), 0.0) * colorT.rgb;
-	vec3 colorS = pow(max(dot(h, n), 0.0), s) * ks;
+//	vec3 colorD = max(dot(l, n), 0.0) * colorT.rgb;
+	vec3 colorD = abs(dot(l, n)) * colorT.rgb;
+	vec3 colorS = pow(abs(dot(h, n)), s) * ks;
 	vec3 color = colorA + colorD + colorS;
 	FragColor = vec4(color, colorT.a);
 	//gl_FragColor = vec4(vTex.xy, 0.0, 1.0);

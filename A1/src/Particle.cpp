@@ -127,11 +127,12 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
     if (v.norm() <= 1e-2) { // if v is close to zero
 //        std::cout<<"dist: "<<(x - xc).norm()<<"\n";
         if (hasCollided && (x - xc).norm() <= 1e-2) { // position is on surface
+//            std::cout<<"fNet.dot(nc): "<<fNet.dot(nc)<<"\n";
             if (fNet.dot(nc) < 0.0) { // acc towards the surface
                 Eigen::Vector3d an = fNet.dot(nc) * nc.normalized();
                 Eigen::Vector3d at = fNet - an;
                 if (simParams.frictionCoeff * an.norm() >= at.norm()) { // friction must overcome tangential acceleration
-//                    std::cout<<"Stopped\n";
+                    std::cout<<"Stopped\n";
                     return;
                 }
             }
@@ -146,15 +147,17 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
     if (didCollide) {
         didCollide = false;
         x = xc;
-
+        nc.normalize();
         Eigen::Vector3d vn = v.dot(nc) * nc;
         Eigen::Vector3d vt = v - vn;
 
         vn *= -simParams.restitutionCoeff;
 
-        double fric = simParams.frictionCoeff * (fNet.dot(nc));
-        Eigen::Vector3d aFric = -std::min(fric, (vt / h).norm()) * vt.normalized();
-        vt += (aFric * h);
+//        double fric = simParams.frictionCoeff * (fNet.dot(nc));
+//        Eigen::Vector3d aFric = std::min(fric, (vt / h).norm()) * vt.normalized();
+//        std::cout<<"aFric: "<< aFric<<"\n";
+        std::cout<<"vt: "<< vt<<"\n";
+//        vt += (aFric * h);
 
         v = vn + vt;
     }
