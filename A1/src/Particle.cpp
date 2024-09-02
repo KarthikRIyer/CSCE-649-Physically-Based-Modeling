@@ -34,10 +34,14 @@ Particle::Particle(const shared_ptr<Shape> s, bool drawSphere) :
 	m(1.0),
 	i(-1),
 	x(0.0, 0.0, 0.0),
+	xc(0.0, 0.0, 0.0),
+	nc(0.0, 0.0, 0.0),
 	v(0.0, 0.0, 0.0),
 	fixed(true),
 	sphere(s),
-	drawSphere(drawSphere)
+	drawSphere(drawSphere),
+	didCollide(false),
+	hasCollided(false)
 {
 	
 }
@@ -97,6 +101,7 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
 
             if (a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
                 didCollide = true;
+                hasCollided = true;
                 xc = xColl;
                 nc = n;
                 double frac = d0 / (d0 - d1);
@@ -110,6 +115,7 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
 }
 
 void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
+
     Eigen::Vector3d vNew = v;
     Eigen::Vector3d fNet(0, 0, 0);
     for (auto forceField: forceFields) {
@@ -117,6 +123,20 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
         vNew += (forceField->getForce(x) * h);
     }
     vNew -= ((simParams.airFrictionFactor / m) * v);
+//    std::cout<<"V: "<<v.norm()<<"\n";
+    if (v.norm() <= 1e-2) { // if v is close to zero
+//        std::cout<<"dist: "<<(x - xc).norm()<<"\n";
+        if (hasCollided && (x - xc).norm() <= 1e-2) { // position is on surface
+            if (fNet.dot(nc) < 0.0) { // acc towards the surface
+                Eigen::Vector3d an = fNet.dot(nc) * nc.normalized();
+                Eigen::Vector3d at = fNet - an;
+                if (simParams.frictionCoeff * an.norm() >= at.norm()) { // friction must overcome tangential acceleration
+//                    std::cout<<"Stopped\n";
+                    return;
+                }
+            }
+        }
+    }
 
     Eigen::Vector3d xNew = x + (v * h);
 
@@ -125,6 +145,7 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
 
     if (didCollide) {
         didCollide = false;
+        x = xc;
 
         Eigen::Vector3d vn = v.dot(nc) * nc;
         Eigen::Vector3d vt = v - vn;

@@ -40,7 +40,8 @@ public:
 	Eigen::Vector3d f;  // force
 	bool fixed;
 	bool didCollide;
-	
+	bool hasCollided;
+
 private:
 	const std::shared_ptr<Shape> sphere;
 	bool drawSphere = true;
