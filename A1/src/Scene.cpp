@@ -88,7 +88,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         spheres.push_back(sphere);
         sphere->r = 0.13;
         sphere->x = Vector3d(0.0, 1.0, 0.0);
-        sphere->v = Vector3d(0.0, 5.0, 5.0);
+        sphere->v = Vector3d(0.0, 15.0, 5.0);
 
         loadDataInputFile(DATA_DIR);
 

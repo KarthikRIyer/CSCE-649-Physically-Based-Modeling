@@ -150,16 +150,22 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
         nc.normalize();
         Eigen::Vector3d vn = v.dot(nc) * nc;
         Eigen::Vector3d vt = v - vn;
-
+//        std::cout<<"v: "<< v.transpose()<<"\n";
+//        std::cout<<"vt: "<< vt.transpose()<<"\n";
+//        std::cout<<"vn: "<< vn.transpose()<<"\n";
+//        std::cout<<"nc: "<< nc.transpose()<<"\n";
+//        std::cout<<"restitution coeff: "<< simParams.restitutionCoeff<<"\n";
         vn *= -simParams.restitutionCoeff;
 
-//        double fric = simParams.frictionCoeff * (fNet.dot(nc));
-//        Eigen::Vector3d aFric = std::min(fric, (vt / h).norm()) * vt.normalized();
+        double fric = simParams.frictionCoeff * (fNet.dot(nc));
+        Eigen::Vector3d aFric = std::min(fric, (vt / h).norm()) * vt.normalized();
 //        std::cout<<"aFric: "<< aFric<<"\n";
-        std::cout<<"vt: "<< vt<<"\n";
-//        vt += (aFric * h);
+//        std::cout<<"vt after: "<< vt.transpose()<<"\n";
+//        std::cout<<"vn after: "<< vn.transpose()<<"\n";
+        vt += (aFric * h);
 
         v = vn + vt;
+//        std::cout<<"v after: "<< v.transpose()<<"\n";
     }
 }
 
