@@ -329,7 +329,7 @@ int main(int argc, char **argv)
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 	// Create a windowed mode window and its OpenGL context.
-	window = glfwCreateWindow(640*2, 480*2, "HAIR SIMULATION", NULL, NULL);
+	window = glfwCreateWindow(640*2, 480*2, "A1 - Bouncing Ball", NULL, NULL);
 	if(!window) {
 		glfwTerminate();
 		return -1;

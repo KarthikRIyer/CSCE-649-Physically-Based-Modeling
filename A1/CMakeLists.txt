@@ -1,7 +1,7 @@
 CMAKE_MINIMUM_REQUIRED(VERSION 3.10)
 
 # Name of the project
-PROJECT(HairSim)
+PROJECT(A1)
 
 # Is this the solution?
 # Override with `cmake -DSOL=ON ..`
