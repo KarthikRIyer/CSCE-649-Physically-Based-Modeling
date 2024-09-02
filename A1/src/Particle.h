@@ -24,6 +24,7 @@ public:
 	virtual ~Particle();
 	void tare();
 	void reset();
+	double detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes);
 	void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams);
 	void draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Program> p) const;
 	
@@ -33,9 +34,12 @@ public:
 	Eigen::Vector3d x0; // initial position
 	Eigen::Vector3d v0; // initial velocity
 	Eigen::Vector3d x;  // position
+	Eigen::Vector3d xc;  // collision pos
+	Eigen::Vector3d nc;  // collision nor
 	Eigen::Vector3d v;  // velocity
 	Eigen::Vector3d f;  // force
 	bool fixed;
+	bool didCollide;
 	
 private:
 	const std::shared_ptr<Shape> sphere;

@@ -7,14 +7,14 @@
 
 #include <vector>
 
-#include <glm/glm.hpp>
+#include <Eigen/Dense>
 
 class Polygon {
 public:
     Polygon();
     void addPoint(float x, float y, float z);
 
-    std::vector<glm::vec3> points;
+    std::vector<Eigen::Vector3d> points;
 };
 
 

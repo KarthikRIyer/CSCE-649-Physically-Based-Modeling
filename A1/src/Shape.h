@@ -25,6 +25,7 @@ public:
     virtual void draw() const;
     void setTextureFilename(const std::string &f) { textureFilename = f; }
     std::string getTextureFilename() const { return textureFilename; }
+    std::vector<Polygon>& getPolygons();
 
 protected:
     std::string meshFilename;

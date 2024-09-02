@@ -14,6 +14,7 @@
 #include "MatrixStack.h"
 #include "IForceField.h"
 #include "SimParams.h"
+#include "Polygon.h"
 
 using namespace std;
 
@@ -57,9 +58,62 @@ void Particle::reset()
 	v = v0;
 }
 
+double sgn(double x) {
+    if (x > 0) return 1;
+    if (x < 0) return -1;
+    return 0;
+}
+
+double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes) {
+    Eigen::Vector3d xNew = x + (v * h);
+    didCollide = false;
+    for (auto shape: shapes) {
+        for (Polygon p : shape->getPolygons()) {
+            Eigen::Vector3d u = p.points[1] - p.points[0];
+            Eigen::Vector3d v = p.points[2] - p.points[0];
+            Eigen::Vector3d n = u.cross(v);
+            n.normalize();
+            if (n.norm() == 0) continue;
+
+            double pn = p.points[0].dot(n);
+            double d0 = (n.x() * x.x() + n.y() * x.y() + n.z() * x.z() - pn);
+            double d1 = (n.x() * xNew.x() + n.y() * xNew.y() + n.z() * xNew.z() - pn);
+
+            if (sgn(d0) * sgn(d1) >= 0) continue;
+
+            Eigen::Vector3d dir = xNew - x;
+            dir.normalize();
+            double t = (pn - n.dot(x))/(n.dot(dir));
+            Eigen::Vector3d xColl = x + (t * dir);
+
+            // check if point is inside polygon
+            double S = 0.5 * u.cross(v).norm();
+            double Aa = 0.5 * (p.points[1] - xColl).cross(p.points[2] - xColl).norm();
+            double Ab = 0.5 * (p.points[2] - xColl).cross(p.points[0] - xColl).norm();
+            double Ac = 0.5 * (p.points[0] - xColl).cross(p.points[1] - xColl).norm();
+            double a = Aa/S;
+            double b = Ab/S;
+            double c = Ac/S;
+
+            if (a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
+                didCollide = true;
+                xc = xColl;
+                nc = n;
+                double frac = d0 / (d0 - d1);
+                return frac;
+            } else {
+                continue;
+            }
+        }
+    }
+    return 1.0;
+}
+
 void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
     Eigen::Vector3d vNew = v;
+    Eigen::Vector3d fNet(0, 0, 0);
     for (auto forceField: forceFields) {
+        fNet += forceField->getForce(x);
         vNew += (forceField->getForce(x) * h);
     }
     vNew -= ((simParams.airFrictionFactor / m) * v);
@@ -68,6 +122,21 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
 
     x = xNew;
     v = vNew;
+
+    if (didCollide) {
+        didCollide = false;
+
+        Eigen::Vector3d vn = v.dot(nc) * nc;
+        Eigen::Vector3d vt = v - vn;
+
+        vn *= -simParams.restitutionCoeff;
+
+        double fric = simParams.frictionCoeff * (fNet.dot(nc));
+        Eigen::Vector3d aFric = -std::min(fric, (vt / h).norm()) * vt.normalized();
+        vt += (aFric * h);
+
+        v = vn + vt;
+    }
 }
 
 void Particle::draw(shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog) const

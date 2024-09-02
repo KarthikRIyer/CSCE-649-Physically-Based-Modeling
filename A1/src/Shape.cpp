@@ -59,17 +59,18 @@ void Shape::loadObj(const string &filename, vector<float> &pos, vector<float> &n
         for(size_t f = 0; f < shapes[s].mesh.num_face_vertices.size(); f++) {
             int fv = shapes[s].mesh.num_face_vertices[f];
             // Loop over vertices in the face.
+            Polygon polygon;
             for(size_t v = 0; v < fv; v++) {
                 // access to vertex
                 tinyobj::index_t idx = shapes[s].mesh.indices[index_offset + v];
                 pos.push_back(attrib.vertices[3*idx.vertex_index+0]);
                 pos.push_back(attrib.vertices[3*idx.vertex_index+1]);
                 pos.push_back(attrib.vertices[3*idx.vertex_index+2]);
-                Polygon polygon;
+
                 polygon.addPoint(attrib.vertices[3*idx.vertex_index+0],
                                  attrib.vertices[3*idx.vertex_index+1],
-                                 attrib.vertices[3*idx.vertex_index+0]);
-                polygons.push_back(polygon);
+                                 attrib.vertices[3*idx.vertex_index+2]);
+
                 if(!attrib.normals.empty() && loadNor) {
                     nor.push_back(attrib.normals[3*idx.normal_index+0]);
                     nor.push_back(attrib.normals[3*idx.normal_index+1]);
@@ -80,9 +81,14 @@ void Shape::loadObj(const string &filename, vector<float> &pos, vector<float> &n
                     tex.push_back(attrib.texcoords[2*idx.texcoord_index+1]);
                 }
             }
+            polygons.push_back(polygon);
             index_offset += fv;
         }
     }
+}
+
+std::vector<Polygon>& Shape::getPolygons() {
+    return polygons;
 }
 
 void Shape::loadMesh(const string &meshName)
