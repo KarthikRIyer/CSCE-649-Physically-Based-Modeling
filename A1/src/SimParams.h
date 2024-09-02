@@ -8,6 +8,7 @@
 struct SimParams {
     float windStrength = 0.0;
     float windOscilationSpeed = 1.0;
+    float airFrictionFactor = 0.01;
 };
 
 #endif //HAIRSIM_SIMPARAMS_H

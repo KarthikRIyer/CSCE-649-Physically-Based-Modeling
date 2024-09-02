@@ -12,6 +12,8 @@
 #include "Shape.h"
 #include "Program.h"
 #include "MatrixStack.h"
+#include "IForceField.h"
+#include "SimParams.h"
 
 using namespace std;
 
@@ -53,6 +55,19 @@ void Particle::reset()
 {
 	x = x0;
 	v = v0;
+}
+
+void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
+    Eigen::Vector3d vNew = v;
+    for (auto forceField: forceFields) {
+        vNew += (forceField->getForce(x) * h);
+    }
+    vNew -= ((simParams.airFrictionFactor / m) * v);
+
+    Eigen::Vector3d xNew = x + (v * h);
+
+    x = xNew;
+    v = vNew;
 }
 
 void Particle::draw(shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog) const

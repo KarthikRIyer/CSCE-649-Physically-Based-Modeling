@@ -109,7 +109,6 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
 
-//        hair = std::make_shared<Hair>(20, 50, 2.15e-6, 0.4, hairGenMesh);
 	}
 
     sphereTexture = make_shared<Texture>();
@@ -165,6 +164,12 @@ void Scene::step()
 //        Vector3d x0 = s->x;
 //        s->x(2) = 0.5 * sin(0.5*t);
 //    }
+
+    if (!spheres.empty()) {
+        for (auto s: spheres) {
+            s->step(h, forceFields, simParams);
+        }
+    }
 
     // update wind
     Eigen::Vector3d wP(0.0, 0.0, -5.0);

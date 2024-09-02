@@ -11,6 +11,8 @@
 class Shape;
 class Program;
 class MatrixStack;
+class IForceField;
+struct SimParams;
 
 class Particle
 {
@@ -22,6 +24,7 @@ public:
 	virtual ~Particle();
 	void tare();
 	void reset();
+	void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams);
 	void draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Program> p) const;
 	
 	double r; // radius
@@ -30,8 +33,6 @@ public:
 	Eigen::Vector3d x0; // initial position
 	Eigen::Vector3d v0; // initial velocity
 	Eigen::Vector3d x;  // position
-	Eigen::Vector3d xTemp;  // temp position
-	Eigen::Vector3d d;  // correction vector
 	Eigen::Vector3d v;  // velocity
 	Eigen::Vector3d f;  // force
 	bool fixed;
