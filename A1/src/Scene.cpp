@@ -88,7 +88,9 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         spheres.push_back(sphere);
         sphere->r = 0.13;
         sphere->x = Vector3d(0.0, 1.0, 0.0);
+        sphere->x0 = Vector3d(0.0, 1.0, 0.0);
         sphere->v = Vector3d(10.0, 15.0, 5.0);
+        sphere->v0 = Vector3d(10.0, 15.0, 5.0);
 
         loadDataInputFile(DATA_DIR);
 
@@ -153,6 +155,10 @@ void Scene::tare()
 void Scene::reset()
 {
 	t = 0.0;
+    for (auto sphere: spheres) {
+        sphere->x = sphere->x0;
+        sphere->v = sphere->v0;
+    }
 }
 
 void Scene::step()
