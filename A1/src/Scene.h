@@ -64,7 +64,7 @@ private:
     std::vector<std::string> textureData;
     std::vector<std::vector<std::string>> meshData;
 
-    void loadDataInputFile(const std::string &DATA_DIR);
+    void loadDataInputFile(const std::string &DATA_DIR, const std::string &FILE_NAME);
     int sceneIndex = 0;
 };
 

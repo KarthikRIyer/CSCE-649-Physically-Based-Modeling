@@ -14,9 +14,9 @@
 using namespace std;
 using namespace Eigen;
 
-void Scene::loadDataInputFile(const std::string &DATA_DIR)
+void Scene::loadDataInputFile(const std::string &DATA_DIR, const std::string &FILE_NAME)
 {
-    string filename = DATA_DIR + "input.txt";
+    string filename = DATA_DIR + FILE_NAME;
     ifstream in;
     in.open(filename);
     if(!in.good()) {
@@ -90,7 +90,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         sphere->v0 = Vector3d(0.0, 0.0, 0.0);
         sphere->v = sphere->v0;
 
-        loadDataInputFile(DATA_DIR);
+        loadDataInputFile(DATA_DIR, "input.txt");
 
         // Create shapes
         for(const auto &mesh : meshData) {
@@ -122,7 +122,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         sphere->v0 = Vector3d(10.0, 15.0, 5.0);
         sphere->v = sphere->v0;
 
-        loadDataInputFile(DATA_DIR);
+        loadDataInputFile(DATA_DIR, "input.txt");
 
         // Create shapes
         for(const auto &mesh : meshData) {
@@ -141,7 +141,69 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->init();
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
-	}
+	} else if (sceneIndex == 2) {
+        sphereShape = make_shared<Shape>();
+        sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
+
+        auto sphere = make_shared<Particle>(sphereShape, true);
+        spheres.push_back(sphere);
+        sphere->r = 0.13;
+        sphere->x0 = Vector3d(0.0, 0.2, 0.0);
+        sphere->x = sphere->x0;
+        sphere->v0 = Vector3d(0.0, 0.0, 0.0);
+        sphere->v = sphere->v0;
+
+        loadDataInputFile(DATA_DIR, "inputSlope.txt");
+
+        // Create shapes
+        for(const auto &mesh : meshData) {
+            auto shape = make_shared<Shape>();
+            shapes.push_back(shape);
+            shape->loadMesh(DATA_DIR + mesh[0]);
+            shape->setTextureFilename(mesh[1]);
+            shape->init();
+        }
+
+        for(const auto &filename : textureData) {
+            auto textureKd = make_shared<Texture>();
+            textureMap[filename] = textureKd;
+            textureKd->setFilename(DATA_DIR + filename);
+            textureKd->setUnit(texUnit); // Bind to unit 1
+            textureKd->init();
+            textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
+        }
+    } else if (sceneIndex == 3) {
+        sphereShape = make_shared<Shape>();
+        sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
+
+        auto sphere = make_shared<Particle>(sphereShape, true);
+        spheres.push_back(sphere);
+        sphere->r = 0.13;
+        sphere->x0 = Vector3d(0.2, 0.2, 0.0);
+        sphere->x = sphere->x0;
+        sphere->v0 = Vector3d(0.0, 0.0, 0.0);
+        sphere->v = sphere->v0;
+
+        loadDataInputFile(DATA_DIR, "inputIcosphere.txt");
+
+        // Create shapes
+        for(const auto &mesh : meshData) {
+            auto shape = make_shared<Shape>();
+            shapes.push_back(shape);
+            shape->loadMesh(DATA_DIR + mesh[0]);
+            shape->setTextureFilename(mesh[1]);
+            shape->init();
+        }
+
+        for(const auto &filename : textureData) {
+            auto textureKd = make_shared<Texture>();
+            textureMap[filename] = textureKd;
+            textureKd->setFilename(DATA_DIR + filename);
+            textureKd->setUnit(texUnit); // Bind to unit 1
+            textureKd->init();
+            textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
+        }
+    }
 
     sphereTexture = make_shared<Texture>();
     sphereTexture->setFilename(DATA_DIR + "white.png");
