@@ -230,12 +230,11 @@ void render()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     ImGui::Begin("Simulation params");
-    ImGui::SliderFloat("Wind strength", &simParams.windStrength, 0.0f, 10.0f);
+//    ImGui::SliderFloat("Wind strength", &simParams.windStrength, 0.0f, 10.0f);
 //    ImGui::SliderFloat("Wind oscillation speed", &simParams.windOscilationSpeed, 0.0f, 10.0f);
-//    ImGui::SliderScalar("sDamping", ImGuiDataType_Double, &simParams.sDamping, &simParams.minSDamping, &simParams.maxSDamping);
-//    ImGui::SliderScalar("sFriction", ImGuiDataType_Double, &simParams.sFriction, &simParams.minSFriction, &simParams.maxSFriction);
-//    ImGui::SliderScalar("sRepulsion", ImGuiDataType_Double, &simParams.sRepulsion, &simParams.minSRepulsion, &simParams.maxSRepulsion);
-//    ImGui::SliderScalar("Collision constant", ImGuiDataType_Double, &simParams.kc, &simParams.minKc, &simParams.maxKc);
+    ImGui::SliderFloat("Air Friction Factor", &simParams.airFrictionFactor, 0.0f, 0.05f);
+    ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoeff, 0.0f, 1.0f);
+    ImGui::SliderFloat("Friction Coefficient", &simParams.frictionCoeff, 0.0f, 5.0f);
 
     if (ImGui::BeginCombo("Choose scene", currentScene)) {
         for (int n = 0; n < IM_ARRAYSIZE(sceneNames); n++) {
