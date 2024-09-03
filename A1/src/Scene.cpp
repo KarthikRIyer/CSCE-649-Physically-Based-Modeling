@@ -72,8 +72,6 @@ Scene::~Scene()
 
 void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit)
 {
-	// Units: meters, kilograms, seconds
-	h = 5e-3;
 
 	gravity = std::make_shared<Gravity>(Eigen::Vector3d(0.0, -9.8, 0.0));
 	wind = std::make_shared<Wind>(5.0, Eigen::Vector3d(1.0, 0.0, 0.0));
@@ -124,6 +122,10 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 
 void Scene::init()
 {
+    // Units: meters, kilograms, seconds
+    h = simParams.timestep;
+    std::cout<<"timestep set: "<<simParams.timestep<<"\n";
+    std::cout<<"timestep used: "<<h<<"\n";
     if (sphereShape)
         sphereShape->init();
 }
@@ -163,6 +165,7 @@ void Scene::reset()
 
 void Scene::step()
 {
+    std::cout<<"timestep: "<<h<<"\n";
     double cf = 1.0;
     if (!spheres.empty()) {
         // collision detection;

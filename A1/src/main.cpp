@@ -235,6 +235,7 @@ void render()
     ImGui::SliderFloat("Air Friction Factor", &simParams.airFrictionFactor, 0.0f, 0.05f);
     ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoeff, 0.0f, 1.0f);
     ImGui::SliderFloat("Friction Coefficient", &simParams.frictionCoeff, 0.0f, 5.0f);
+    ImGui::SliderFloat("Timestep", &simParams.timestep, 1e-3, 5e-2);
 
     if (ImGui::BeginCombo("Choose scene", currentScene)) {
         for (int n = 0; n < IM_ARRAYSIZE(sceneNames); n++) {
@@ -247,7 +248,8 @@ void render()
         }
         ImGui::EndCombo();
     }
-    if (ImGui::Button("Load Scene") && prevSceneIndex != currSceneIndex) {
+    if (ImGui::Button("Load Scene")) {
+//    if (ImGui::Button("Load Scene") && prevSceneIndex != currSceneIndex) {
         std::cout<<"Clicked\n";
         prevSceneIndex = currSceneIndex;
         run_sim = false;
@@ -256,9 +258,11 @@ void render()
         scene->cleanup();
         scene = make_shared<Scene>();
         scene->setSceneNum(currSceneIndex);
+        scene->updateSimParams(simParams);
         scene->load(RESOURCE_DIR, DATA_DIR, texUnit);
         scene->tare();
         scene->init();
+        scene->updateSimParams(simParams);
         sim_paused = false;
         run_sim = true;
     }
