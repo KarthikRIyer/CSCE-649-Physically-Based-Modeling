@@ -38,10 +38,10 @@ Particle::Particle(const shared_ptr<Shape> s, bool drawSphere) :
 	nc(0.0, 0.0, 0.0),
 	v(0.0, 0.0, 0.0),
 	fixed(true),
+    didCollide(false),
+    hasCollided(false),
 	sphere(s),
-	drawSphere(drawSphere),
-	didCollide(false),
-	hasCollided(false)
+	drawSphere(drawSphere)
 {
 	
 }
@@ -126,7 +126,7 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
     std::cout<<"V: "<<v.norm()<<"\n";
     if (v.norm() <= 0.08) { // if v is close to zero
         std::cout<<"dist: "<<(x - xc).norm()<<"\n";
-        if (hasCollided && (x - xc).norm() <= 1e-2) { // position is on surface
+        if (hasCollided && (x - xc).norm() <= 2e-2) { // position is on surface
 //            std::cout<<"fNet.dot(nc): "<<fNet.dot(nc)<<"\n";
             if (fNet.dot(nc) < 0.0) { // acc towards the surface
                 Eigen::Vector3d an = fNet.dot(nc) * nc.normalized();
@@ -146,8 +146,9 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
 
     if (didCollide) {
         didCollide = false;
-        x = xc;
         nc.normalize();
+        x = xc;
+        x += (1e-7 * nc); // to handle precision errors
         Eigen::Vector3d vn = v.dot(nc) * nc;
         Eigen::Vector3d vt = v - vn;
 //        std::cout<<"v: "<< v.transpose()<<"\n";
