@@ -80,8 +80,8 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
             if (n.norm() == 0) continue;
 
             double pn = p.points[0].dot(n);
-            double d0 = (n.x() * x.x() + n.y() * x.y() + n.z() * x.z() - pn);
-            double d1 = (n.x() * xNew.x() + n.y() * xNew.y() + n.z() * xNew.z() - pn);
+            double d0 = (n.dot(x) - pn);
+            double d1 = (n.dot(xNew) - pn);
 
             if (sgn(d0) * sgn(d1) >= 0) continue;
 
