@@ -69,7 +69,7 @@ double sgn(double x) {
 }
 
 double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes) {
-    Eigen::Vector3d xNew = x + (v * h);
+//    Eigen::Vector3d xNew = x + (v * h);
     didCollide = false;
     for (auto shape: shapes) {
         for (Polygon p : shape->getPolygons()) {
@@ -79,32 +79,38 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
             n.normalize();
             if (n.norm() == 0) continue;
 
-            double pn = p.points[0].dot(n);
-            double d0 = (n.dot(x) - pn);
-            double d1 = (n.dot(xNew) - pn);
+            // project center of sphere to triangle plane
+            Eigen::Vector3d dir = x - p.points[0];
+            double dist = dir.dot(n);
+            Eigen::Vector3d xp = x - (dist * n);
 
-            if (sgn(d0) * sgn(d1) >= 0) continue;
+//            double pn = p.points[0].dot(n);
+//            double d0 = (n.dot(x) - pn);
+//            double d1 = (n.dot(xNew) - pn);
+//
+//            if (sgn(d0) * sgn(d1) >= 0) continue;
 
-            Eigen::Vector3d dir = xNew - x;
-            dir.normalize();
-            double t = (pn - n.dot(x))/(n.dot(dir));
-            Eigen::Vector3d xColl = x + (t * dir);
+//            Eigen::Vector3d dir = xNew - x;
+//            dir.normalize();
+//            double t = (pn - n.dot(x))/(n.dot(dir));
+//            Eigen::Vector3d xColl = x + (t * dir);
 
             // check if point is inside polygon
             double S = 0.5 * u.cross(v).norm();
-            double Aa = 0.5 * (p.points[1] - xColl).cross(p.points[2] - xColl).norm();
-            double Ab = 0.5 * (p.points[2] - xColl).cross(p.points[0] - xColl).norm();
-            double Ac = 0.5 * (p.points[0] - xColl).cross(p.points[1] - xColl).norm();
+            double Aa = 0.5 * (p.points[1] - xp).cross(p.points[2] - xp).norm();
+            double Ab = 0.5 * (p.points[2] - xp).cross(p.points[0] - xp).norm();
+            double Ac = 0.5 * (p.points[0] - xp).cross(p.points[1] - xp).norm();
             double a = Aa/S;
             double b = Ab/S;
             double c = Ac/S;
 
-            if (a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
+            if (dist < r && a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
                 didCollide = true;
                 hasCollided = true;
-                xc = xColl;
+                xc = xp;
                 nc = n;
-                double frac = d0 / (d0 - d1);
+//                double frac = d0 / (d0 - d1);
+                double frac = dist / r;
                 return frac;
             } else {
                 continue;
@@ -126,7 +132,7 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
     std::cout<<"V: "<<v.norm()<<"\n";
     if (v.norm() <= 0.08) { // if v is close to zero
         std::cout<<"dist: "<<(x - xc).norm()<<"\n";
-        if (hasCollided && (x - xc).norm() <= 2e-2) { // position is on surface
+        if (hasCollided && (x - (r * nc) - xc).norm() <= 1e-2) { // position is on surface
 //            std::cout<<"fNet.dot(nc): "<<fNet.dot(nc)<<"\n";
             if (fNet.dot(nc) < 0.0) { // acc towards the surface
                 Eigen::Vector3d an = fNet.dot(nc) * nc.normalized();
@@ -147,7 +153,7 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
     if (didCollide) {
         didCollide = false;
         nc.normalize();
-        x = xc;
+        x = xc + (nc * r);
         x += (1e-7 * nc); // to handle precision errors
         Eigen::Vector3d vn = v.dot(nc) * nc;
         Eigen::Vector3d vt = v - vn;
