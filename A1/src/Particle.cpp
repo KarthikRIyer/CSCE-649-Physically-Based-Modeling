@@ -104,11 +104,15 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
             double b = Ab/S;
             double c = Ac/S;
 
-            if (dist < r && a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
+            if (std::abs(dist) < r && a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
                 didCollide = true;
                 hasCollided = true;
                 xc = xp;
                 nc = n;
+//                std::cout<<"nc: "<<nc.transpose()<<"\n";
+//                std::cout<<"xc: "<<xc.transpose()<<"\n";
+//                std::cout<<"x: "<<x.transpose()<<"\n";
+//                std::cout<<"dist: "<<dist<<"\n";
 //                double frac = d0 / (d0 - d1);
                 double frac = dist / r;
                 return frac;
