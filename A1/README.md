@@ -32,7 +32,7 @@ To run the simulator:
 ## Credits
 
 This project uses:
-- Rendering boilerplate code from Dr. Sueda's [Computer Animation course (CSCE-689)](https://people.engr.tamu.edu/sueda/courses/CSCE450/2023F/index.html), which has been modified to support OpenGL 4
+- Rendering boilerplate code from Dr. Sueda's [Computer Animation course (CSCE-689)](https://people.engr.tamu.edu/sueda/courses/CSCE450/2023F/index.html), which has been modified to support OpenGL 4, and to load multiple scenes whilepausing the simulation
 - [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) for vector math
 - [https://github.com/g-truc/glm](glm) for vector math and for opengl support
 - [Dear ImGui](https://github.com/ocornut/imgui) for immediate mode UI

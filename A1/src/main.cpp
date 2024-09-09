@@ -262,7 +262,7 @@ void render()
 	GLSL::checkError(GET_FILE_LINE);
 }
 
-void stepperFunc()
+void simLoop()
 {
 	double t = 0;
 	int n = 0;
@@ -355,7 +355,7 @@ int main(int argc, char **argv)
 	stop_flag = false;
 	run_sim = true;
 	sim_paused = false;
-	thread stepperThread(stepperFunc);
+	thread simThread(simLoop);
 	// Loop until the user closes the window.
 	while(!glfwWindowShouldClose(window)) {
 		if(!glfwGetWindowAttrib(window, GLFW_ICONIFIED)) {
@@ -373,7 +373,7 @@ int main(int argc, char **argv)
     ImGui::DestroyContext();
 	// Quit program.
 	stop_flag = true;
-	stepperThread.join();
+	simThread.join();
 	glfwDestroyWindow(window);
 	glfwTerminate();
 	return 0;
