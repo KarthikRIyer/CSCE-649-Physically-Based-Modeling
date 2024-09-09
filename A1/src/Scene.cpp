@@ -85,7 +85,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         auto sphere = make_shared<Particle>(sphereShape, true);
         spheres.push_back(sphere);
         sphere->r = 0.13;
-        sphere->x0 = Vector3d(0.0, 1.0, 0.0);
+        sphere->x0 = Vector3d(0.0, 2.0, 0.0);
         sphere->x = sphere->x0;
         sphere->v0 = Vector3d(0.0, 0.0, 0.0);
         sphere->v = sphere->v0;
