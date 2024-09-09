@@ -1,8 +1,0 @@
-# -------- CMake --------
-build/*
-
-# -------- IDE --------
-.vscode/*
-.vs/*
-out/*
-CMakeSettings.json
