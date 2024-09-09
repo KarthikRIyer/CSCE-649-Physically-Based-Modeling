@@ -132,7 +132,7 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
         fNet += forceField->getForce(x);
         vNew += (forceField->getForce(x) * h);
     }
-    vNew -= ((simParams.airFrictionFactor / m) * v);
+    vNew -= (h * (simParams.airFrictionFactor / m) * v);
     std::cout<<"V: "<<v.norm()<<"\n";
     if (v.norm() <= 0.08) { // if v is close to zero
         std::cout<<"dist: "<<(x - xc).norm()<<"\n";
