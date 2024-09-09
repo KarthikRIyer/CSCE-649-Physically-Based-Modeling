@@ -2,8 +2,8 @@
 // Created by Karthik Iyer on 02/12/23.
 //
 
-#ifndef HAIRSIM_WIND_H
-#define HAIRSIM_WIND_H
+#ifndef A1_WIND_H
+#define A1_WIND_H
 
 #include "IForceField.h"
 
@@ -19,4 +19,4 @@ private:
 };
 
 
-#endif //HAIRSIM_WIND_H
+#endif //A1_WIND_H

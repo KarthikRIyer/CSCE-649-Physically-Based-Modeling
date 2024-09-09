@@ -2,8 +2,8 @@
 // Created by Karthik Iyer on 04/12/23.
 //
 
-#ifndef HAIRSIM_SIMPARAMS_H
-#define HAIRSIM_SIMPARAMS_H
+#ifndef A1_SIMPARAMS_H
+#define A1_SIMPARAMS_H
 
 struct SimParams {
     float windStrength = 0.0;
@@ -14,4 +14,4 @@ struct SimParams {
     float timestep = 5e-3;
 };
 
-#endif //HAIRSIM_SIMPARAMS_H
+#endif //A1_SIMPARAMS_H

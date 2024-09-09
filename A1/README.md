@@ -26,7 +26,7 @@ make -j4
 To run the simulator:
 
 ```console
-./HairSim ../resources ../data
+./A1 ../resources ../data
 ```
 
 ## Credits

@@ -41,7 +41,6 @@ string RESOURCE_DIR = ""; // Where the resources are loaded from
 string DATA_DIR = ""; // where the data are loaded from
 
 shared_ptr<Camera> camera;
-//shared_ptr<Program> progHair;
 shared_ptr<Program> progMesh;
 shared_ptr<Scene> scene;
 int texUnit = 1;
@@ -147,18 +146,6 @@ static void init()
     progMesh->bind();
     glUniform1i(progMesh->getUniform("kdTex"), texUnit);
     progMesh->unbind();
-
-
-
-//    progHair = make_shared<Program>();
-//    progHair->setShaderNames(RESOURCE_DIR + "hair_vert.glsl", RESOURCE_DIR + "hair_frag.glsl");
-//    progHair->setVerbose(true); // Set this to true when debugging.
-//    progHair->init();
-//    progHair->addUniform("P");
-//    progHair->addUniform("MV");
-//    progHair->addUniform("color");
-//    progHair->addAttribute("aPos");
-//    progHair->setVerbose(false);
 	
 	camera = make_shared<Camera>();
 
@@ -209,13 +196,6 @@ void render()
 
 
 	// Draw scene
-	MV->pushMatrix();
-//    progHair->bind();
-//    glUniformMatrix4fv(progHair->getUniform("P"), 1, GL_FALSE, glm::value_ptr(P->topMatrix()));
-//    glUniformMatrix4fv(progHair->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
-//	scene->drawHair(progHair);
-//    progHair->unbind();
-	MV->popMatrix();
 
     progMesh->bind();
 	glUniformMatrix4fv(progMesh->getUniform("P"), 1, GL_FALSE, glm::value_ptr(P->topMatrix()));

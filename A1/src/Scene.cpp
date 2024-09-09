@@ -282,9 +282,6 @@ void Scene::step()
     wDir.x() = 5.0 * sin(simParams.windOscilationSpeed * t);
     wind->setDirection(wDir);
     wind->setStrength(simParams.windStrength);
-
-	// Simulate the ball
-	// hair->step(h, forceFields, spheres);
 }
 
 void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog) const

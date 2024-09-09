@@ -2,8 +2,8 @@
 // Created by Karthik Iyer on 02/12/23.
 //
 
-#ifndef HAIRSIM_GRAVITY_H
-#define HAIRSIM_GRAVITY_H
+#ifndef A1_GRAVITY_H
+#define A1_GRAVITY_H
 
 
 #include "IForceField.h"
@@ -19,4 +19,4 @@ private:
 };
 
 
-#endif //HAIRSIM_GRAVITY_H
+#endif //A1_GRAVITY_H

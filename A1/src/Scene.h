@@ -39,7 +39,6 @@ public:
 	void setSceneNum(int sceneNum);
 	
 	void draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Program> prog) const;
-	void drawHair(const std::shared_ptr<Program> progHair) const;
 
 	double getTime() const { return t; }
 	double getTimestep() const { return h; }
@@ -48,7 +47,6 @@ private:
 	double t;
 	double h;
 	SimParams simParams;
-//	std::string hairGenMesh;
 
 	std::shared_ptr<Gravity> gravity;
 	std::shared_ptr<Wind> wind;

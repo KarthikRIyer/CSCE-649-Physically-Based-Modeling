@@ -2,8 +2,8 @@
 // Created by Karthik Iyer on 01/09/24.
 //
 
-#ifndef HAIRSIM_POLYGON_H
-#define HAIRSIM_POLYGON_H
+#ifndef A1_POLYGON_H
+#define A1_POLYGON_H
 
 #include <vector>
 
@@ -18,4 +18,4 @@ public:
 };
 
 
-#endif //HAIRSIM_POLYGON_H
+#endif //A1_POLYGON_H

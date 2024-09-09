@@ -2,8 +2,8 @@
 // Created by Karthik Iyer on 02/12/23.
 //
 
-#ifndef HAIRSIM_IFORCEFIELD_H
-#define HAIRSIM_IFORCEFIELD_H
+#ifndef A1_IFORCEFIELD_H
+#define A1_IFORCEFIELD_H
 
 
 #include <Eigen/Core>
@@ -15,4 +15,4 @@ public:
 };
 
 
-#endif //HAIRSIM_IFORCEFIELD_H
+#endif //A1_IFORCEFIELD_H
