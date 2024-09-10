@@ -116,6 +116,85 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
 //                double frac = d0 / (d0 - d1);
                 double frac = dist / r;
                 return frac;
+            } else if (std::abs(dist) < r && (xp - p.points[0]).norm() < r) {
+                // center of the sphere is outside the triangle but the
+                // sphere still intersects a corner of the triangle
+                didCollide = true;
+                hasCollided = true;
+                xc = p.points[0];
+                nc = (x - xc).normalized();
+                double frac = (x - xc).norm() / r;
+                return frac;
+            } else if (std::abs(dist) < r && (xp - p.points[1]).norm() < r) {
+                // center of the sphere is outside the triangle but the
+                // sphere still intersects a corner of the triangle
+                didCollide = true;
+                hasCollided = true;
+                xc = p.points[1];
+                nc = (x - xc).normalized();
+                double frac = (x - xc).norm() / r;
+                return frac;
+            } else if (std::abs(dist) < r && (xp - p.points[2]).norm() < r) {
+                // center of the sphere is outside the triangle but the
+                // sphere still intersects a corner of the triangle
+                didCollide = true;
+                hasCollided = true;
+                xc = p.points[2];
+                nc = (x - xc).normalized();
+                double frac = (x - xc).norm() / r;
+                return frac;
+            } else if (std::abs(dist) < r) {
+                // center of sphere is close to edges of triangle
+                Eigen::Vector3d A = p.points[0];
+                Eigen::Vector3d B = p.points[1];
+                Eigen::Vector3d C = x;
+
+                Eigen::Vector3d AB = (B - A);
+                Eigen::Vector3d AC = (C - A);
+                Eigen::Vector3d AD = AB * (AB.dot(AC))/(AB.dot(AB));
+                Eigen::Vector3d D = A + AD;
+                if (AD.norm() <= AB.norm() && AD.dot(AB) > 0) {
+                    didCollide = true;
+                    hasCollided = true;
+                    xc = D; // collision point is projection of center on edge
+                    nc = (x - D).normalized(); // normal is from collision point to center of sphere
+                    double frac = (x - xc).norm() / r;
+                    return frac;
+                }
+
+                A = p.points[1];
+                B = p.points[2];
+                C = x;
+                AB = (B - A);
+                AC = (C - A);
+                AD = AB * (AB.dot(AC))/(AB.dot(AB));
+                D = A + AD;
+                if (AD.norm() <= AB.norm() && AD.dot(AB) > 0) {
+                    didCollide = true;
+                    hasCollided = true;
+                    xc = D; // collision point is projection of center on edge
+                    nc = (x - D).normalized(); // normal is from collision point to center of sphere
+                    double frac = (x - xc).norm() / r;
+                    return frac;
+                }
+
+                A = p.points[2];
+                B = p.points[0];
+                C = x;
+                AB = (B - A);
+                AC = (C - A);
+                AD = AB * (AB.dot(AC))/(AB.dot(AB));
+                D = A + AD;
+                if (AD.norm() <= AB.norm() && AD.dot(AB) > 0) {
+                    didCollide = true;
+                    hasCollided = true;
+                    xc = D; // collision point is projection of center on edge
+                    nc = (x - D).normalized(); // normal is from collision point to center of sphere
+                    double frac = (x - xc).norm() / r;
+                    return frac;
+                }
+
+                continue;
             } else {
                 continue;
             }
