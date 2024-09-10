@@ -1,6 +1,3 @@
-#include <cstdlib>
-#include <stdio.h>
-#include <stdlib.h>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -14,8 +11,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#define GLM_FORCE_RADIANS
-#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
 #include "GLSL.h"
