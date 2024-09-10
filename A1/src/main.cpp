@@ -275,12 +275,12 @@ void simLoop()
 //            double sleeptime = std::max(5000 - dt, 0.0);
             double sleeptime = std::max(scene->getTimestep() * 1e6 - dt, 0.0);
             this_thread::sleep_for(chrono::microseconds((long)sleeptime));
-            if(t > 1000) {
-                if(keyToggles[(unsigned)' '] && keyToggles[(unsigned)'t']) {
-                    cout << t/n << " ms/step" << endl;
-                }
-                t = 0;
-                n = 0;
+
+            if(keyToggles[(unsigned)' '] && keyToggles[(unsigned )'t']) {
+                std::cout<<"===================================\n";
+                std::cout<<"timestep: "<<scene->getTimestep()*1e3<<" ms\n";
+                std::cout<<"processing time: "<<dt*1e-3<<" ms\n";
+                std::cout<<"sleep time: "<<sleeptime*1e-3<<" ms\n";
             }
             if (!run_sim) sim_paused = true;
 	    }
