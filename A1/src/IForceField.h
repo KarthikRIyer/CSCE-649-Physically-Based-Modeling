@@ -12,6 +12,7 @@ class IForceField {
 public:
     IForceField();
     virtual Eigen::Vector3d getForce(Eigen::Vector3d &loc) const;
+    virtual ~IForceField() = 0;
 };
 
 
