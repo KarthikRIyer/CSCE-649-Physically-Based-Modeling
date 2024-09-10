@@ -210,7 +210,7 @@ void render()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     ImGui::Begin("Simulation params");
-    ImGui::SliderFloat("Wind strength", &simParams.windStrength, 0.0f, 10.0f);
+    ImGui::SliderFloat("Wind strength", &simParams.windStrength, 0.0f, 5.0f);
     ImGui::SliderFloat("Wind oscillation speed", &simParams.windOscilationSpeed, 0.0f, 10.0f);
     ImGui::SliderFloat("Air Friction Factor", &simParams.airFrictionFactor, 0.0f, 5.0f);
     ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoeff, 0.0f, 1.0f);
