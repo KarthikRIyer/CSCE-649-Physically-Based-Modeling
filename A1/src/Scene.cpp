@@ -258,7 +258,7 @@ void Scene::reset()
 
 void Scene::step()
 {
-    std::cout<<"timestep: "<<h<<"\n";
+//    std::cout<<"timestep: "<<h<<"\n";
     double cf = 1.0;
     if (!spheres.empty()) {
         // collision detection;

@@ -212,16 +212,16 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
         vNew += (forceField->getForce(x) * h);
     }
     vNew -= (h * (simParams.airFrictionFactor / m) * v);
-    std::cout<<"V: "<<v.norm()<<"\n";
+//    std::cout<<"V: "<<v.norm()<<"\n";
     if (v.norm() <= 0.08) { // if v is close to zero
-        std::cout<<"dist: "<<(x - xc).norm()<<"\n";
+//        std::cout<<"dist: "<<(x - xc).norm()<<"\n";
         if (hasCollided && (x - (r * nc) - xc).norm() <= 1e-2) { // position is on surface
 //            std::cout<<"fNet.dot(nc): "<<fNet.dot(nc)<<"\n";
             if (fNet.dot(nc) < 0.0) { // acc towards the surface
                 Eigen::Vector3d an = fNet.dot(nc) * nc.normalized();
                 Eigen::Vector3d at = fNet - an;
                 if (simParams.frictionCoeff * an.norm() >= at.norm()) { // friction must overcome tangential acceleration
-                    std::cout<<"Stopped\n";
+//                    std::cout<<"Stopped\n";
                     return;
                 }
             }
