@@ -1,5 +1,8 @@
 # Assignment 1 (Bouncing Ball)
 
+Name: Karthik Ramesh Iyer
+UIN: 234009250
+
 ## Prequisites
 
 - OpenGL 4.x
