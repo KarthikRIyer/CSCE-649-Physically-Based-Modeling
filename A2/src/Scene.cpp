@@ -84,10 +84,10 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 
         auto sphere = make_shared<Particle>(sphereShape, true);
         spheres.push_back(sphere);
-        sphere->r = 0.13;
-        sphere->x0 = Vector3d(0.0, 2.0, 0.0);
+        sphere->r = 0.01;
+        sphere->x0 = Vector3d(0.0, 1.1, 0.0);
         sphere->x = sphere->x0;
-        sphere->v0 = Vector3d(0.0, 0.0, 0.0);
+        sphere->v0 = Vector3d(0.1, 0.0, 0.0);
         sphere->v = sphere->v0;
 
         loadDataInputFile(DATA_DIR, "input.txt");
@@ -165,22 +165,16 @@ void Scene::reset()
 void Scene::step()
 {
 //    std::cout<<"timestep: "<<h<<"\n";
-    double cf = 1.0;
     if (!spheres.empty()) {
         // collision detection;
         for (auto s: spheres) {
-            double f = s->detectCollision(h, shapes);
-            cf = min(cf, f);
+            s->detectCollision(h, shapes);
         }
-        if (cf != 1.0) {
-            std::cout<<"Collided "<<cf<<"\n";
-        }
-
         for (auto s: spheres) {
-            s->step(cf * h, forceFields, simParams);
+            s->step(h, forceFields, simParams);
         }
     }
-    t += cf * h;
+    t += h;
 
     // update wind
     Eigen::Vector3d wP(0.0, 0.0, 0.0);
