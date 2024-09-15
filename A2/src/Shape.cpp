@@ -145,6 +145,13 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
         rng.seed(ss);
         std::uniform_real_distribution<double> unif(0, 1);
 
+        std::mt19937_64 rngVel;
+        uint64_t randomSeedVel = 1234568765;
+        std::seed_seq ssVel{uint32_t(randomSeedVel & 0xffffffff), uint32_t(randomSeed >> 32)};
+        rngVel.seed(ssVel);
+        std::uniform_real_distribution<double> unifVelTheta(0, simParams.initialParticleVelocityRandomness * (M_PI / 180.0));
+        std::uniform_real_distribution<double> unifVelPhi(0, 2.0 * M_PI);
+
         int totalParticles = particleCount;
         for (int i = 0; i < particleFractions.size(); i++) {
             int particlesToGenerate = (int) ((double) particleCount * particleFractions[i]);
@@ -159,8 +166,14 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
             Eigen::Vector3d R = polygon.points[2];
             Eigen::Vector3d PQ = Q - P;
             Eigen::Vector3d PR = R - P;
-            Eigen::Vector3d n = PQ.cross(PR);
-            n.normalize();
+            Eigen::Vector3d n = PQ.cross(PR).normalized();
+            Eigen::Vector3d t = PQ.normalized();
+            Eigen::Vector3d bt = n.cross(t).normalized();
+            Eigen::Matrix3d Rmat;
+            Rmat.col(0) = t;
+            Rmat.col(1) = bt;
+            Rmat.col(2) = n;
+
             for (int j = 0; j < particlesToGenerate; j++) { // generate random point in triangle
 //                https://blogs.sas.com/content/iml/2020/10/19/random-points-in-triangle.html
                 double u = unif(rng);
@@ -178,6 +191,13 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
                 sphere->x0 = point;
                 sphere->x = sphere->x0;
                 sphere->v0 = n * simParams.initialParticleVelocity;
+
+                // add randomness to velocity direction
+                double theta = unifVelTheta(rngVel);
+                double phi = unifVelPhi(rngVel);
+                Eigen::Vector3d y(std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta));
+                sphere->v0 = Rmat * y * simParams.initialParticleVelocity;;
+
                 sphere->v = sphere->v0;
             }
         }
