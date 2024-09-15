@@ -210,6 +210,7 @@ void render()
     ImGui::SliderFloat("Air Friction Factor", &simParams.airFrictionFactor, 0.0f, 5.0f);
     ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoeff, 0.0f, 1.0f);
     ImGui::SliderFloat("Friction Coefficient", &simParams.frictionCoeff, 0.0f, 5.0f);
+    ImGui::SliderFloat("Initial Particle Velocity", &simParams.initialParticleVelocity, 0.0f, 5.0f);
     ImGui::SliderFloat("Timestep", &simParams.timestep, 1e-3, 5e-2);
 
     if (ImGui::BeginCombo("Choose scene", currentScene)) {

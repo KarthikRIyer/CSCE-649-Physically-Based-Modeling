@@ -119,7 +119,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generatorShape->loadMesh(DATA_DIR + generator[0]);
             generatorShape->setTextureFilename(generator[1]);
             generatorShape->init();
-            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape);
+            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams);
             spheres.insert(spheres.end(), particles.begin(), particles.end());
         }
 

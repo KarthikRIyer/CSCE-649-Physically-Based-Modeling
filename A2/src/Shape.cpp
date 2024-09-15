@@ -15,6 +15,7 @@
 #include "Program.h"
 #include "Polygon.h"
 #include "Particle.h"
+#include "SimParams.h"
 
 using namespace std;
 using namespace glm;
@@ -134,7 +135,7 @@ void Shape::loadMesh(const string &meshName)
     }
 }
 
-std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::shared_ptr<Shape>& s) const {
+std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::shared_ptr<Shape>& s, SimParams& simParams) const {
     std::vector<std::shared_ptr<Particle>> particles;
     if (isGenerator) {
         // https://stackoverflow.com/questions/9878965/rand-between-0-and-1
@@ -176,7 +177,7 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
                 sphere->r = 0.01;
                 sphere->x0 = point;
                 sphere->x = sphere->x0;
-                sphere->v0 = n * 0.1;
+                sphere->v0 = n * simParams.initialParticleVelocity;
                 sphere->v = sphere->v0;
             }
         }

@@ -12,6 +12,7 @@ struct SimParams {
     float restitutionCoeff = 0.6;
     float frictionCoeff = 0.5;
     float timestep = 5e-3;
+    float initialParticleVelocity = 0.5;
 };
 
 #endif //A1_SIMPARAMS_H
