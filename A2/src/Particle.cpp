@@ -34,7 +34,7 @@ Particle::Particle(const shared_ptr<Shape> s, bool drawSphere) :
 	m(1.0),
 	i(-1),
 	x(0.0, 0.0, 0.0),
-//	xc(0.0, 0.0, 0.0),
+	xc(0.0, 0.0, 0.0),
 	nc(0.0, 0.0, 0.0),
 	v(0.0, 0.0, 0.0),
 	fixed(true),
@@ -130,7 +130,7 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
             if (a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
                 didCollide = true;
                 hasCollided = true;
-//                xc = xColl;
+                xc = xColl;
                 nc = n;
                 dColl = -(xNew - p.points[0]).dot(nc) * nc;
 //                std::cout<<"Collided: dColl:" <<dColl.transpose()<<"\n";
@@ -161,20 +161,20 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
     }
     vNew -= (h * (simParams.airFrictionFactor / m) * v);
 //    std::cout<<"V: "<<v.norm()<<"\n";
-//    if (v.norm() <= 0.08) { // if v is close to zero
-////        std::cout<<"dist: "<<(x - xc).norm()<<"\n";
-//        if (hasCollided && (dColl.norm() <= 1e-2)) { // position is on surface
-////            std::cout<<"fNet.dot(nc): "<<fNet.dot(nc)<<"\n";
-//            if (fNet.dot(nc) < 0.0) { // acc towards the surface
-//                Eigen::Vector3d an = fNet.dot(nc) * nc.normalized();
-//                Eigen::Vector3d at = fNet - an;
-//                if (simParams.frictionCoeff * an.norm() >= at.norm()) { // friction must overcome tangential acceleration
-////                    std::cout<<"Stopped\n";
-//                    return;
-//                }
-//            }
-//        }
-//    }
+    if (v.norm() <= 0.08) { // if v is close to zero
+//        std::cout<<"dist: "<<(x - xc).norm()<<"\n";
+        if (hasCollided && ((x - xc).norm() <= 1e-2)) { // position is on surface
+//            std::cout<<"fNet.dot(nc): "<<fNet.dot(nc)<<"\n";
+            if (fNet.dot(nc) < 0.0) { // acc towards the surface
+                Eigen::Vector3d an = fNet.dot(nc) * nc.normalized();
+                Eigen::Vector3d at = fNet - an;
+                if (simParams.frictionCoeff * an.norm() >= at.norm()) { // friction must overcome tangential acceleration
+//                    std::cout<<"Stopped\n";
+                    return;
+                }
+            }
+        }
+    }
 
     Eigen::Vector3d xNew = x + (v * h);
 
