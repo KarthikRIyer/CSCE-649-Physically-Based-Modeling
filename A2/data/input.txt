@@ -3,4 +3,4 @@
 # - MESH <obj file> <texture file>
 TEXTURE grey.jpg
 MESH plane.obj grey.jpg
-MESH simple-plane-generator.obj grey.jpg
+GENERATOR simple-plane-generator.obj grey.jpg 10000

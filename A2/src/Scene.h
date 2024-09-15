@@ -57,10 +57,12 @@ private:
 	std::vector< std::shared_ptr<Particle> > spheres;
 
     std::vector<std::shared_ptr<Shape> > shapes;
+    std::vector<std::shared_ptr<Shape> > generators;
     std::map<std::string, std::shared_ptr<Texture>> textureMap;
 
     std::vector<std::string> textureData;
     std::vector<std::vector<std::string>> meshData;
+    std::vector<std::vector<std::string>> generatorData;
 
     void loadDataInputFile(const std::string &DATA_DIR, const std::string &FILE_NAME);
     int sceneIndex = 0;

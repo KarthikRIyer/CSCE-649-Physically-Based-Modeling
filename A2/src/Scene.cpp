@@ -53,6 +53,15 @@ void Scene::loadDataInputFile(const std::string &DATA_DIR, const std::string &FI
             ss >> value;
             mesh.push_back(value); // texture
             meshData.push_back(mesh);
+        } else if(key.compare("GENERATOR") == 0) {
+            vector<string> generator;
+            ss >> value;
+            generator.push_back(value); // obj
+            ss >> value;
+            generator.push_back(value); // texture
+            ss >> value;
+            generator.push_back(value); // particle count
+            generatorData.push_back(generator);
         } else {
             cout << "Unknown key word: " << key << endl;
         }
@@ -99,6 +108,14 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             shape->loadMesh(DATA_DIR + mesh[0]);
             shape->setTextureFilename(mesh[1]);
             shape->init();
+        }
+
+        for(const auto &generator : generatorData) {
+            auto generatorShape = make_shared<Shape>(true, std::stoi(generator[2]));
+            generators.push_back(generatorShape);
+            generatorShape->loadMesh(DATA_DIR + generator[0]);
+            generatorShape->setTextureFilename(generator[1]);
+            generatorShape->init();
         }
 
         for(const auto &filename : textureData) {
@@ -187,6 +204,20 @@ void Scene::step()
 void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog) const
 {
     for(const auto &shape : shapes) {
+        textureMap.at(shape->getTextureFilename())->bind(prog->getUniform("kdTex"));
+//        textureMap[shape->getTextureFilename()]->bind(prog->getUniform("kdTex"));
+        glLineWidth(1.0f); // for wireframe
+//        glUniformMatrix4fv(prog->getUniform("P"), 1, GL_FALSE, glm::value_ptr(P->topMatrix()));
+//        glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
+        glUniform3f(prog->getUniform("ka"), 0.1f, 0.1f, 0.1f);
+        glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
+        glUniform1f(prog->getUniform("s"), 200.0f);
+        shape->setProgram(prog);
+        shape->draw();
+        textureMap.at(shape->getTextureFilename())->unbind();
+    }
+
+    for(const auto &shape : generators) {
         textureMap.at(shape->getTextureFilename())->bind(prog->getUniform("kdTex"));
 //        textureMap[shape->getTextureFilename()]->bind(prog->getUniform("kdTex"));
         glLineWidth(1.0f); // for wireframe

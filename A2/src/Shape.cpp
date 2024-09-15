@@ -26,7 +26,19 @@ Shape::Shape() :
         prog(NULL),
         posBufID(0),
         norBufID(0),
-        texBufID(0)
+        texBufID(0),
+        isGenerator(false),
+        particleCount(0)
+{
+}
+
+Shape::Shape(bool isGenerator, int particleCount) :
+        prog(NULL),
+        posBufID(0),
+        norBufID(0),
+        texBufID(0),
+        isGenerator(isGenerator),
+        particleCount(particleCount)
 {
 }
 
@@ -97,6 +109,26 @@ void Shape::loadMesh(const string &meshName)
     meshFilename = meshName;
     loadObj(meshFilename, posBuf, norBuf, texBuf);
     std::cout<<"Loaded obj\n";
+
+    if (isGenerator) {
+        particleFractions.clear();
+        double totalArea = 0.0;
+        for (auto polygon: polygons) {
+            Eigen::Vector3d P = polygon.points[0];
+            Eigen::Vector3d Q = polygon.points[1];
+            Eigen::Vector3d R = polygon.points[2];
+            Eigen::Vector3d u = P - Q;
+            Eigen::Vector3d v = P - R;
+
+            double area = 0.5 * u.cross(v).norm();
+            totalArea += area;
+            particleFractions.push_back(area);
+        }
+        for (double & particleFraction : particleFractions) {
+            particleFraction /= totalArea;
+        }
+        std::cout<<"Calculated particle fractions per tri\n";
+    }
 }
 
 void Shape::init()

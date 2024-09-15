@@ -16,6 +16,7 @@ class Shape
 {
 public:
     Shape();
+    Shape(bool isGenerator, int particleCount);
     virtual ~Shape();
     void loadObj(const std::string &filename, std::vector<float> &pos, std::vector<float> &nor, std::vector<float> &tex, bool loadNor = true, bool loadTex = true);
     void loadMesh(const std::string &meshName);
@@ -34,7 +35,10 @@ protected:
     std::vector<float> posBuf;
     std::vector<float> norBuf;
     std::vector<float> texBuf;
+    bool isGenerator;
+    int particleCount;
     std::vector<Polygon> polygons;
+    std::vector<double> particleFractions;
     GLuint VAO;
     GLuint posBufID;
     GLuint norBufID;
