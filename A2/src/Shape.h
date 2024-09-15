@@ -11,6 +11,7 @@
 class MatrixStack;
 class Program;
 class Polygon;
+class Particle;
 
 class Shape
 {
@@ -27,6 +28,7 @@ public:
     void setTextureFilename(const std::string &f) { textureFilename = f; }
     std::string getTextureFilename() const { return textureFilename; }
     std::vector<Polygon>& getPolygons();
+    std::vector<std::shared_ptr<Particle>> generateParticles(const std::shared_ptr<Shape> s) const;
 
 protected:
     std::string meshFilename;

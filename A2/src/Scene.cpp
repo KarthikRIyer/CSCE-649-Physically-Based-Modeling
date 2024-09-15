@@ -86,18 +86,21 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 	wind = std::make_shared<Wind>(5.0, Eigen::Vector3d(1.0, 0.0, 0.0));
 	forceFields.push_back(gravity);
 	forceFields.push_back(wind);
-
+    spheres.clear();
+    meshData.clear();
+    generatorData.clear();
+    textureData.clear();
 	if (sceneIndex == 0) {
         sphereShape = make_shared<Shape>();
         sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
 
-        auto sphere = make_shared<Particle>(sphereShape, true);
-        spheres.push_back(sphere);
-        sphere->r = 0.01;
-        sphere->x0 = Vector3d(0.0, 1.1, 0.0);
-        sphere->x = sphere->x0;
-        sphere->v0 = Vector3d(0.1, 0.0, 0.0);
-        sphere->v = sphere->v0;
+//        auto sphere = make_shared<Particle>(sphereShape, true);
+//        spheres.push_back(sphere);
+//        sphere->r = 0.01;
+//        sphere->x0 = Vector3d(0.0, 1.1, 0.0);
+//        sphere->x = sphere->x0;
+//        sphere->v0 = Vector3d(0.1, 0.0, 0.0);
+//        sphere->v = sphere->v0;
 
         loadDataInputFile(DATA_DIR, "input.txt");
 
@@ -116,6 +119,8 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generatorShape->loadMesh(DATA_DIR + generator[0]);
             generatorShape->setTextureFilename(generator[1]);
             generatorShape->init();
+            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape);
+            spheres.insert(spheres.end(), particles.begin(), particles.end());
         }
 
         for(const auto &filename : textureData) {
