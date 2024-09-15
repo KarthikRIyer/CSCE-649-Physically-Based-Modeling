@@ -134,7 +134,7 @@ void Shape::loadMesh(const string &meshName)
     }
 }
 
-std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::shared_ptr<Shape> s) const {
+std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::shared_ptr<Shape>& s) const {
     std::vector<std::shared_ptr<Particle>> particles;
     if (isGenerator) {
         // https://stackoverflow.com/questions/9878965/rand-between-0-and-1
@@ -152,14 +152,16 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
                 particlesToGenerate += totalParticles;
                 totalParticles = 0;
             }
+            auto polygon = polygons[i];
+            Eigen::Vector3d P = polygon.points[0];
+            Eigen::Vector3d Q = polygon.points[1];
+            Eigen::Vector3d R = polygon.points[2];
+            Eigen::Vector3d PQ = Q - P;
+            Eigen::Vector3d PR = R - P;
+            Eigen::Vector3d n = PQ.cross(PR);
+            n.normalize();
             for (int j = 0; j < particlesToGenerate; j++) { // generate random point in triangle
 //                https://blogs.sas.com/content/iml/2020/10/19/random-points-in-triangle.html
-                auto polygon = polygons[i];
-                Eigen::Vector3d P = polygon.points[0];
-                Eigen::Vector3d Q = polygon.points[1];
-                Eigen::Vector3d R = polygon.points[2];
-                Eigen::Vector3d PQ = Q - P;
-                Eigen::Vector3d PR = R - P;
                 double u = unif(rng);
                 double v = unif(rng);
                 if (u + v > 1.0) {
@@ -174,7 +176,7 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
                 sphere->r = 0.01;
                 sphere->x0 = point;
                 sphere->x = sphere->x0;
-                sphere->v0 = Eigen::Vector3d(0.0, 0.0, 0.0);
+                sphere->v0 = n * 0.1;
                 sphere->v = sphere->v0;
             }
         }
