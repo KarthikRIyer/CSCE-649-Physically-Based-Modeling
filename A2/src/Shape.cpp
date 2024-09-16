@@ -211,7 +211,8 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
 
                     auto sphere = make_shared<Particle>(s, true);
                     particles.push_back(sphere);
-                    sphere->r = 0.01;
+                    sphere->fixed = false;
+                    sphere->r = 0.1;
                     sphere->x0 = point;
                     sphere->x = sphere->x0;
                     sphere->tStart = startTime;

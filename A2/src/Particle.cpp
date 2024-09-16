@@ -69,6 +69,7 @@ double sgn(double x) {
 }
 
 double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes) {
+    if (fixed) return 0;
     Eigen::Vector3d xNew = x + (v * h);
     didCollide = false;
     for (auto shape: shapes) {
@@ -152,7 +153,7 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
 }
 
 void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
-
+    if (fixed) return;
     Eigen::Vector3d vNew = v;
     Eigen::Vector3d fNet(0, 0, 0);
     for (auto forceField: forceFields) {
