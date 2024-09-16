@@ -41,7 +41,7 @@ shared_ptr<Scene> scene;
 int texUnit = 1;
 
 SimParams simParams;
-const char* sceneNames[] = {"Drop"};
+const char* sceneNames[] = {"Drop", "Multi-slope"};
 int currSceneIndex = 0;
 static const char* currentScene = sceneNames[currSceneIndex];
 int prevSceneIndex = 0;

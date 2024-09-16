@@ -186,7 +186,7 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
         nc.normalize();
 //        x = xc + (nc * r);
         x = x + (1.0 + simParams.restitutionCoeff) * (dColl);
-//        x += (1e-7 * nc); // to handle precision errors
+        x += (1e-7 * nc); // to handle precision errors
         Eigen::Vector3d vn = v.dot(nc) * nc;
         Eigen::Vector3d vt = v - vn;
 //        std::cout<<"v: "<< v.transpose()<<"\n";

@@ -1,0 +1,6 @@
+# Each line starts with a keyword:
+# - TEXTURE <texture file>
+# - MESH <obj file> <texture file>
+TEXTURE grey.jpg
+MESH multi-slope.obj grey.jpg
+GENERATOR simple-plane-generator.obj grey.jpg 20000 0 10000 10000
