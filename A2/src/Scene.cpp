@@ -61,6 +61,12 @@ void Scene::loadDataInputFile(const std::string &DATA_DIR, const std::string &FI
             generator.push_back(value); // texture
             ss >> value;
             generator.push_back(value); // particle count
+            ss >> value;
+            generator.push_back(value); // start time
+            ss >> value;
+            generator.push_back(value); // end time
+            ss >> value;
+            generator.push_back(value); // lifetime
             generatorData.push_back(generator);
         } else {
             cout << "Unknown key word: " << key << endl;
@@ -114,14 +120,22 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         }
 
         for(const auto &generator : generatorData) {
-            auto generatorShape = make_shared<Shape>(true, std::stoi(generator[2]));
+            int particleCount = std::stoi(generator[2]);
+            std::string meshName = generator[0];
+            std::string texName = generator[1];
+            double startTime = std::stod(generator[3]);
+            double endTime = std::stod(generator[4]);
+            double lifetime = std::stod(generator[5]);
+            auto generatorShape = make_shared<Shape>(true, particleCount);
             generators.push_back(generatorShape);
-            generatorShape->loadMesh(DATA_DIR + generator[0]);
-            generatorShape->setTextureFilename(generator[1]);
+            generatorShape->loadMesh(DATA_DIR + meshName);
+            generatorShape->setTextureFilename(texName);
             generatorShape->init();
-            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams);
+            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams,
+                                                                                                 startTime, endTime, lifetime, h);
             spheres.insert(spheres.end(), particles.begin(), particles.end());
         }
+        std::cout<<"generated\n";
 
         for(const auto &filename : textureData) {
             auto textureKd = make_shared<Texture>();
@@ -190,10 +204,10 @@ void Scene::step()
     if (!spheres.empty()) {
         // collision detection;
         for (auto s: spheres) {
-            s->detectCollision(h, shapes);
-        }
-        for (auto s: spheres) {
-            s->step(h, forceFields, simParams);
+            if (t*1e3 >= s->tStart && t*1e3 <= s->tEnd) {
+                s->detectCollision(h, shapes);
+                s->step(h, forceFields, simParams);
+            }
         }
     }
     t += h;
@@ -241,8 +255,12 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
     glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
     glUniform1f(prog->getUniform("s"), 200.0f);
     glUniform3fv(prog->getUniform("kdFront"), 1, Vector3f(1.0, 1.0, 1.0).data());
+//    std::cout<<"t: "<<t<<"\n";
     for(int i = 0; i < (int)spheres.size(); ++i) {
-        spheres[i]->draw(MV, prog);
+//        spheres[i]->draw(MV, prog);
+        if (t*1e3 >= spheres[i]->tStart && t*1e3 <= spheres[i]->tEnd) {
+            spheres[i]->draw(MV, prog);
+        }
     }
 }
 

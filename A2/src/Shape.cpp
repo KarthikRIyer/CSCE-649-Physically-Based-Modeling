@@ -135,7 +135,8 @@ void Shape::loadMesh(const string &meshName)
     }
 }
 
-std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::shared_ptr<Shape>& s, SimParams& simParams) const {
+std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::shared_ptr<Shape>& s, SimParams& simParams,
+                                                                double startTime, double endTime, double lifetime, double h) const {
     std::vector<std::shared_ptr<Particle>> particles;
     if (isGenerator) {
         // https://stackoverflow.com/questions/9878965/rand-between-0-and-1
@@ -152,14 +153,27 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
         std::uniform_real_distribution<double> unifVelTheta(0, simParams.initialParticleVelocityRandomness * (M_PI / 180.0));
         std::uniform_real_distribution<double> unifVelPhi(0, 2.0 * M_PI);
 
+        int totalTimesteps = (endTime - startTime)/(h * 1e3);
         int totalParticles = particleCount;
+        std::cout<<"totalTimesteps: "<<totalTimesteps<<"\n";
+        std::cout<<"totalParticles: "<<totalParticles<<"\n";
         for (int i = 0; i < particleFractions.size(); i++) {
             int particlesToGenerate = (int) ((double) particleCount * particleFractions[i]);
             totalParticles -= particlesToGenerate;
             if (i == particleFractions.size()) { // if any particles are pending at the end assign them to last poly
-                particlesToGenerate += totalParticles;
+                particlesToGenerate += std::max(totalParticles, 0);
                 totalParticles = 0;
             }
+            int particlesPerTimestep = particlesToGenerate / totalTimesteps;
+            int everyXTimestep = 0;
+            if (particlesPerTimestep == 0) {
+                double fractionalParticlesPerTimestep = (double) particlesToGenerate / (double) totalTimesteps;
+                double timestepsToSkip = 1.0 / fractionalParticlesPerTimestep;
+                everyXTimestep = timestepsToSkip;
+                particlesPerTimestep = 1;
+            }
+            std::cout<<"particlesToGenerate: "<<particlesToGenerate<<"\n";
+            std::cout<<"particlesPerTimestep: "<<particlesPerTimestep<<"\n";
             auto polygon = polygons[i];
             Eigen::Vector3d P = polygon.points[0];
             Eigen::Vector3d Q = polygon.points[1];
@@ -174,34 +188,75 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
             Rmat.col(1) = bt;
             Rmat.col(2) = n;
 
-            for (int j = 0; j < particlesToGenerate; j++) { // generate random point in triangle
-//                https://blogs.sas.com/content/iml/2020/10/19/random-points-in-triangle.html
-                double u = unif(rng);
-                double v = unif(rng);
-                if (u + v > 1.0) {
-                    u = 1.0 - u;
-                    v = 1.0 - v;
+            int particlesGenerated = 0;
+            for (int j = 0; j < totalTimesteps; j++) {
+                if (everyXTimestep != 0 && j % everyXTimestep != 0) continue;
+                for (int k = 0; k < particlesPerTimestep; k++) {
+                    if (particlesGenerated > particlesToGenerate)
+                        continue;
+                    particlesGenerated++;
+                    double startTime = j * h * 1e3;
+                    double endTime = startTime + lifetime;
+
+                    // generate random point in triangle
+                    // https://blogs.sas.com/content/iml/2020/10/19/random-points-in-triangle.html
+                    double u = unif(rng);
+                    double v = unif(rng);
+                    if (u + v > 1.0) {
+                        u = 1.0 - u;
+                        v = 1.0 - v;
+                    }
+
+                    Eigen::Vector3d point = P + u * PQ + v * PR;
+
+                    auto sphere = make_shared<Particle>(s, true);
+                    particles.push_back(sphere);
+                    sphere->r = 0.01;
+                    sphere->x0 = point;
+                    sphere->x = sphere->x0;
+                    sphere->tStart = startTime;
+                    sphere->tEnd = endTime;
+                    sphere->v0 = n * simParams.initialParticleVelocity;
+
+                    // add randomness to velocity direction
+                    double theta = unifVelTheta(rngVel);
+                    double phi = unifVelPhi(rngVel);
+                    Eigen::Vector3d y(std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta));
+                    sphere->v0 = Rmat * y * simParams.initialParticleVelocity;;
+
+                    sphere->v = sphere->v0;
                 }
-
-                Eigen::Vector3d point = P + u * PQ + v * PR;
-
-                auto sphere = make_shared<Particle>(s, true);
-                particles.push_back(sphere);
-                sphere->r = 0.01;
-                sphere->x0 = point;
-                sphere->x = sphere->x0;
-                sphere->v0 = n * simParams.initialParticleVelocity;
-
-                // add randomness to velocity direction
-                double theta = unifVelTheta(rngVel);
-                double phi = unifVelPhi(rngVel);
-                Eigen::Vector3d y(std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta));
-                sphere->v0 = Rmat * y * simParams.initialParticleVelocity;;
-
-                sphere->v = sphere->v0;
             }
+
+//            for (int j = 0; j < particlesToGenerate; j++) { // generate random point in triangle
+////                https://blogs.sas.com/content/iml/2020/10/19/random-points-in-triangle.html
+//                double u = unif(rng);
+//                double v = unif(rng);
+//                if (u + v > 1.0) {
+//                    u = 1.0 - u;
+//                    v = 1.0 - v;
+//                }
+//
+//                Eigen::Vector3d point = P + u * PQ + v * PR;
+//
+//                auto sphere = make_shared<Particle>(s, true);
+//                particles.push_back(sphere);
+//                sphere->r = 0.01;
+//                sphere->x0 = point;
+//                sphere->x = sphere->x0;
+//                sphere->v0 = n * simParams.initialParticleVelocity;
+//
+//                // add randomness to velocity direction
+//                double theta = unifVelTheta(rngVel);
+//                double phi = unifVelPhi(rngVel);
+//                Eigen::Vector3d y(std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta));
+//                sphere->v0 = Rmat * y * simParams.initialParticleVelocity;;
+//
+//                sphere->v = sphere->v0;
+//            }
         }
     }
+    std::cout<<"Particles size: "<<particles.size()<<"\n";
     return particles;
 }
 

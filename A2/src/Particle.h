@@ -44,6 +44,9 @@ public:
 	bool didCollide;
 	bool hasCollided;
 
+	double tStart;
+	double tEnd;
+
 private:
 	const std::shared_ptr<Shape> sphere;
 	bool drawSphere = true;

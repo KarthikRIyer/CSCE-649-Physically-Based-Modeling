@@ -29,7 +29,8 @@ public:
     void setTextureFilename(const std::string &f) { textureFilename = f; }
     std::string getTextureFilename() const { return textureFilename; }
     std::vector<Polygon>& getPolygons();
-    std::vector<std::shared_ptr<Particle>> generateParticles(const std::shared_ptr<Shape>& s, SimParams& simParams) const;
+    std::vector<std::shared_ptr<Particle>> generateParticles(const std::shared_ptr<Shape>& s, SimParams& simParams,
+                                                             double startTime, double endTime, double lifetime, double h) const;
 
 protected:
     std::string meshFilename;
