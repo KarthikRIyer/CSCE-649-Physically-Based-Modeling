@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
+#include <tbb/tbb.h>
 
 #include "Scene.h"
 #include "Particle.h"
@@ -300,13 +301,20 @@ void Scene::step()
 {
 //    std::cout<<"timestep: "<<h<<"\n";
     if (!spheres.empty()) {
-        // collision detection;
-        for (auto s: spheres) {
+        // collision detection and step
+        tbb::parallel_for((size_t)0, spheres.size(), [=](size_t i) {
+            auto s = spheres[i];
             if (t*1e3 >= s->tStart && t*1e3 <= s->tEnd) {
                 s->detectCollision(h, shapes);
                 s->step(h, forceFields, simParams);
             }
-        }
+        });
+//        for (auto s: spheres) {
+//            if (t*1e3 >= s->tStart && t*1e3 <= s->tEnd) {
+//                s->detectCollision(h, shapes);
+//                s->step(h, forceFields, simParams);
+//            }
+//        }
     }
     t += h;
 
