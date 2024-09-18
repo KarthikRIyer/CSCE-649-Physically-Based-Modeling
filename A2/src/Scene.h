@@ -6,6 +6,7 @@
 #include <memory>
 #include <string>
 #include <map>
+#include <fstream>
 
 #define EIGEN_DONT_ALIGN_STATICALLY
 #include <Eigen/Dense>
@@ -35,7 +36,7 @@ public:
 	void tare();
 	void reset();
 	void updateSimParams(SimParams& simParams);
-	void step();
+	void step(std::ofstream &outputFile, bool writeToFile);
 	void setSceneNum(int sceneNum);
 	
 	void draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Program> prog) const;

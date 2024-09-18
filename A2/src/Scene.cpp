@@ -297,7 +297,7 @@ void Scene::reset()
     }
 }
 
-void Scene::step()
+void Scene::step(std::ofstream &outputFile, bool writeToFile)
 {
 //    std::cout<<"timestep: "<<h<<"\n";
     if (!spheres.empty()) {
@@ -315,6 +315,23 @@ void Scene::step()
 //                s->step(h, forceFields, simParams);
 //            }
 //        }
+    }
+    if (writeToFile) {
+        if (!spheres.empty()) {
+            int deadSpheres = 0;
+            for (auto s: spheres) {
+                bool alive = t*1e3 >= s->tStart && t*1e3 <= s->tEnd;
+                if (!alive || s->fixed) deadSpheres++;
+            }
+            if (deadSpheres != spheres.size()) {
+                outputFile << "timestep\n";
+                for (auto s: spheres) {
+                    bool alive = t*1e3 >= s->tStart && t*1e3 <= s->tEnd;
+                    outputFile << (alive ? "a" : "d") << " " << s->x.x() << " " << s->x.y() << " " << s->x.z() << " \n";
+                }
+                outputFile <<"\n";
+            }
+        }
     }
     t += h;
 
