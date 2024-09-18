@@ -212,7 +212,7 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
                     auto sphere = make_shared<Particle>(s, true);
                     particles.push_back(sphere);
                     sphere->fixed = false;
-                    sphere->r = 0.1;
+                    sphere->r = 0.02;
                     sphere->x0 = point;
                     sphere->x = sphere->x0;
                     sphere->tStart = startTime;
@@ -228,33 +228,6 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
                     sphere->v = sphere->v0;
                 }
             }
-
-//            for (int j = 0; j < particlesToGenerate; j++) { // generate random point in triangle
-////                https://blogs.sas.com/content/iml/2020/10/19/random-points-in-triangle.html
-//                double u = unif(rng);
-//                double v = unif(rng);
-//                if (u + v > 1.0) {
-//                    u = 1.0 - u;
-//                    v = 1.0 - v;
-//                }
-//
-//                Eigen::Vector3d point = P + u * PQ + v * PR;
-//
-//                auto sphere = make_shared<Particle>(s, true);
-//                particles.push_back(sphere);
-//                sphere->r = 0.01;
-//                sphere->x0 = point;
-//                sphere->x = sphere->x0;
-//                sphere->v0 = n * simParams.initialParticleVelocity;
-//
-//                // add randomness to velocity direction
-//                double theta = unifVelTheta(rngVel);
-//                double phi = unifVelPhi(rngVel);
-//                Eigen::Vector3d y(std::sin(theta) * std::cos(phi), std::sin(theta) * std::sin(phi), std::cos(theta));
-//                sphere->v0 = Rmat * y * simParams.initialParticleVelocity;;
-//
-//                sphere->v = sphere->v0;
-//            }
         }
     }
     std::cout<<"Particles size: "<<particles.size()<<"\n";

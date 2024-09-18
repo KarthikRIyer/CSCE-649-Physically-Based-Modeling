@@ -43,7 +43,7 @@ shared_ptr<Scene> scene;
 int texUnit = 1;
 
 SimParams simParams;
-const char* sceneNames[] = {"Drop", "Multi-slope", "Point Gravity"};
+const char* sceneNames[] = {"Drop", "Multi-slope", "Point Gravity", "Slope Wedge"};
 int currSceneIndex = 0;
 static const char* currentScene = sceneNames[currSceneIndex];
 int prevSceneIndex = 0;
