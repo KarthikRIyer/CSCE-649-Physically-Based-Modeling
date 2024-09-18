@@ -54,6 +54,8 @@ void Scene::loadDataInputFile(const std::string &DATA_DIR, const std::string &FI
             mesh.push_back(value); // obj
             ss >> value;
             mesh.push_back(value); // texture
+            ss >> value;
+            mesh.push_back(value); // isObstacle
             meshData.push_back(mesh);
         } else if(key.compare("GENERATOR") == 0) {
             vector<string> generator;
@@ -110,6 +112,9 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             shapes.push_back(shape);
             shape->loadMesh(DATA_DIR + mesh[0]);
             shape->setTextureFilename(mesh[1]);
+            bool isObstacle = (mesh[2] == "true");
+            std::cout<<"isObstacle: "<<mesh[2]<<"\n";
+            shape->setObstacle(isObstacle);
             shape->init();
         }
 
@@ -124,6 +129,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generators.push_back(generatorShape);
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
+            generatorShape->setObstacle(false);
             generatorShape->init();
             std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
                                                                                                  startTime, endTime, lifetime, h);
@@ -151,6 +157,9 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             shapes.push_back(shape);
             shape->loadMesh(DATA_DIR + mesh[0]);
             shape->setTextureFilename(mesh[1]);
+            bool isObstacle = (mesh[2] == "true");
+            std::cout<<"isObstacle: "<<mesh[2]<<"\n";
+            shape->setObstacle(isObstacle);
             shape->init();
         }
 
@@ -165,6 +174,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generators.push_back(generatorShape);
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
+            generatorShape->setObstacle(false);
             generatorShape->init();
             std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
                                                                                                  startTime, endTime, lifetime, h);
@@ -215,6 +225,9 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             shapes.push_back(shape);
             shape->loadMesh(DATA_DIR + mesh[0]);
             shape->setTextureFilename(mesh[1]);
+            bool isObstacle = (mesh[2] == "true");
+            std::cout<<"isObstacle: "<<mesh[2]<<"\n";
+            shape->setObstacle(isObstacle);
             shape->init();
         }
 
@@ -229,6 +242,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generators.push_back(generatorShape);
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
+            generatorShape->setObstacle(false);
             generatorShape->init();
             std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.1,
                                                                                                  startTime, endTime, lifetime, h);
@@ -256,6 +270,9 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             shapes.push_back(shape);
             shape->loadMesh(DATA_DIR + mesh[0]);
             shape->setTextureFilename(mesh[1]);
+            bool isObstacle = (mesh[2] == "true");
+            std::cout<<"isObstacle: "<<mesh[2]<<"\n";
+            shape->setObstacle(isObstacle);
             shape->init();
         }
 
@@ -270,6 +287,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generators.push_back(generatorShape);
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
+            generatorShape->setObstacle(false);
             generatorShape->init();
             std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
                                                                                                  startTime, endTime, lifetime, h);
@@ -297,6 +315,9 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             shapes.push_back(shape);
             shape->loadMesh(DATA_DIR + mesh[0]);
             shape->setTextureFilename(mesh[1]);
+            bool isObstacle = (mesh[2] == "true");
+            std::cout<<"isObstacle: "<<mesh[2]<<"\n";
+            shape->setObstacle(isObstacle);
             shape->init();
         }
 
@@ -311,6 +332,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generators.push_back(generatorShape);
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
+            generatorShape->setObstacle(false);
             generatorShape->init();
             std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
                                                                                                  startTime, endTime, lifetime, h);
@@ -329,7 +351,11 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
     }
 
     sphereTexture = make_shared<Texture>();
-    sphereTexture->setFilename(DATA_DIR + "white.png");
+    if (sceneIndex == 4) {
+        sphereTexture->setFilename(DATA_DIR + "yellow.jpeg");
+    } else {
+        sphereTexture->setFilename(DATA_DIR + "white.png");
+    }
     sphereTexture->setUnit(texUnit); // Bind to unit 1
     sphereTexture->init();
     sphereTexture->setWrapModes(GL_REPEAT, GL_REPEAT);

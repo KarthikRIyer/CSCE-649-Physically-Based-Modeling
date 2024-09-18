@@ -73,6 +73,9 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
     Eigen::Vector3d xNew = x + (v * h);
     didCollide = false;
     for (auto shape: shapes) {
+        if (!shape->getObstacle()) {
+            continue;
+        }
         for (Polygon p : shape->getPolygons()) {
             Eigen::Vector3d P = p.points[0];
             Eigen::Vector3d Q = p.points[1];

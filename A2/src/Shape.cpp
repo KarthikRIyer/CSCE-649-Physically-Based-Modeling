@@ -32,6 +32,7 @@ Shape::Shape() :
         norBufID(0),
         texBufID(0),
         isGenerator(false),
+        isObstacle(true),
         particleCount(0)
 {
 }
@@ -42,6 +43,18 @@ Shape::Shape(bool isGenerator, int particleCount) :
         norBufID(0),
         texBufID(0),
         isGenerator(isGenerator),
+        isObstacle(true),
+        particleCount(particleCount)
+{
+}
+
+Shape::Shape(bool isGenerator, int particleCount, bool isObstacle) :
+        prog(NULL),
+        posBufID(0),
+        norBufID(0),
+        texBufID(0),
+        isGenerator(isGenerator),
+        isObstacle(isObstacle),
         particleCount(particleCount)
 {
 }
@@ -232,6 +245,14 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
     }
     std::cout<<"Particles size: "<<particles.size()<<"\n";
     return particles;
+}
+
+void Shape::setObstacle(bool isObstacle) {
+    this->isObstacle = isObstacle;
+}
+
+bool Shape::getObstacle() {
+    return isObstacle;
 }
 
 void Shape::init()

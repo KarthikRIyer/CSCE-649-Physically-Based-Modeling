@@ -2,6 +2,6 @@
 # - TEXTURE <texture file>
 # - MESH <obj file> <texture file>
 TEXTURE grey.jpg
-MESH saw.obj grey.jpg
-MESH saw-floor.obj grey.jpg
+MESH saw.obj grey.jpg false
+MESH saw-floor.obj grey.jpg true
 GENERATOR saw-generator.obj grey.jpg 10000 0 10000 500
