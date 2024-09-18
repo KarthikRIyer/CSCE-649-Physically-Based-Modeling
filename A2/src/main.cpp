@@ -43,7 +43,7 @@ shared_ptr<Scene> scene;
 int texUnit = 1;
 
 SimParams simParams;
-const char* sceneNames[] = {"Drop", "Multi-slope", "Point Gravity", "Slope Wedge"};
+const char* sceneNames[] = {"Drop", "Multi-slope", "Point Gravity", "Slope Wedge", "Saw"};
 int currSceneIndex = 0;
 static const char* currentScene = sceneNames[currSceneIndex];
 int prevSceneIndex = 0;
@@ -213,7 +213,7 @@ void render()
     ImGui::SliderFloat("Air Friction Factor", &simParams.airFrictionFactor, 0.0f, 5.0f);
     ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoeff, 0.0f, 1.0f);
     ImGui::SliderFloat("Friction Coefficient", &simParams.frictionCoeff, 0.0f, 5.0f);
-    ImGui::SliderFloat("Initial Particle Velocity", &simParams.initialParticleVelocity, 0.0f, 5.0f);
+    ImGui::SliderFloat("Initial Particle Velocity", &simParams.initialParticleVelocity, 0.0f, 50.0f);
     ImGui::SliderFloat("Initial Particle Velocity Randomness", &simParams.initialParticleVelocityRandomness, 0.0f, 20.0f);
     ImGui::SliderFloat("Timestep", &simParams.timestep, 1e-3, 5e-2);
 
