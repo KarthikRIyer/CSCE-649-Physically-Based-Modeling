@@ -125,7 +125,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
             generatorShape->init();
-            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams,
+            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
                                                                                                  startTime, endTime, lifetime, h);
             spheres.insert(spheres.end(), particles.begin(), particles.end());
         }
@@ -166,7 +166,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
             generatorShape->init();
-            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams,
+            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
                                                                                                  startTime, endTime, lifetime, h);
             spheres.insert(spheres.end(), particles.begin(), particles.end());
         }
@@ -199,13 +199,13 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         auto sphere1 = make_shared<Particle>(sphereShape, true);
         spheres.push_back(sphere1);
         sphere1->fixed = true;
-        sphere1->r = 0.1;
+        sphere1->r = 0.4;
         sphere1->x0 = Eigen::Vector3d(0, 0, 0);
         sphere1->x = sphere1->x0;
         auto sphere2 = make_shared<Particle>(sphereShape, true);
         spheres.push_back(sphere2);
         sphere2->fixed = true;
-        sphere2->r = 0.1;
+        sphere2->r = 0.4;
         sphere2->x0 = Eigen::Vector3d(-2, -2, 0);
         sphere2->x = sphere2->x0;
 
@@ -230,7 +230,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
             generatorShape->init();
-            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams,
+            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.1,
                                                                                                  startTime, endTime, lifetime, h);
             spheres.insert(spheres.end(), particles.begin(), particles.end());
         }
@@ -271,7 +271,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
             generatorShape->init();
-            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams,
+            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
                                                                                                  startTime, endTime, lifetime, h);
             spheres.insert(spheres.end(), particles.begin(), particles.end());
         }
@@ -312,7 +312,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             generatorShape->loadMesh(DATA_DIR + meshName);
             generatorShape->setTextureFilename(texName);
             generatorShape->init();
-            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams,
+            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
                                                                                                  startTime, endTime, lifetime, h);
             spheres.insert(spheres.end(), particles.begin(), particles.end());
         }

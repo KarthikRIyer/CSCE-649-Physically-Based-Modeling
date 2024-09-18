@@ -135,7 +135,7 @@ void Shape::loadMesh(const string &meshName)
     }
 }
 
-std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::shared_ptr<Shape>& s, SimParams& simParams,
+std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::shared_ptr<Shape>& s, SimParams& simParams, double particleSize,
                                                                 double startTime, double endTime, double lifetime, double h) const {
     std::vector<std::shared_ptr<Particle>> particles;
     if (isGenerator) {
@@ -212,7 +212,7 @@ std::vector<std::shared_ptr<Particle>> Shape::generateParticles(const std::share
                     auto sphere = make_shared<Particle>(s, true);
                     particles.push_back(sphere);
                     sphere->fixed = false;
-                    sphere->r = 0.02;
+                    sphere->r = particleSize;
                     sphere->x0 = point;
                     sphere->x = sphere->x0;
                     sphere->tStart = startTime;
