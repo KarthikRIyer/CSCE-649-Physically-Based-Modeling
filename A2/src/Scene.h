@@ -47,17 +47,20 @@ public:
 private:
 	double t;
 	double h;
+	double sawAngle;
 	SimParams simParams;
 
 	std::shared_ptr<Gravity> gravity;
 	std::shared_ptr<Wind> wind;
 	std::vector<std::shared_ptr<IForceField>> forceFields;
     std::shared_ptr<Texture> sphereTexture;
+    std::shared_ptr<Texture> sawTexture;
 
 	std::shared_ptr<Shape> sphereShape;
 	std::vector< std::shared_ptr<Particle> > spheres;
 
     std::vector<std::shared_ptr<Shape> > shapes;
+    std::shared_ptr<Shape> sawShape;
     std::vector<std::shared_ptr<Shape> > generators;
     std::map<std::string, std::shared_ptr<Texture>> textureMap;
 

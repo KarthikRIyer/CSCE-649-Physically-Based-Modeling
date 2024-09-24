@@ -309,6 +309,17 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 
         loadDataInputFile(DATA_DIR, "sawInput.txt");
 
+        // Load saw model
+        sawShape = make_shared<Shape>();
+        sawShape->setObstacle(false);
+        sawShape->loadMesh(DATA_DIR + "saw.obj");
+        sawTexture = make_shared<Texture>();
+        sawTexture->setFilename(DATA_DIR + "grey.jpg");
+        sawTexture->setUnit(texUnit); // Bind to unit 1
+        sawTexture->init();
+        sawTexture->setWrapModes(GL_REPEAT, GL_REPEAT);
+
+
         // Create shapes
         for(const auto &mesh : meshData) {
             auto shape = make_shared<Shape>();
@@ -348,6 +359,8 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->init();
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
+
+        sawAngle = 0.0;
     }
 
     sphereTexture = make_shared<Texture>();
@@ -370,11 +383,15 @@ void Scene::init()
     std::cout<<"timestep used: "<<h<<"\n";
     if (sphereShape)
         sphereShape->init();
+    if (sawShape)
+        sawShape->init();
 }
 
 void Scene::cleanup() {
     if (sphereShape)
         sphereShape->cleanupBuffers();
+    if (sawShape)
+        sawShape->cleanupBuffers();
     for (auto &shape: shapes) {
         if (shape)
             shape->cleanupBuffers();
@@ -423,6 +440,10 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
 //                s->step(h, forceFields, simParams);
 //            }
 //        }
+    }
+    if (sceneIndex == 4) {
+        sawAngle -= (h * 4);
+        if (sawAngle <= -360) sawAngle = 0.0;
     }
     if (writeToFile) {
         if (!spheres.empty()) {
@@ -481,6 +502,22 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
         textureMap.at(shape->getTextureFilename())->unbind();
     }
 
+    // draw saw
+    if (sceneIndex == 4) {
+        MV->pushMatrix();
+        MV->rotate(sawAngle, glm::vec3(1.0, 0.0, 0.0));
+        sawTexture->bind(prog->getUniform("kdTex"));
+        glUniform3f(prog->getUniform("ka"), 0.1f, 0.1f, 0.1f);
+        glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
+        glUniform1f(prog->getUniform("s"), 200.0f);
+        glUniform3fv(prog->getUniform("kdFront"), 1, Vector3f(1.0, 1.0, 1.0).data());
+        glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
+        sawShape->setProgram(prog);
+        sawShape->draw();
+        sawTexture->unbind();
+        MV->popMatrix();
+    }
+
     sphereTexture->bind(prog->getUniform("kdTex"));
     glUniform3f(prog->getUniform("ka"), 0.1f, 0.1f, 0.1f);
     glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
@@ -493,6 +530,8 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
             spheres[i]->draw(MV, prog);
         }
     }
+    sphereTexture->unbind();
+
 }
 
 void Scene::updateSimParams(SimParams& simParams) {
