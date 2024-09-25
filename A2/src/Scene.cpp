@@ -94,9 +94,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 {
 
 	gravity = std::make_shared<Gravity>(Eigen::Vector3d(0.0, -9.8, 0.0));
-	wind = std::make_shared<Wind>(5.0, Eigen::Vector3d(1.0, 0.0, 0.0));
 	forceFields.push_back(gravity);
-	forceFields.push_back(wind);
     spheres.clear();
     meshData.clear();
     generatorData.clear();
@@ -517,13 +515,6 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
         }
     }
     t += h;
-
-    // update wind
-    Eigen::Vector3d wP(0.0, 0.0, 0.0);
-    Eigen::Vector3d wDir(0.0, 0.0, 0.0);
-    wDir.x() = 5.0 * sin(simParams.windOscilationSpeed * t);
-    wind->setDirection(wDir);
-    wind->setStrength(simParams.windStrength);
 }
 
 void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog) const

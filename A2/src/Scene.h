@@ -51,7 +51,6 @@ private:
 	SimParams simParams;
 
 	std::shared_ptr<Gravity> gravity;
-	std::shared_ptr<Wind> wind;
 	std::vector<std::shared_ptr<IForceField>> forceFields;
     std::shared_ptr<Texture> sphereTexture;
     std::shared_ptr<Texture> sawTexture;
