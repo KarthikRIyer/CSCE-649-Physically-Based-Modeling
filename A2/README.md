@@ -29,14 +29,16 @@ make -j4
 To run the simulator:
 
 ```console
-./A1 ../resources ../data
+./A2 ../resources ../data
 ```
 
 ## Note
 
 - The simulation and rendering loop are set up in main.cpp. The approach used is to run both threads in parallel and the simulation thread updates the state which is read by the rendering thread. The rendering thread does not wait for the simulation thread. If the timestep used is `h` and processing one timestep takes time `x`, the simulation loop waits for time = `max(h - x, 0)` before processing the next timestep. This makes sure that the simulation is displayed at the expected rate.
 - All geometry is loaded in Scene.cpp, into the Shape class defined in Shape.h/Shape.cpp
-- The ball is defined by the Particle class defined in Particle.h/Particle.cpp and collision is handled in the `detectCollision` and `step` functions in that class.
+- Particle-object collision is handled in the `detectCollision` and `step` functions in the Particle class.
+- Pressing the `f` key and running the sim will write particle positions out to a file. Note that the sim will become significantly slower because of file IO.
+- Pressing the `z` key will render in wireframe mode, showing the mesh triangles
 
 
 ## Credits
@@ -46,3 +48,6 @@ This project uses:
 - [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page) for vector math
 - [https://github.com/g-truc/glm](glm) for vector math and for opengl support
 - [Dear ImGui](https://github.com/ocornut/imgui) for immediate mode UI
+- [One TBB](https://github.com/oneapi-src/oneTBB) for parallel processing
+- [Circular Saw model](https://sketchfab.com/3d-models/circular-saw-blade-219c51b8284345568e4a5a80156125ef) by YouniqueIdeaStudio on Sketchfab
+- Chladni Plate simulation inspired by this [Blender tutorial](https://youtu.be/Nqus6inp9Tk) by Kris Bettini
