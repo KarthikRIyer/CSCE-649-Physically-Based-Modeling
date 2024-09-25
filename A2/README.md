@@ -51,3 +51,4 @@ This project uses:
 - [One TBB](https://github.com/oneapi-src/oneTBB) for parallel processing
 - [Circular Saw model](https://sketchfab.com/3d-models/circular-saw-blade-219c51b8284345568e4a5a80156125ef) by YouniqueIdeaStudio on Sketchfab
 - Chladni Plate simulation inspired by this [Blender tutorial](https://youtu.be/Nqus6inp9Tk) by Kris Bettini
+- Circular saw sparks simulation inspired by this [Blender tutorial](https://youtu.be/QCMyvcc3ZaU) by Blenderguru
