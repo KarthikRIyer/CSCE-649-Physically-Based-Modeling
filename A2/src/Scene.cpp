@@ -12,6 +12,7 @@
 #include "Gravity.h"
 #include "PointGravity.h"
 #include "Wind.h"
+#include "ChladniForce.h"
 
 using namespace std;
 using namespace Eigen;
@@ -361,6 +362,59 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         }
 
         sawAngle = 0.0;
+    } else if (sceneIndex == 5) {
+        sphereShape = make_shared<Shape>();
+        sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
+
+        loadDataInputFile(DATA_DIR, "chladniInput.txt");
+
+        // Create shapes
+        for(const auto &mesh : meshData) {
+            auto shape = make_shared<Shape>();
+            shapes.push_back(shape);
+            shape->loadMesh(DATA_DIR + mesh[0]);
+            shape->setTextureFilename(mesh[1]);
+            bool isObstacle = (mesh[2] == "true");
+            std::cout<<"isObstacle: "<<mesh[2]<<"\n";
+            shape->setObstacle(isObstacle);
+            shape->init();
+        }
+
+        for(const auto &generator : generatorData) {
+            int particleCount = std::stoi(generator[2]);
+            std::string meshName = generator[0];
+            std::string texName = generator[1];
+            double startTime = std::stod(generator[3]);
+            double endTime = std::stod(generator[4]);
+            double lifetime = std::stod(generator[5]);
+            auto generatorShape = make_shared<Shape>(true, particleCount);
+            generators.push_back(generatorShape);
+            generatorShape->loadMesh(DATA_DIR + meshName);
+            generatorShape->setTextureFilename(texName);
+            generatorShape->setObstacle(false);
+            generatorShape->init();
+            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
+                                                                                                 startTime, endTime, lifetime, h);
+            spheres.insert(spheres.end(), particles.begin(), particles.end());
+        }
+        std::cout<<"generated\n";
+
+        for(const auto &filename : textureData) {
+            auto textureKd = make_shared<Texture>();
+            textureMap[filename] = textureKd;
+            textureKd->setFilename(DATA_DIR + filename);
+            textureKd->setUnit(texUnit); // Bind to unit 1
+            textureKd->init();
+            textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
+        }
+
+        auto chladniForce = std::make_shared<ChladniForce>();
+        chladniForce->setA(simParams.chladniA);
+        chladniForce->setB(simParams.chladniB);
+        chladniForce->setM(simParams.chladniM);
+        chladniForce->setN(simParams.chladniN);
+
+        forceFields.push_back(chladniForce);
     }
 
     sphereTexture = make_shared<Texture>();
