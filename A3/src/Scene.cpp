@@ -10,9 +10,7 @@
 #include "Texture.h"
 #include "MatrixStack.h"
 #include "Gravity.h"
-#include "PointGravity.h"
-#include "Wind.h"
-#include "ChladniForce.h"
+#include "Generator.h"
 
 using namespace std;
 using namespace Eigen;
@@ -82,7 +80,6 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 	forceFields.push_back(gravity);
     spheres.clear();
     meshData.clear();
-    generatorData.clear();
     textureData.clear();
 	if (sceneIndex == 0) {
         sphereShape = make_shared<Shape>();
@@ -102,23 +99,6 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             shape->init();
         }
 
-        for(const auto &generator : generatorData) {
-            int particleCount = std::stoi(generator[2]);
-            std::string meshName = generator[0];
-            std::string texName = generator[1];
-            double startTime = std::stod(generator[3]);
-            double endTime = std::stod(generator[4]);
-            double lifetime = std::stod(generator[5]);
-            auto generatorShape = make_shared<Shape>(true, particleCount);
-            generators.push_back(generatorShape);
-            generatorShape->loadMesh(DATA_DIR + meshName);
-            generatorShape->setTextureFilename(texName);
-            generatorShape->setObstacle(false);
-            generatorShape->init();
-            std::vector<std::shared_ptr<Particle>> particles = generatorShape->generateParticles(sphereShape, simParams, 0.02,
-                                                                                                 startTime, endTime, lifetime, h);
-            spheres.insert(spheres.end(), particles.begin(), particles.end());
-        }
         std::cout<<"generated\n";
 
         for(const auto &filename : textureData) {
@@ -129,6 +109,10 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->init();
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
+
+        auto boids = Generator::getBoids(1000, Eigen::Vector3d(0.0, 3.0, 0.0), 2.0, sphereShape);
+        spheres.insert(spheres.end(), boids.begin(), boids.end());
+
 	}
 
     sphereTexture = make_shared<Texture>();
@@ -189,35 +173,17 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
         // collision detection and step
         tbb::parallel_for((size_t)0, spheres.size(), [=](size_t i) {
             auto s = spheres[i];
-            if (t*1e3 >= s->tStart && t*1e3 <= s->tEnd) {
-                s->detectCollision(h, shapes);
-                s->step(h, forceFields, simParams);
-            }
-        });
-//        for (auto s: spheres) {
 //            if (t*1e3 >= s->tStart && t*1e3 <= s->tEnd) {
 //                s->detectCollision(h, shapes);
-//                s->step(h, forceFields, simParams);
+                s->step(h, forceFields, simParams);
 //            }
+        });
+//        for (auto s: spheres) {
+////            if (t*1e3 >= s->tStart && t*1e3 <= s->tEnd) {
+////                s->detectCollision(h, shapes);
+//                s->step(h, forceFields, simParams);
+////            }
 //        }
-    }
-
-    if (writeToFile) {
-        if (!spheres.empty()) {
-            int deadSpheres = 0;
-            for (auto s: spheres) {
-                bool alive = t*1e3 >= s->tStart && t*1e3 <= s->tEnd;
-                if (!alive || s->fixed) deadSpheres++;
-            }
-            if (deadSpheres != spheres.size()) {
-                outputFile << "timestep\n";
-                for (auto s: spheres) {
-                    bool alive = t*1e3 >= s->tStart && t*1e3 <= s->tEnd;
-                    outputFile << (alive ? "a" : "d") << " " << s->x.x() << " " << s->x.y() << " " << s->x.z() << " \n";
-                }
-                outputFile <<"\n";
-            }
-        }
     }
     t += h;
 }
@@ -246,9 +212,9 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
 //    std::cout<<"t: "<<t<<"\n";
     for(int i = 0; i < (int)spheres.size(); ++i) {
 //        spheres[i]->draw(MV, prog);
-        if (spheres[i]->fixed || (t*1e3 >= spheres[i]->tStart && t*1e3 <= spheres[i]->tEnd)) {
+//        if (spheres[i]->fixed || (t*1e3 >= spheres[i]->tStart && t*1e3 <= spheres[i]->tEnd)) {
             spheres[i]->draw(MV, prog);
-        }
+//        }
     }
     sphereTexture->unbind();
 

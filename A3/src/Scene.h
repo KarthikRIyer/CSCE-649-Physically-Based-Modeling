@@ -58,7 +58,6 @@ private:
 	std::vector< std::shared_ptr<Particle> > spheres;
 
     std::vector<std::shared_ptr<Shape> > shapes;
-    std::vector<std::shared_ptr<Shape> > generators;
     std::map<std::string, std::shared_ptr<Texture>> textureMap;
 
     std::vector<std::string> textureData;

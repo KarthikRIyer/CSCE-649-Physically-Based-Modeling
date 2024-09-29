@@ -24,7 +24,7 @@ public:
 	virtual ~Particle();
 	void tare();
 	void reset();
-	double detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes);
+//	double detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes);
 	void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams);
 	void draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Program> p) const;
 	
@@ -43,9 +43,6 @@ public:
 	bool fixed;
 	bool didCollide;
 	bool hasCollided;
-
-	double tStart;
-	double tEnd;
 
 private:
 	const std::shared_ptr<Shape> sphere;
