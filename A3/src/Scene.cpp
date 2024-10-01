@@ -10,7 +10,7 @@
 #include "Texture.h"
 #include "MatrixStack.h"
 #include "Gravity.h"
-#include "Generator.h"
+#include "Cluster.h"
 
 using namespace std;
 using namespace Eigen;
@@ -81,6 +81,13 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
     spheres.clear();
     meshData.clear();
     textureData.clear();
+
+    sphereTexture = make_shared<Texture>();
+    sphereTexture->setFilename(DATA_DIR + "white.png");
+    sphereTexture->setUnit(texUnit); // Bind to unit 1
+    sphereTexture->init();
+    sphereTexture->setWrapModes(GL_REPEAT, GL_REPEAT);
+
 	if (sceneIndex == 0) {
         sphereShape = make_shared<Shape>();
         sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
@@ -110,16 +117,9 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
 
-        auto boids = Generator::getBoids(1000, Eigen::Vector3d(0.0, 3.0, 0.0), 2.0, sphereShape);
-        spheres.insert(spheres.end(), boids.begin(), boids.end());
-
+        auto cluster = std::make_shared<Cluster>(1000, Eigen::Vector3d(0.0, 3.0, 0.0), 2.0, sphereShape, sphereTexture);
+        clusters.push_back(cluster);
 	}
-
-    sphereTexture = make_shared<Texture>();
-	sphereTexture->setFilename(DATA_DIR + "white.png");
-    sphereTexture->setUnit(texUnit); // Bind to unit 1
-    sphereTexture->init();
-    sphereTexture->setWrapModes(GL_REPEAT, GL_REPEAT);
 
 }
 
@@ -185,6 +185,10 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
 ////            }
 //        }
     }
+
+    for (auto cluster: clusters) {
+        cluster->step(h, forceFields, simParams);
+    }
     t += h;
 }
 
@@ -202,6 +206,10 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
         shape->setProgram(prog);
         shape->draw();
         textureMap.at(shape->getTextureFilename())->unbind();
+    }
+
+    for (auto cluster: clusters) {
+        cluster->draw(MV, prog);
     }
 
     sphereTexture->bind(prog->getUniform("kdTex"));

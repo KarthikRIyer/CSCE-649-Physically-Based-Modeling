@@ -21,6 +21,7 @@ class Texture;
 class IForceField;
 class Gravity;
 class Wind;
+class Cluster;
 
 class Scene
 {
@@ -56,6 +57,7 @@ private:
 
 	std::shared_ptr<Shape> sphereShape;
 	std::vector< std::shared_ptr<Particle> > spheres;
+	std::vector< std::shared_ptr<Cluster> > clusters;
 
     std::vector<std::shared_ptr<Shape> > shapes;
     std::map<std::string, std::shared_ptr<Texture>> textureMap;
