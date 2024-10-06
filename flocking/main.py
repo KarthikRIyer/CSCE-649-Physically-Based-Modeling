@@ -18,6 +18,9 @@ NUM_PARTICLES = 1000
 NUM_GOALS = 1
 
 x = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
+xp1 = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
+xp2 = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
+xp3 = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 # x_temp = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 v = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 alignSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
@@ -28,6 +31,9 @@ separationSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 a = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 a_temp = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 x_display = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
+xp1_display = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
+xp2_display = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
+xp3_display = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 
 goalX = ti.Vector.field(2, dtype=ti.f32, shape=NUM_GOALS)
 goalXDisplay = ti.Vector.field(2, dtype=ti.f32, shape=NUM_GOALS)
@@ -52,15 +58,38 @@ def setup():
     for i in range(NUM_PARTICLES):
         x[i] = ti.random(dtype=float) * WIDTH, ti.random(dtype=float) * HEIGHT
         v[i] = (ti.random(dtype=float) * 2.0 - 1.0), (ti.random(dtype=float) * 2.0 -1)
+        # v[i] = (1, -1)
         v[i] = ti.math.normalize(v[i])
         v[i] *= vMag
         a[i] = 0.0, 0.0
+        xp1[i] = 0.0, 0.0
+        xp2[i] = 0.0, 0.0
+        xp3[i] = 0.0, 0.0
 
 
 @ti.kernel
 def apply_forces():
     for i in range(NUM_PARTICLES):
         x[i] = x[i] + dt * v[i]
+
+        angle = ti.math.atan2(v[i][1], v[i][0])
+        angle -= 1.5708
+        # print(angle)
+        cos_angle = ti.math.cos(angle)
+        sin_angle = ti.math.sin(angle)
+        xp1[i] = x[i] + ti.Vector([0, PARTICLE_RADIUS * 4])
+        xp1[i] = x[i] + ti.Vector(
+            [cos_angle * (xp1[i][0] - x[i][0]) - sin_angle * (xp1[i][1] - x[i][1]),
+             sin_angle * (xp1[i][0] - x[i][0]) + cos_angle * (xp1[i][1] - x[i][1])])
+        xp2[i] = x[i] + ti.Vector([PARTICLE_RADIUS * 0.866, -PARTICLE_RADIUS * 0.5])
+        xp2[i] = x[i] + ti.Vector(
+            [cos_angle * (xp2[i][0] - x[i][0]) - sin_angle * (xp2[i][1] - x[i][1]),
+             sin_angle * (xp2[i][0] - x[i][0]) + cos_angle * (xp2[i][1] - x[i][1])])
+        xp3[i] = x[i] + ti.Vector([-PARTICLE_RADIUS * 0.866, -PARTICLE_RADIUS * 0.5])
+        xp3[i] = x[i] + ti.Vector(
+            [cos_angle * (xp3[i][0] - x[i][0]) - sin_angle * (xp3[i][1] - x[i][1]),
+             sin_angle * (xp3[i][0] - x[i][0]) + cos_angle * (xp3[i][1] - x[i][1])])
+
         v[i] = v[i] + dt * a[i]
         if ti.math.length(v[i]) > maxSpeed:
             v[i] = maxSpeed * ti.math.normalize(v[i])
@@ -80,7 +109,6 @@ def apply_forces():
         elif x[i][1] < 0:
             # x[i][1] = HEIGHT
             a[i][1] = collisionPenaltyForceMag
-
         # a[i] = ti.math.normalize(a[i])
         # a[i] *= maxForce
 
@@ -193,7 +221,7 @@ def move_goal(time: ti.f32):
     vel = ti.Vector([-ti.math.sin(theta), ti.math.cos(theta)]) * av * 100.0
     # print(vel)
     goalX[0] += vel * dt
-    print(goalX[0])
+    # print(goalX[0])
 
 
 def simulate():
@@ -218,11 +246,22 @@ def update():
         x_display[i][0] = x[i][0] / WIDTH
         x_display[i][1] = x[i][1] / HEIGHT
 
+        xp1_display[i][0] = xp1[i][0] / WIDTH
+        xp1_display[i][1] = xp1[i][1] / HEIGHT
+        xp2_display[i][0] = xp2[i][0] / WIDTH
+        xp2_display[i][1] = xp2[i][1] / HEIGHT
+        xp3_display[i][0] = xp3[i][0] / WIDTH
+        xp3_display[i][1] = xp3[i][1] / HEIGHT
+
 
 def render(gui):
     q = x_display.to_numpy()
+    p1 = xp1_display.to_numpy()
+    p2 = xp2_display.to_numpy()
+    p3 = xp3_display.to_numpy()
     for i in range(NUM_PARTICLES):
-        gui.circle(pos=q[i], color=PARTICLE_COLOUR, radius=PARTICLE_RADIUS)
+        # gui.circle(pos=q[i], color=PARTICLE_COLOUR, radius=PARTICLE_RADIUS)
+        gui.triangle(p1[i], p2[i], p3[i], color=PARTICLE_COLOUR)
     q = goalXDisplay.to_numpy()
     for i in range(NUM_GOALS):
         gui.circle(pos=q[i], color=GOAL_COLOR, radius=PARTICLE_RADIUS * 2)
