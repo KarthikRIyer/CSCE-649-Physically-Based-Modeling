@@ -11,11 +11,14 @@ HEIGHT = 600
 BACKGROUND_COLOUR = 0xf0f0f0
 PARTICLE_COLOUR = 0x328ac1
 GOAL_COLOR = 0x00ff00
+OBSTACLE_COLOR = 0xff0000
 PARTICLE_RADIUS = 4
+OBSTACLE_RADIUS = 15
 dt = 1 / 60
 
 NUM_PARTICLES = 1000
 NUM_GOALS = 1
+NUM_OBSTACLES = 2
 
 x = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 xp1 = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
@@ -26,6 +29,7 @@ v = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 alignSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 cohesionSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 goalSeekSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
+obstacleSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 separationSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 # v_temp = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 a = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
@@ -37,6 +41,11 @@ xp3_display = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 
 goalX = ti.Vector.field(2, dtype=ti.f32, shape=NUM_GOALS)
 goalXDisplay = ti.Vector.field(2, dtype=ti.f32, shape=NUM_GOALS)
+
+obstacleX = ti.Vector.field(2, dtype=ti.f32, shape=NUM_OBSTACLES)
+obstacleRad = ti.field(dtype=ti.f32, shape=NUM_OBSTACLES)
+obstacleXDisplay = ti.Vector.field(2, dtype=ti.f32, shape=NUM_OBSTACLES)
+
 
 vMag = 200.0
 perceptionDist = 50
@@ -56,6 +65,10 @@ enableGoal = False
 @ti.kernel
 def setup():
     goalX[0] = 300, 300
+    obstacleX[0] = 450, 225
+    obstacleRad[0] = OBSTACLE_RADIUS
+    obstacleX[1] = 150, 425
+    obstacleRad[1] = OBSTACLE_RADIUS * 2
     for i in range(NUM_PARTICLES):
         x[i] = ti.random(dtype=float) * WIDTH, ti.random(dtype=float) * HEIGHT
         v[i] = (ti.random(dtype=float) * 2.0 - 1.0), (ti.random(dtype=float) * 2.0 -1)
@@ -122,6 +135,7 @@ def calc_net_acceleration():
         a[i] += cohesionFactor * cohesionSteering[i]
         a[i] += separationFactor * separationSteering[i]
         a[i] += goalSeekFactor * goalSeekSteering[i]
+        a[i] += 1.0 * obstacleSteering[i]
         # print(a[i])
 
 
@@ -190,6 +204,18 @@ def goalSeek():
 
 
 @ti.kernel
+def obstacle():
+    for i in range(NUM_PARTICLES):
+        obstacleSteering[i] = 0.0, 0.0
+        for j in range(NUM_OBSTACLES):
+            obsVec = x[i] - obstacleX[j]
+            dist = ti.math.length(obsVec)
+            rad = obstacleRad[j]
+            if dist < rad:
+                obstacleSteering[i] += 1000.0 * ti.math.normalize(obsVec)
+
+
+@ti.kernel
 def separation():
     for i in range(NUM_PARTICLES):
         separationSteering[i] = 0.0, 0.0
@@ -233,6 +259,7 @@ def simulate():
     separation()
     if enableGoal:
         goalSeek()
+    obstacle()
     calc_net_acceleration()
     apply_forces()
     update()
@@ -244,6 +271,7 @@ def update():
     for i in range(NUM_GOALS):
         goalXDisplay[i][0] = goalX[i][0] / WIDTH
         goalXDisplay[i][1] = goalX[i][1] / HEIGHT
+
     for i in range(NUM_PARTICLES):
         x_display[i][0] = x[i][0] / WIDTH
         x_display[i][1] = x[i][1] / HEIGHT
@@ -254,6 +282,10 @@ def update():
         xp2_display[i][1] = xp2[i][1] / HEIGHT
         xp3_display[i][0] = xp3[i][0] / WIDTH
         xp3_display[i][1] = xp3[i][1] / HEIGHT
+
+    for i in range(NUM_OBSTACLES):
+        obstacleXDisplay[i][0] = obstacleX[i][0] / WIDTH
+        obstacleXDisplay[i][1] = obstacleX[i][1] / HEIGHT
 
 
 def render(gui):
@@ -268,6 +300,10 @@ def render(gui):
     if enableGoal:
         for i in range(NUM_GOALS):
             gui.circle(pos=q[i], color=GOAL_COLOR, radius=PARTICLE_RADIUS * 2)
+    q = obstacleXDisplay.to_numpy()
+    obsRad = obstacleRad.to_numpy()
+    for i in range(NUM_OBSTACLES):
+        gui.circle(pos=q[i], color=OBSTACLE_COLOR, radius=obsRad[i])
     gui.show()
 
 
