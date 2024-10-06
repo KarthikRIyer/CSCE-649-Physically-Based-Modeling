@@ -50,6 +50,7 @@ goalSeekFactor = 0.2
 
 collisionPenaltyForceMag = 1000.0
 t = 0.0
+enableGoal = False
 
 
 @ti.kernel
@@ -230,7 +231,8 @@ def simulate():
     align()
     cohesion()
     separation()
-    goalSeek()
+    if enableGoal:
+        goalSeek()
     calc_net_acceleration()
     apply_forces()
     update()
@@ -263,8 +265,9 @@ def render(gui):
         # gui.circle(pos=q[i], color=PARTICLE_COLOUR, radius=PARTICLE_RADIUS)
         gui.triangle(p1[i], p2[i], p3[i], color=PARTICLE_COLOUR)
     q = goalXDisplay.to_numpy()
-    for i in range(NUM_GOALS):
-        gui.circle(pos=q[i], color=GOAL_COLOR, radius=PARTICLE_RADIUS * 2)
+    if enableGoal:
+        for i in range(NUM_GOALS):
+            gui.circle(pos=q[i], color=GOAL_COLOR, radius=PARTICLE_RADIUS * 2)
     gui.show()
 
 
@@ -272,5 +275,8 @@ if __name__ == '__main__':
     gui = ti.GUI('Flocking', res=(WIDTH, HEIGHT), background_color=BACKGROUND_COLOUR)
     setup()
     while True:
+        for e in gui.get_events(ti.GUI.PRESS):
+            if e.key == 'g':
+                enableGoal = not enableGoal
         simulate()
         render(gui)
