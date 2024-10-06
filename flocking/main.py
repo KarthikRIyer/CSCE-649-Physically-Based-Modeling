@@ -1,7 +1,8 @@
 import taichi as ti
 import numpy as np
 
-ti.init(arch=ti.cpu, debug=True)
+# ti.init(arch=ti.cpu, debug=True)
+ti.init(arch=ti.cpu)
 # ti.init(arch=ti.gpu)
 
 # GUI
@@ -9,21 +10,27 @@ WIDTH = 600
 HEIGHT = 600
 BACKGROUND_COLOUR = 0xf0f0f0
 PARTICLE_COLOUR = 0x328ac1
+GOAL_COLOR = 0x00ff00
 PARTICLE_RADIUS = 4
 dt = 1 / 60
 
 NUM_PARTICLES = 1000
+NUM_GOALS = 1
 
 x = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 # x_temp = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 v = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 alignSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 cohesionSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
+goalSeekSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 separationSteering = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 # v_temp = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 a = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 a_temp = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
 x_display = ti.Vector.field(2, dtype=ti.f32, shape=NUM_PARTICLES)
+
+goalX = ti.Vector.field(2, dtype=ti.f32, shape=NUM_GOALS)
+goalXDisplay = ti.Vector.field(2, dtype=ti.f32, shape=NUM_GOALS)
 
 vMag = 200.0
 perceptionDist = 50
@@ -31,19 +38,21 @@ maxForce = 400.0
 maxSpeed = vMag
 
 alignFactor = 1.2
-cohesionFactor = 1.0
-separationFactor = 1.1
+cohesionFactor = 1.2
+separationFactor = 1.3
+goalSeekFactor = 0.2
 
 collisionPenaltyForceMag = 1000.0
 
 @ti.kernel
 def setup():
- for i in range(NUM_PARTICLES):
-     x[i] = ti.random(dtype=float) * WIDTH, ti.random(dtype=float) * HEIGHT
-     v[i] = (ti.random(dtype=float) * 2.0 - 1.0), (ti.random(dtype=float) * 2.0 -1)
-     v[i] = ti.math.normalize(v[i])
-     v[i] *= vMag
-     a[i] = 0.0, 0.0
+    goalX[0] = 200, 300
+    for i in range(NUM_PARTICLES):
+        x[i] = ti.random(dtype=float) * WIDTH, ti.random(dtype=float) * HEIGHT
+        v[i] = (ti.random(dtype=float) * 2.0 - 1.0), (ti.random(dtype=float) * 2.0 -1)
+        v[i] = ti.math.normalize(v[i])
+        v[i] *= vMag
+        a[i] = 0.0, 0.0
 
 
 @ti.kernel
@@ -81,6 +90,7 @@ def calc_net_acceleration():
         a[i] += alignFactor * alignSteering[i]
         a[i] += cohesionFactor * cohesionSteering[i]
         a[i] += separationFactor * separationSteering[i]
+        a[i] += goalSeekFactor * goalSeekSteering[i]
         # print(a[i])
 
 
@@ -132,6 +142,23 @@ def cohesion():
 
 
 @ti.kernel
+def goalSeek():
+    for i in range(NUM_PARTICLES):
+        goalSeekSteering[i] = 0.0, 0.0
+        for j in range(NUM_GOALS):
+            goalSeekSteering[i] += goalX[j]
+        goalSeekSteering[i] /= NUM_GOALS
+        goalSeekSteering[i] -= x[i]
+        goalSeekSteering[i] = ti.math.normalize(goalSeekSteering[i])
+        goalSeekSteering[i] *= maxSpeed
+        goalSeekSteering[i] -= v[i]
+        # print(ti.math.length(goalSeekSteering[i]))
+        if ti.math.length(goalSeekSteering[i]) > maxForce:
+            goalSeekSteering[i] = ti.math.normalize(goalSeekSteering[i])
+            goalSeekSteering[i] *= maxForce
+
+
+@ti.kernel
 def separation():
     for i in range(NUM_PARTICLES):
         separationSteering[i] = 0.0, 0.0
@@ -160,6 +187,7 @@ def simulate():
     align()
     cohesion()
     separation()
+    goalSeek()
     calc_net_acceleration()
     apply_forces()
     update()
@@ -167,6 +195,9 @@ def simulate():
 
 @ti.kernel
 def update():
+    for i in range(NUM_GOALS):
+        goalXDisplay[i][0] = goalX[i][0] / WIDTH
+        goalXDisplay[i][1] = goalX[i][1] / HEIGHT
     for i in range(NUM_PARTICLES):
         x_display[i][0] = x[i][0] / WIDTH
         x_display[i][1] = x[i][1] / HEIGHT
@@ -176,6 +207,9 @@ def render(gui):
     q = x_display.to_numpy()
     for i in range(NUM_PARTICLES):
         gui.circle(pos=q[i], color=PARTICLE_COLOUR, radius=PARTICLE_RADIUS)
+    q = goalXDisplay.to_numpy()
+    for i in range(NUM_GOALS):
+        gui.circle(pos=q[i], color=GOAL_COLOR, radius=PARTICLE_RADIUS * 2)
     gui.show()
 
 
