@@ -43,10 +43,12 @@ separationFactor = 1.3
 goalSeekFactor = 0.2
 
 collisionPenaltyForceMag = 1000.0
+t = 0.0
+
 
 @ti.kernel
 def setup():
-    goalX[0] = 200, 300
+    goalX[0] = 300, 300
     for i in range(NUM_PARTICLES):
         x[i] = ti.random(dtype=float) * WIDTH, ti.random(dtype=float) * HEIGHT
         v[i] = (ti.random(dtype=float) * 2.0 - 1.0), (ti.random(dtype=float) * 2.0 -1)
@@ -183,7 +185,20 @@ def separation():
                 separationSteering[i] *= maxForce
 
 
+@ti.kernel
+def move_goal(time: ti.f32):
+    av = 0.5
+    theta = av * time
+    # print(theta)
+    vel = ti.Vector([-ti.math.sin(theta), ti.math.cos(theta)]) * av * 100.0
+    # print(vel)
+    goalX[0] += vel * dt
+    print(goalX[0])
+
+
 def simulate():
+    global t
+    move_goal(t)
     align()
     cohesion()
     separation()
@@ -191,6 +206,7 @@ def simulate():
     calc_net_acceleration()
     apply_forces()
     update()
+    t += dt
 
 
 @ti.kernel
