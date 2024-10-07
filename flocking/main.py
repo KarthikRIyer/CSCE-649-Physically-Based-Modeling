@@ -10,6 +10,7 @@ WIDTH = 600
 HEIGHT = 600
 BACKGROUND_COLOUR = 0xf0f0f0
 PARTICLE_COLOUR = 0x328ac1
+LINE_COLOUR = 0x000000
 GOAL_COLOR = 0x00ff00
 OBSTACLE_COLOR = 0xff0000
 PARTICLE_RADIUS = 4
@@ -373,7 +374,7 @@ def update():
 
 
 def render(gui):
-    q = x_display.to_numpy()
+    # q = x_display.to_numpy()
     p1 = xp1_display.to_numpy()
     p2 = xp2_display.to_numpy()
     p3 = xp3_display.to_numpy()
@@ -398,5 +399,8 @@ if __name__ == '__main__':
         for e in gui.get_events(ti.GUI.PRESS):
             if e.key == 'g':
                 enableGoal = not enableGoal
+            if e.key == 'r':
+                t = 0.0
+                setup()
         simulate()
         render(gui)
