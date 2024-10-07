@@ -214,6 +214,15 @@ def obstacle():
             if dist < rad:
                 obstacleSteering[i] += 1000.0 * ti.math.normalize(obsVec)
 
+            # steering away from object
+            up = -obsVec
+            up = ti.math.normalize(up)
+            vi = ti.math.dot(v[i], up) * up
+            vt = v[i] - vi
+            tColl = dist / ti.math.length(vi)
+            a = ((2 * 2 * rad)/(tColl * tColl)) * ti.math.normalize(vt)
+            obstacleSteering[i] += 2*a
+
 
 @ti.kernel
 def separation():
