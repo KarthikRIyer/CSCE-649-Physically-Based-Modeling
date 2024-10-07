@@ -46,11 +46,17 @@ obstacleX = ti.Vector.field(2, dtype=ti.f32, shape=NUM_OBSTACLES)
 obstacleRad = ti.field(dtype=ti.f32, shape=NUM_OBSTACLES)
 obstacleXDisplay = ti.Vector.field(2, dtype=ti.f32, shape=NUM_OBSTACLES)
 
-
 vMag = 200.0
 perceptionDist = 50
 maxForce = 400.0
 maxSpeed = vMag
+
+GRID_SIZE = 2 * perceptionDist
+NUM_CELLS_X = WIDTH // GRID_SIZE
+NUM_CELLS_Y = HEIGHT // GRID_SIZE
+
+grid = ti.field(dtype=ti.i32, shape=(NUM_CELLS_X, NUM_CELLS_Y, NUM_PARTICLES))
+grid_count = ti.field(dtype=ti.i32, shape=(NUM_CELLS_X, NUM_CELLS_Y))
 
 alignFactor = 1.2
 cohesionFactor = 1.2
@@ -79,6 +85,24 @@ def setup():
         xp1[i] = 0.0, 0.0
         xp2[i] = 0.0, 0.0
         xp3[i] = 0.0, 0.0
+
+
+@ti.kernel
+def update_grid():
+    for i in range(NUM_CELLS_X):
+        for j in range(NUM_CELLS_Y):
+            grid_count[i, j] = 0
+
+    for i in range(NUM_PARTICLES):
+        cell_x = int(x[i][0] // GRID_SIZE)
+        cell_y = int(x[i][1] // GRID_SIZE)
+        cell_x = ti.math.max(0, ti.math.min(cell_x, NUM_CELLS_X - 1))
+        cell_y = ti.math.max(0, ti.math.min(cell_y, NUM_CELLS_Y - 1))
+
+        if grid_count[cell_x, cell_y] < NUM_PARTICLES:
+            grid[cell_x, cell_y, grid_count[cell_x, cell_y]] = i
+            grid_count[cell_x, cell_y] += 1
+
 
 
 @ti.kernel
@@ -143,14 +167,31 @@ def calc_net_acceleration():
 def align():
     for i in range(NUM_PARTICLES):
         alignSteering[i] = 0.0, 0.0
+        cell_x = int(x[i][0] // GRID_SIZE)
+        cell_y = int(x[i][1] // GRID_SIZE)
         totalNeigh = 0
-        for j in range(NUM_PARTICLES):
-            if i == j:
-                continue
-            d = ti.math.length(x[j] - x[i])
-            if d < perceptionDist:
-                totalNeigh += 1
-                alignSteering[i] += v[j]
+
+        for dx in range(-1, 2):
+            for dy in range(-1, 2):
+                neighbor_cell_x = cell_x + dx
+                neighbor_cell_y = cell_y + dy
+                if 0 <= neighbor_cell_x < NUM_CELLS_X and 0 <= neighbor_cell_y < NUM_CELLS_Y:
+                    for j in range(grid_count[neighbor_cell_x, neighbor_cell_y]):
+                        neighbor_index = grid[neighbor_cell_x, neighbor_cell_y, j]
+                        if neighbor_index == i:
+                            continue
+                        d = ti.math.length(x[neighbor_index] - x[i])
+                        if d < perceptionDist:
+                            totalNeigh += 1
+                            alignSteering[i] += v[neighbor_index]
+
+        # for j in range(NUM_PARTICLES):
+        #     if i == j:
+        #         continue
+        #     d = ti.math.length(x[j] - x[i])
+        #     if d < perceptionDist:
+        #         totalNeigh += 1
+        #         alignSteering[i] += v[j]
         if totalNeigh > 0:
             # alignSteering[i] /= totalNeigh
             alignSteering[i] = ti.math.normalize(alignSteering[i])
@@ -166,14 +207,30 @@ def align():
 def cohesion():
     for i in range(NUM_PARTICLES):
         cohesionSteering[i] = 0.0, 0.0
+        cell_x = int(x[i][0] // GRID_SIZE)
+        cell_y = int(x[i][1] // GRID_SIZE)
         totalNeigh = 0
-        for j in range(NUM_PARTICLES):
-            if i == j:
-                continue
-            d = ti.math.length(x[j] - x[i])
-            if d < perceptionDist:
-                totalNeigh += 1
-                cohesionSteering[i] += x[j]
+
+        for dx in range(-1, 2):
+            for dy in range(-1, 2):
+                neighbor_cell_x = cell_x + dx
+                neighbor_cell_y = cell_y + dy
+                if 0 <= neighbor_cell_x < NUM_CELLS_X and 0 <= neighbor_cell_y < NUM_CELLS_Y:
+                    for j in range(grid_count[neighbor_cell_x, neighbor_cell_y]):
+                        neighbor_index = grid[neighbor_cell_x, neighbor_cell_y, j]
+                        if neighbor_index == i:
+                            continue
+                        d = ti.math.length(x[neighbor_index] - x[i])
+                        if d < perceptionDist:
+                            totalNeigh += 1
+                            cohesionSteering[i] += x[neighbor_index]
+        # for j in range(NUM_PARTICLES):
+        #     if i == j:
+        #         continue
+        #     d = ti.math.length(x[j] - x[i])
+        #     if d < perceptionDist:
+        #         totalNeigh += 1
+        #         cohesionSteering[i] += x[j]
         if totalNeigh > 0:
             cohesionSteering[i] /= totalNeigh
             cohesionSteering[i] -= x[i]
@@ -228,16 +285,33 @@ def obstacle():
 def separation():
     for i in range(NUM_PARTICLES):
         separationSteering[i] = 0.0, 0.0
+        cell_x = int(x[i][0] // GRID_SIZE)
+        cell_y = int(x[i][1] // GRID_SIZE)
         totalNeigh = 0
-        for j in range(NUM_PARTICLES):
-            if i == j:
-                continue
-            d = ti.math.length(x[j] - x[i])
-            if d < perceptionDist:
-                totalNeigh += 1
-                diff = x[i] - x[j]
-                diff *= (1.0 / (d * d))
-                separationSteering[i] += diff
+        for dx in range(-1, 2):
+            for dy in range(-1, 2):
+                neighbor_cell_x = cell_x + dx
+                neighbor_cell_y = cell_y + dy
+                if 0 <= neighbor_cell_x < NUM_CELLS_X and 0 <= neighbor_cell_y < NUM_CELLS_Y:
+                    for j in range(grid_count[neighbor_cell_x, neighbor_cell_y]):
+                        neighbor_index = grid[neighbor_cell_x, neighbor_cell_y, j]
+                        if neighbor_index == i:
+                            continue
+                        d = ti.math.length(x[neighbor_index] - x[i])
+                        if d < perceptionDist:
+                            totalNeigh += 1
+                            diff = x[i] - x[neighbor_index]
+                            diff *= (1.0 / (d * d))
+                            separationSteering[i] += diff
+        # for j in range(NUM_PARTICLES):
+        #     if i == j:
+        #         continue
+        #     d = ti.math.length(x[j] - x[i])
+        #     if d < perceptionDist:
+        #         totalNeigh += 1
+        #         diff = x[i] - x[j]
+        #         diff *= (1.0 / (d * d))
+        #         separationSteering[i] += diff
         if totalNeigh > 0:
             separationSteering[i] /= totalNeigh
             separationSteering[i] = ti.math.normalize(separationSteering[i])
@@ -263,6 +337,7 @@ def move_goal(time: ti.f32):
 def simulate():
     global t
     move_goal(t)
+    update_grid()
     align()
     cohesion()
     separation()
