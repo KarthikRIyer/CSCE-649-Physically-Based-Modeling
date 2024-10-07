@@ -381,6 +381,9 @@ def render(gui):
     for i in range(NUM_PARTICLES):
         # gui.circle(pos=q[i], color=PARTICLE_COLOUR, radius=PARTICLE_RADIUS)
         gui.triangle(p1[i], p2[i], p3[i], color=PARTICLE_COLOUR)
+        gui.line(begin=p1[i], end=p2[i], radius=1, color=LINE_COLOUR)
+        gui.line(begin=p2[i], end=p3[i], radius=1, color=LINE_COLOUR)
+        gui.line(begin=p3[i], end=p1[i], radius=1, color=LINE_COLOUR)
     q = goalXDisplay.to_numpy()
     if enableGoal:
         for i in range(NUM_GOALS):
