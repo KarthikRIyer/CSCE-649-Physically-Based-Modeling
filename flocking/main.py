@@ -6,7 +6,7 @@ ti.init(arch=ti.cpu)
 # ti.init(arch=ti.gpu)
 
 # GUI
-WIDTH = 600
+WIDTH = 1200
 HEIGHT = 600
 BACKGROUND_COLOUR = 0xf0f0f0
 PARTICLE_COLOUR = 0x328ac1
