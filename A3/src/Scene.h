@@ -48,7 +48,6 @@ public:
 private:
 	double t;
 	double h;
-	double sawAngle;
 	SimParams simParams;
 
 	std::shared_ptr<Gravity> gravity;

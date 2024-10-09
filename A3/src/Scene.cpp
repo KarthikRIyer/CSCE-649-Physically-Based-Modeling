@@ -117,7 +117,8 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
 
-        auto cluster = std::make_shared<Cluster>(1000, Eigen::Vector3d(0.0, 3.0, 0.0), 2.0, sphereShape, sphereTexture);
+        auto cluster = std::make_shared<Cluster>(1000, Eigen::Vector3d(0.0, 3.0, 0.0),
+                                                 2.0, sphereShape, sphereTexture, simParams);
         clusters.push_back(cluster);
 	}
 
@@ -164,6 +165,9 @@ void Scene::reset()
         sphere->x = sphere->x0;
         sphere->v = sphere->v0;
     }
+    for (auto cluster: clusters) {
+        cluster->reset();
+    }
 }
 
 void Scene::step(std::ofstream &outputFile, bool writeToFile)
@@ -187,7 +191,7 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
     }
 
     for (auto cluster: clusters) {
-        cluster->step(h, forceFields, simParams);
+        cluster->step(t, h, forceFields, simParams);
     }
     t += h;
 }

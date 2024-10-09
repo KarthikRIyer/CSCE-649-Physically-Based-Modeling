@@ -2,4 +2,4 @@
 # - TEXTURE <texture file>
 # - MESH <obj file> <texture file>
 TEXTURE grey.jpg
-MESH plane.obj grey.jpg true
+MESH box.obj grey.jpg true
