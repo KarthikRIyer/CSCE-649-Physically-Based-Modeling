@@ -177,7 +177,7 @@ void JelloCube::reset() {
 }
 
 std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> JelloCube::getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields) {
-    int integrationScheme = 1;
+    int integrationScheme = 2;
     std::vector<Eigen::Vector3d> v (particles.size(), Eigen::Vector3d());
     std::vector<Eigen::Vector3d> a (particles.size(), Eigen::Vector3d());
     for (const auto & particle : particles) {
@@ -259,6 +259,96 @@ std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> JelloCube
         for (int i = 0; i < particles.size(); ++i) {
             v[i] = particles[i]->vk2;
             a[i] = particles[i]->ak2;
+        }
+    } else if (integrationScheme == 2) {
+        for (int i = 0; i < particles.size(); ++i) {
+            particles[i]->vk1 = particles[i]->v;
+            particles[i]->ak1 = particles[i]->f / particles[i]->m;
+        }
+
+        for (int i = 0; i < particles.size(); ++i) {
+            particles[i]->xTemp = particles[i]->x + particles[i]->vk1 * h * 0.5;
+            particles[i]->vTemp = particles[i]->v + particles[i]->ak1 * h * 0.5;
+        }
+        for (const auto & particle : particles) {
+            particle->f = particle->fExt;
+            for (int i = 0; i < springs.size(); ++i) {
+                std::shared_ptr<Spring> spring = springs[i];
+
+                Eigen::Vector3d v0 = spring->p0->vTemp;
+                Eigen::Vector3d v1 = spring->p1->vTemp;
+                Eigen::Vector3d u01 = (spring->p1->xTemp - spring->p0->xTemp).normalized();
+                double currentLength = spring->getCurrentLength();
+                double restLength = spring->getRestLength();
+
+                Eigen::Vector3d springF = spring->k * (currentLength - restLength) * u01;
+                Eigen::Vector3d damperF = spring->d * ((v1 - v0).dot(u01)) * u01;
+
+                spring->p0->f += springF;
+                spring->p0->f += damperF;
+                spring->p1->f += -springF;
+                spring->p1->f += -damperF;
+            }
+            particle->vk2 = particle->vTemp;
+            particle->ak2 = particle->f / particle->m;
+        }
+
+        for (int i = 0; i < particles.size(); ++i) {
+            particles[i]->xTemp = particles[i]->x + particles[i]->vk2 * h * 0.5;
+            particles[i]->vTemp = particles[i]->v + particles[i]->ak2 * h * 0.5;
+        }
+        for (const auto & particle : particles) {
+            particle->f = particle->fExt;
+            for (int i = 0; i < springs.size(); ++i) {
+                std::shared_ptr<Spring> spring = springs[i];
+
+                Eigen::Vector3d v0 = spring->p0->vTemp;
+                Eigen::Vector3d v1 = spring->p1->vTemp;
+                Eigen::Vector3d u01 = (spring->p1->xTemp - spring->p0->xTemp).normalized();
+                double currentLength = spring->getCurrentLength();
+                double restLength = spring->getRestLength();
+
+                Eigen::Vector3d springF = spring->k * (currentLength - restLength) * u01;
+                Eigen::Vector3d damperF = spring->d * ((v1 - v0).dot(u01)) * u01;
+
+                spring->p0->f += springF;
+                spring->p0->f += damperF;
+                spring->p1->f += -springF;
+                spring->p1->f += -damperF;
+            }
+            particle->vk3 = particle->vTemp;
+            particle->ak3 = particle->f / particle->m;
+        }
+
+        for (int i = 0; i < particles.size(); ++i) {
+            particles[i]->xTemp = particles[i]->x + particles[i]->vk3 * h;
+            particles[i]->vTemp = particles[i]->v + particles[i]->ak3 * h;
+        }
+        for (const auto & particle : particles) {
+            particle->f = particle->fExt;
+            for (int i = 0; i < springs.size(); ++i) {
+                std::shared_ptr<Spring> spring = springs[i];
+
+                Eigen::Vector3d v0 = spring->p0->vTemp;
+                Eigen::Vector3d v1 = spring->p1->vTemp;
+                Eigen::Vector3d u01 = (spring->p1->xTemp - spring->p0->xTemp).normalized();
+                double currentLength = spring->getCurrentLength();
+                double restLength = spring->getRestLength();
+
+                Eigen::Vector3d springF = spring->k * (currentLength - restLength) * u01;
+                Eigen::Vector3d damperF = spring->d * ((v1 - v0).dot(u01)) * u01;
+
+                spring->p0->f += springF;
+                spring->p0->f += damperF;
+                spring->p1->f += -springF;
+                spring->p1->f += -damperF;
+            }
+            particle->vk4 = particle->vTemp;
+            particle->ak4 = particle->f / particle->m;
+        }
+        for (int i = 0; i < particles.size(); ++i) {
+            v[i] = (1.0 / 6.0) * (particles[i]->vk1 + 2 * particles[i]->vk2 + 2 * particles[i]->vk3 + particles[i]->vk4);
+            a[i] = (1.0 / 6.0) * (particles[i]->ak1 + 2 * particles[i]->ak2 + 2 * particles[i]->ak3 + particles[i]->ak4);
         }
     }
 
