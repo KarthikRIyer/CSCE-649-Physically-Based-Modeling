@@ -6,6 +6,7 @@
 #define A4_JELLOCUBE_H
 
 #include <vector>
+#include <Eigen/Core>
 
 class Particle;
 class Spring;
@@ -34,6 +35,9 @@ private:
     unsigned VAO;
     unsigned eleBufID;
     unsigned posBufID;
+
+    std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> getVelAcc(double h,
+                                                                                     std::vector<std::shared_ptr<IForceField>>& forceFields);
 };
 
 

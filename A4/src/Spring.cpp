@@ -26,3 +26,8 @@ double Spring::getCurrentLength() const {
     Eigen::Vector3d  dx = p0->x - p1->x;
     return dx.norm();
 }
+
+double Spring::getCurrentTempLength() const {
+    Eigen::Vector3d  dx = p0->xTemp - p1->xTemp;
+    return dx.norm();
+}

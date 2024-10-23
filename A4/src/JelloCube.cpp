@@ -176,12 +176,28 @@ void JelloCube::reset() {
     }
 }
 
-void JelloCube::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
+std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> JelloCube::getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields) {
+    int integrationScheme = 1;
+    std::vector<Eigen::Vector3d> v (particles.size(), Eigen::Vector3d());
+    std::vector<Eigen::Vector3d> a (particles.size(), Eigen::Vector3d());
     for (const auto & particle : particles) {
+
         particle->f = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particle->fExt = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particle->vk1 = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particle->vk2 = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particle->vk3 = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particle->vk4 = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particle->ak1 = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particle->ak2 = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particle->ak3 = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particle->ak4 = Eigen::Vector3d(0.0, 0.0, 0.0);
+
         for (int i = 0; i < forceFields.size(); ++i) {
             std::shared_ptr<IForceField> forceField = forceFields[i];
             particle->f += forceField->getForce(particle->x);
+            particle->fExt += forceField->getForce(particle->x);
+            particle->f += particle->fExt;
         }
     }
 
@@ -203,9 +219,84 @@ void JelloCube::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
         spring->p1->f += -damperF;
     }
 
+    if (integrationScheme == 0) {
+        for (int i = 0; i < particles.size(); ++i) {
+            v[i] = particles[i]->v;
+            a[i] = particles[i]->f / particles[i]->m;
+        }
+    } else if (integrationScheme == 1) {
+        for (int i = 0; i < particles.size(); ++i) {
+            particles[i]->vk1 = particles[i]->v;
+            particles[i]->ak1 = particles[i]->f / particles[i]->m;
+        }
+
+        for (int i = 0; i < particles.size(); ++i) {
+            particles[i]->xTemp = particles[i]->x + particles[i]->vk1 * h * 0.5;
+            particles[i]->vTemp = particles[i]->v + particles[i]->ak1 * h * 0.5;
+        }
+        for (const auto & particle : particles) {
+            particle->f = particle->fExt;
+            for (int i = 0; i < springs.size(); ++i) {
+                std::shared_ptr<Spring> spring = springs[i];
+
+                Eigen::Vector3d v0 = spring->p0->vTemp;
+                Eigen::Vector3d v1 = spring->p1->vTemp;
+                Eigen::Vector3d u01 = (spring->p1->xTemp - spring->p0->xTemp).normalized();
+                double currentLength = spring->getCurrentLength();
+                double restLength = spring->getRestLength();
+
+                Eigen::Vector3d springF = spring->k * (currentLength - restLength) * u01;
+                Eigen::Vector3d damperF = spring->d * ((v1 - v0).dot(u01)) * u01;
+
+                spring->p0->f += springF;
+                spring->p0->f += damperF;
+                spring->p1->f += -springF;
+                spring->p1->f += -damperF;
+            }
+            particle->vk2 = particle->vTemp;
+            particle->ak2 = particle->f / particle->m;
+        }
+        for (int i = 0; i < particles.size(); ++i) {
+            v[i] = particles[i]->vk2;
+            a[i] = particles[i]->ak2;
+        }
+    }
+
+    return std::make_pair(v, a);
+}
+
+void JelloCube::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
+//    for (const auto & particle : particles) {
+//        particle->f = Eigen::Vector3d(0.0, 0.0, 0.0);
+//        for (int i = 0; i < forceFields.size(); ++i) {
+//            std::shared_ptr<IForceField> forceField = forceFields[i];
+//            particle->f += forceField->getForce(particle->x);
+//        }
+//    }
+//
+//    for (int i = 0; i < springs.size(); ++i) {
+//        std::shared_ptr<Spring> spring = springs[i];
+//
+//        Eigen::Vector3d v0 = spring->p0->v;
+//        Eigen::Vector3d v1 = spring->p1->v;
+//        Eigen::Vector3d u01 = (spring->p1->x - spring->p0->x).normalized();
+//        double currentLength = spring->getCurrentLength();
+//        double restLength = spring->getRestLength();
+//
+//        Eigen::Vector3d springF = spring->k * (currentLength - restLength) * u01;
+//        Eigen::Vector3d damperF = spring->d * ((v1 - v0).dot(u01)) * u01;
+//
+//        spring->p0->f += springF;
+//        spring->p0->f += damperF;
+//        spring->p1->f += -springF;
+//        spring->p1->f += -damperF;
+//    }
+
+    auto va = getVelAcc(h, forceFields);
+
     for (int i = 0; i < particles.size(); ++i) {
-        particles[i]->x += particles[i]->v * h;
-        particles[i]->v += (particles[i]->f / particles[i]->m) * h;
+        particles[i]->x += va.first[i] * h;
+        particles[i]->v += va.second[i] * h;
     }
 
     int posBufIndex = 0;

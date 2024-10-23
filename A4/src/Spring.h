@@ -16,6 +16,7 @@ public:
     virtual ~Spring();
     double getRestLength() const;
     double getCurrentLength() const;
+    double getCurrentTempLength() const;
 
     std::shared_ptr<Particle> p0;
     std::shared_ptr<Particle> p1;
