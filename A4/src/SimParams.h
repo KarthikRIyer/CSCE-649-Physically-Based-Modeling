@@ -7,7 +7,7 @@
 
 struct SimParams {
     float airFrictionFactor = 0.01;
-    float timestep = 5e-3;
+    float timestep = 1e-3;
 };
 
 #endif //A1_SIMPARAMS_H
