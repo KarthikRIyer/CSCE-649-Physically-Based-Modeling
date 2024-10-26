@@ -12,6 +12,7 @@
 #include "Particle.h"
 #include "Wind.h"
 #include "JelloCube.h"
+#include "SingleSpring.h"
 
 using namespace std;
 using namespace Eigen;
@@ -110,7 +111,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
 
-        jelloCube = std::make_shared<JelloCube>();
+        singleSpring = std::make_shared<SingleSpring>();
 
 	}
 
@@ -132,6 +133,8 @@ void Scene::init()
         sphereShape->init();
     if (jelloCube)
         jelloCube->init();
+    if (singleSpring)
+        singleSpring->init();
 }
 
 void Scene::cleanup() {
@@ -139,6 +142,8 @@ void Scene::cleanup() {
         sphereShape->cleanupBuffers();
     if (jelloCube)
         jelloCube->cleanupBuffers();
+    if (singleSpring)
+        singleSpring->cleanupBuffers();
     for (auto &shape: shapes) {
         if (shape)
             shape->cleanupBuffers();
@@ -160,6 +165,8 @@ void Scene::tare()
     }
     if (jelloCube)
         jelloCube->tare();
+    if (singleSpring)
+        singleSpring->tare();
 }
 
 void Scene::reset()
@@ -171,6 +178,8 @@ void Scene::reset()
     }
     if (jelloCube)
         jelloCube->reset();
+    if (singleSpring)
+        singleSpring->reset();
 }
 
 void Scene::step(std::ofstream &outputFile, bool writeToFile)
@@ -195,6 +204,8 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
 
     if (jelloCube)
         jelloCube->step(h, forceFields, simParams, shapes);
+    if (singleSpring)
+        singleSpring->step(h, forceFields, simParams, shapes);
 
     /*
     if (writeToFile) {
@@ -253,6 +264,8 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
 void Scene::drawJelloCube(const std::shared_ptr<Program> prog) const {
     if (jelloCube)
         jelloCube->draw(prog);
+    if (singleSpring)
+        singleSpring->draw(prog);
 }
 
 void Scene::updateSimParams(SimParams& simParams) {

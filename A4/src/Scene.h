@@ -12,7 +12,7 @@
 #include <Eigen/Dense>
 #include "SimParams.h"
 
-class Cloth;
+class SingleSpring;
 class Particle;
 class MatrixStack;
 class Program;
@@ -52,6 +52,7 @@ private:
 	SimParams simParams;
 
     std::shared_ptr<JelloCube> jelloCube;
+    std::shared_ptr<SingleSpring> singleSpring;
 
 	std::shared_ptr<Gravity> gravity;
 	std::vector<std::shared_ptr<IForceField>> forceFields;
