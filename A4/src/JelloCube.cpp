@@ -13,8 +13,12 @@
 #include "GLSL.h"
 #include "Program.h"
 #include "IForceField.h"
+#include "Shape.h"
+#include "Polygon.h"
 
 JelloCube::JelloCube() {
+    double springConst = 500.0;
+    double damperConst = 1.0;
     std::shared_ptr<Particle> p0 = std::make_shared<Particle>();
     std::shared_ptr<Particle> p1 = std::make_shared<Particle>();
 //    std::shared_ptr<Particle> p2 = std::make_shared<Particle>();
@@ -24,8 +28,8 @@ JelloCube::JelloCube() {
 //    std::shared_ptr<Particle> p6 = std::make_shared<Particle>();
 //    std::shared_ptr<Particle> p7 = std::make_shared<Particle>();
 
-    p0->x0 = Eigen::Vector3d(-1.0, 1.0, 0.0);
-    p1->x0 = Eigen::Vector3d(1.0, 1.0, 0.0);
+    p0->x0 = Eigen::Vector3d(0.5, 1.0, 0.0);
+    p1->x0 = Eigen::Vector3d(0.5, 0.5, 0.0);
 //    p2->x0 = Eigen::Vector3d(1.0, 2.0, 0.0);
 //    p3->x0 = Eigen::Vector3d(-1.0, 2.0, 0.0);
 //    p4->x0 = Eigen::Vector3d(-1.0, 2.0, 1.0);
@@ -47,46 +51,47 @@ JelloCube::JelloCube() {
         particles[i]->v = particles[i]->v0;
         particles[i]->x = particles[i]->x0;
         particles[i]->f = Eigen::Vector3d(0.0, 0.0, 0.0);
+        particles[i]->fixed = false;
     }
 
-    std::shared_ptr<Spring> s0 = std::make_shared<Spring>(p0, p1, 15.0, 0.5);
-//    std::shared_ptr<Spring> s1 = std::make_shared<Spring>(p1, p2, 15.0, 0.5);
-//    std::shared_ptr<Spring> s2 = std::make_shared<Spring>(p2, p3, 15.0, 0.5);
-//    std::shared_ptr<Spring> s3 = std::make_shared<Spring>(p3, p0, 15.0, 0.5);
+    std::shared_ptr<Spring> s0 = std::make_shared<Spring>(p0, p1, springConst, damperConst);
+//    std::shared_ptr<Spring> s1 = std::make_shared<Spring>(p1, p2, springConst, damperConst);
+//    std::shared_ptr<Spring> s2 = std::make_shared<Spring>(p2, p3, springConst, damperConst);
+//    std::shared_ptr<Spring> s3 = std::make_shared<Spring>(p3, p0, springConst, damperConst);
 //
-//    std::shared_ptr<Spring> s4 = std::make_shared<Spring>(p7, p6, 15.0, 0.5);
-//    std::shared_ptr<Spring> s5 = std::make_shared<Spring>(p6, p5, 15.0, 0.5);
-//    std::shared_ptr<Spring> s6 = std::make_shared<Spring>(p5, p4, 15.0, 0.5);
-//    std::shared_ptr<Spring> s7 = std::make_shared<Spring>(p4, p7, 15.0, 0.5);
+//    std::shared_ptr<Spring> s4 = std::make_shared<Spring>(p7, p6, springConst, damperConst);
+//    std::shared_ptr<Spring> s5 = std::make_shared<Spring>(p6, p5, springConst, damperConst);
+//    std::shared_ptr<Spring> s6 = std::make_shared<Spring>(p5, p4, springConst, damperConst);
+//    std::shared_ptr<Spring> s7 = std::make_shared<Spring>(p4, p7, springConst, damperConst);
 //
-//    std::shared_ptr<Spring> s8 = std::make_shared<Spring>(p0, p7, 15.0, 0.5);
-//    std::shared_ptr<Spring> s9 = std::make_shared<Spring>(p1, p6, 15.0, 0.5);
-//    std::shared_ptr<Spring> s10 = std::make_shared<Spring>(p3, p4, 15.0, 0.5);
-//    std::shared_ptr<Spring> s11 = std::make_shared<Spring>(p2, p5, 15.0, 0.5);
+//    std::shared_ptr<Spring> s8 = std::make_shared<Spring>(p0, p7, springConst, damperConst);
+//    std::shared_ptr<Spring> s9 = std::make_shared<Spring>(p1, p6, springConst, damperConst);
+//    std::shared_ptr<Spring> s10 = std::make_shared<Spring>(p3, p4, springConst, damperConst);
+//    std::shared_ptr<Spring> s11 = std::make_shared<Spring>(p2, p5, springConst, damperConst);
 
     // cross springs
-//    std::shared_ptr<Spring> s12 = std::make_shared<Spring>(p1, p3, 15.0, 0.5);
-//    std::shared_ptr<Spring> s13 = std::make_shared<Spring>(p0, p2, 15.0, 0.5);
+//    std::shared_ptr<Spring> s12 = std::make_shared<Spring>(p1, p3, springConst, damperConst);
+//    std::shared_ptr<Spring> s13 = std::make_shared<Spring>(p0, p2, springConst, damperConst);
 //
-//    std::shared_ptr<Spring> s14 = std::make_shared<Spring>(p4, p6, 15.0, 0.5);
-//    std::shared_ptr<Spring> s15 = std::make_shared<Spring>(p7, p5, 15.0, 0.5);
+//    std::shared_ptr<Spring> s14 = std::make_shared<Spring>(p4, p6, springConst, damperConst);
+//    std::shared_ptr<Spring> s15 = std::make_shared<Spring>(p7, p5, springConst, damperConst);
 //
-//    std::shared_ptr<Spring> s16 = std::make_shared<Spring>(p4, p2, 15.0, 0.5);
-//    std::shared_ptr<Spring> s17 = std::make_shared<Spring>(p3, p5, 15.0, 0.5);
+//    std::shared_ptr<Spring> s16 = std::make_shared<Spring>(p4, p2, springConst, damperConst);
+//    std::shared_ptr<Spring> s17 = std::make_shared<Spring>(p3, p5, springConst, damperConst);
 //
-//    std::shared_ptr<Spring> s18 = std::make_shared<Spring>(p7, p1, 15.0, 0.5);
-//    std::shared_ptr<Spring> s19 = std::make_shared<Spring>(p6, p0, 15.0, 0.5);
+//    std::shared_ptr<Spring> s18 = std::make_shared<Spring>(p7, p1, springConst, damperConst);
+//    std::shared_ptr<Spring> s19 = std::make_shared<Spring>(p6, p0, springConst, damperConst);
 //
-//    std::shared_ptr<Spring> s20 = std::make_shared<Spring>(p3, p7, 15.0, 0.5);
-//    std::shared_ptr<Spring> s21 = std::make_shared<Spring>(p0, p4, 15.0, 0.5);
+//    std::shared_ptr<Spring> s20 = std::make_shared<Spring>(p3, p7, springConst, damperConst);
+//    std::shared_ptr<Spring> s21 = std::make_shared<Spring>(p0, p4, springConst, damperConst);
 //
-//    std::shared_ptr<Spring> s22 = std::make_shared<Spring>(p2, p6, 15.0, 0.5);
-//    std::shared_ptr<Spring> s23 = std::make_shared<Spring>(p1, p5, 15.0, 0.5);
+//    std::shared_ptr<Spring> s22 = std::make_shared<Spring>(p2, p6, springConst, damperConst);
+//    std::shared_ptr<Spring> s23 = std::make_shared<Spring>(p1, p5, springConst, damperConst);
 //
-//    std::shared_ptr<Spring> s24 = std::make_shared<Spring>(p0, p5, 15.0, 0.5);
-//    std::shared_ptr<Spring> s25 = std::make_shared<Spring>(p1, p4, 15.0, 0.5);
-//    std::shared_ptr<Spring> s26 = std::make_shared<Spring>(p6, p3, 15.0, 0.5);
-//    std::shared_ptr<Spring> s27 = std::make_shared<Spring>(p7, p2, 15.0, 0.5);
+//    std::shared_ptr<Spring> s24 = std::make_shared<Spring>(p0, p5, springConst, damperConst);
+//    std::shared_ptr<Spring> s25 = std::make_shared<Spring>(p1, p4, springConst, damperConst);
+//    std::shared_ptr<Spring> s26 = std::make_shared<Spring>(p6, p3, springConst, damperConst);
+//    std::shared_ptr<Spring> s27 = std::make_shared<Spring>(p7, p2, springConst, damperConst);
 
     springs.push_back(s0);
 //    springs.push_back(s1);
@@ -120,9 +125,9 @@ JelloCube::JelloCube() {
 //    springs.push_back(s26);
 //    springs.push_back(s27);
 
-    for (int i = 0; i < springs.size(); ++i) {
-        springs[i]->d = 0;
-    }
+//    for (int i = 0; i < springs.size(); ++i) {
+//        springs[i]->d = 0;
+//    }
     posBuf.clear();
     eleBuf.clear();
     posBuf.resize(springs.size() * 2 * 3);
@@ -145,7 +150,7 @@ JelloCube::JelloCube() {
         eleBuf[eleBufIndex++] = posIndex++;
     }
 
-    p0->x = Eigen::Vector3d(-0.8, 1.0, 0.0);
+//    p0->x = Eigen::Vector3d(0.5, 0.8, 0.0);
 //    p1->x = Eigen::Vector3d(0.5, 1.0, 0.0);
 }
 
@@ -177,7 +182,7 @@ void JelloCube::reset() {
 }
 
 std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> JelloCube::getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields) {
-    int integrationScheme = 0;
+    int integrationScheme = 2;
     std::vector<Eigen::Vector3d> v (particles.size(), Eigen::Vector3d());
     std::vector<Eigen::Vector3d> a (particles.size(), Eigen::Vector3d());
     for (const auto & particle : particles) {
@@ -373,7 +378,7 @@ std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> JelloCube
     return std::make_pair(v, a);
 }
 
-void JelloCube::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
+void JelloCube::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams, std::vector<std::shared_ptr<Shape> >& shapes) {
 //    for (const auto & particle : particles) {
 //        particle->f = Eigen::Vector3d(0.0, 0.0, 0.0);
 //        for (int i = 0; i < forceFields.size(); ++i) {
@@ -403,8 +408,11 @@ void JelloCube::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
     auto va = getVelAcc(h, forceFields);
 
     for (int i = 0; i < particles.size(); ++i) {
+        particles[i]->xTemp = particles[i]->x;
+        particles[i]->vTemp = particles[i]->v;
         particles[i]->x += va.first[i] * h;
         particles[i]->v += va.second[i] * h;
+        detectCollision(particles[i], shapes);
     }
 
     int posBufIndex = 0;
@@ -419,6 +427,121 @@ void JelloCube::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
         posBuf[posBufIndex++] = p1->x.x();
         posBuf[posBufIndex++] = p1->x.y();
         posBuf[posBufIndex++] = p1->x.z();
+    }
+}
+
+double JelloCube::sgn(double x) {
+    if (x > 0) return 1;
+    if (x < 0) return -1;
+    return 0;
+}
+
+void JelloCube::detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes) {
+    if (particle->fixed) {
+        return;
+    }
+    Eigen::Vector3d x = particle->xTemp;
+    Eigen::Vector3d xNew = particle->x;
+    Eigen::Vector3d vel = particle->vTemp;
+
+    if (vel.norm() <= 0.08) { // v close to zero
+        if (particle->hasCollided && (xNew - particle->xc).norm() <= 1e-2) { // position on surface
+//            if (particle->f.dot(particle->nc) < 0.0) { // check this
+                particle->x = x;
+                particle->v = Eigen::Vector3d(0.0, 0.0, 0.0);
+                return;
+//            }
+        }
+    }
+
+    for (auto shape: shapes) {
+        if (!shape->getObstacle()) {
+            continue;
+        }
+        for (Polygon p : shape->getPolygons()) {
+            Eigen::Vector3d P = p.points[0];
+            Eigen::Vector3d Q = p.points[1];
+            Eigen::Vector3d R = p.points[2];
+
+            Eigen::Vector3d u = Q - P;
+            Eigen::Vector3d v = R - P;
+            Eigen::Vector3d n = u.cross(v);
+            n.normalize();
+            if (n.norm() == 0) continue;
+
+            double pn = P.dot(n);
+            double d0 = (n.dot(x) - pn);
+            double d1 = (n.dot(xNew) - pn);
+
+            if (sgn(d0) * sgn(d1) >= 0) continue;
+
+            Eigen::Vector3d dir = xNew - x;
+            dir.normalize();
+            double t = (pn - n.dot(x))/(n.dot(dir));
+            Eigen::Vector3d xColl = x + (t * dir);
+
+            // check if point is inside polygon by projecting along axis with highest normal value
+            Eigen::Vector3d Pproj, Qproj, Rproj, xCollProj;
+            if (std::abs(n.x()) >= std::max(std::abs(n.y()), std::abs(n.z()))) {
+                Pproj = Eigen::Vector3d(P.y(), P.z(), 0.0);
+                Qproj = Eigen::Vector3d(Q.y(), Q.z(), 0.0);
+                Rproj = Eigen::Vector3d(R.y(), R.z(), 0.0);
+                xCollProj = Eigen::Vector3d(xColl.y(), xColl.z(), 0.0);
+            } else if (std::abs(n.y()) >= std::max(std::abs(n.x()), std::abs(n.z()))) {
+                Pproj = Eigen::Vector3d(P.z(), P.x(), 0.0);
+                Qproj = Eigen::Vector3d(Q.z(), Q.x(), 0.0);
+                Rproj = Eigen::Vector3d(R.z(), R.x(), 0.0);
+                xCollProj = Eigen::Vector3d(xColl.z(), xColl.x(), 0.0);
+            } else {
+                Pproj = Eigen::Vector3d(P.x(), P.y(), 0.0);
+                Qproj = Eigen::Vector3d(Q.x(), Q.y(), 0.0);
+                Rproj = Eigen::Vector3d(R.x(), R.y(), 0.0);
+                xCollProj = Eigen::Vector3d(xColl.x(), xColl.y(), 0.0);
+            }
+
+            Eigen::Vector3d edge1Proj = (Pproj - Qproj);
+            Eigen::Vector3d edge2Proj = (Pproj - Rproj);
+            Eigen::Vector3d areaProj = edge1Proj.cross(edge2Proj);
+            double S = 0.5 * areaProj.norm() * (areaProj.z() / std::abs(areaProj.z()));
+            Eigen::Vector3d AaVec = (Qproj - xCollProj).cross(Rproj - xCollProj);
+            double Aa = 0.5 * AaVec.norm() * (AaVec.z()/std::abs(AaVec.z()));
+            Eigen::Vector3d AbVec = (Rproj - xCollProj).cross(Pproj - xCollProj);
+            double Ab = 0.5 * AbVec.norm() * (AbVec.z()/std::abs(AbVec.z()));
+            Eigen::Vector3d AcVec = (Pproj - xCollProj).cross(Qproj - xCollProj);
+            double Ac = 0.5 * AcVec.norm() * (AcVec.z()/std::abs(AcVec.z()));
+            double a = Aa/S;
+            double b = Ab/S;
+            double c = Ac/S;
+
+            if (a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
+                Eigen::Vector3d xc = xColl;
+                Eigen::Vector3d nc = n;
+                xNew = xc + 1e-3 * nc;
+                Eigen::Vector3d vn = vel.dot(nc) * nc;
+                Eigen::Vector3d vt = vel - vn;
+                vn *= -1;
+                vel = vt + vn;
+//                double dColl = -(xNew - p.points[0]).dot(nc) * nc;
+//                std::cout<<"Collided: dColl:" <<dColl.transpose()<<"\n";
+//                std::cout<<"xColl:" <<xColl.transpose()<<"\n";
+//                std::cout<<"pts 0:" <<p.points[0].transpose()<<"\n";
+//                std::cout<<"pts 1:" <<p.points[1].transpose()<<"\n";
+//                std::cout<<"pts 2:" <<p.points[2].transpose()<<"\n";
+//                std::cout<<"Aa :" <<Aa<<"\n";
+//                std::cout<<"Ab :" <<Ab<<"\n";
+//                std::cout<<"Ac :" <<Ac<<"\n";
+                particle->didCollide = true;
+                particle->hasCollided = true;
+                particle->nc = nc;
+                particle->xc = xc;
+                particle->x = xNew;
+                particle->v = vel;
+                std::cout<<"Collided\n";
+                return;
+            } else {
+                continue;
+            }
+        }
     }
 }
 
