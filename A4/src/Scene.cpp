@@ -113,7 +113,36 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 
         singleSpring = std::make_shared<SingleSpring>();
 
-	}
+	} else if (sceneIndex == 1) {
+        sphereShape = make_shared<Shape>();
+        sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
+
+        loadDataInputFile(DATA_DIR, "inputWedge.txt");
+
+        // Create shapes
+        for(const auto &mesh : meshData) {
+            auto shape = make_shared<Shape>();
+            shapes.push_back(shape);
+            shape->loadMesh(DATA_DIR + mesh[0]);
+            shape->setTextureFilename(mesh[1]);
+            bool isObstacle = (mesh[2] == "true");
+            std::cout<<"isObstacle: "<<mesh[2]<<"\n";
+            shape->setObstacle(isObstacle);
+            shape->init();
+        }
+
+
+        for(const auto &filename : textureData) {
+            auto textureKd = make_shared<Texture>();
+            textureMap[filename] = textureKd;
+            textureKd->setFilename(DATA_DIR + filename);
+            textureKd->setUnit(texUnit); // Bind to unit 1
+            textureKd->init();
+            textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
+        }
+
+        singleSpring = std::make_shared<SingleSpring>();
+    }
 
     sphereTexture = make_shared<Texture>();
     sphereTexture->setFilename(DATA_DIR + "white.png");

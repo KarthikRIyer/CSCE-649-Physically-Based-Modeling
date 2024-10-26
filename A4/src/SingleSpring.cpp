@@ -23,8 +23,8 @@ SingleSpring::SingleSpring() {
     std::shared_ptr<Particle> p0 = std::make_shared<Particle>();
     std::shared_ptr<Particle> p1 = std::make_shared<Particle>();
 
-    p0->x0 = Eigen::Vector3d(0.5, 1.0, 0.0);
-    p1->x0 = Eigen::Vector3d(0.5, 0.5, 0.0);
+    p0->x0 = Eigen::Vector3d(-0.4, 1.0, 0.0);
+    p1->x0 = Eigen::Vector3d(0.6, 1.0, 0.0);
 
     particles.push_back(p0);
     particles.push_back(p1);
@@ -330,7 +330,21 @@ void SingleSpring::step(double h, std::vector<std::shared_ptr<IForceField>>& for
         particles[i]->vTemp = particles[i]->v;
         particles[i]->x += va.first[i] * h;
         particles[i]->v += va.second[i] * h;
+        particles[i]->didCollide = false;
+    }
+
+    for (int i = 0; i < particles.size(); ++i) {
         detectCollision(particles[i], shapes);
+    }
+
+    for (int i = 0; i < edges.size(); ++i) {
+        if (edges[i]->p0->didCollide || edges[i]->p1->didCollide)
+            continue;
+        edges[i]->p0->xTemp = edges[i]->p0->x;
+        edges[i]->p1->xTemp = edges[i]->p1->x;
+        edges[i]->p0->vTemp = edges[i]->p0->v;
+        edges[i]->p1->vTemp = edges[i]->p1->v;
+        detectEdgeCollision(edges[i], shapes);
     }
 
     int posBufIndex = 0;
@@ -354,8 +368,153 @@ double SingleSpring::sgn(double x) {
     return 0;
 }
 
-void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edges, std::vector<std::shared_ptr<Shape>> &shapes) {
+void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<std::shared_ptr<Shape>> &shapes) {
+    std::shared_ptr<Particle> p0 = edge->p0;
+    std::shared_ptr<Particle> p1 = edge->p1;
 
+    Eigen::Vector3d e1 = p1->xTemp - p0->xTemp;
+    Eigen::Vector3d P1 = p0->xTemp;
+
+//    Eigen::Vector3d e1Plus = p1->x - p0->x;
+//    Eigen::Vector3d P1Plus = p0->x;
+
+    for (auto shape: shapes) {
+        if (!shape->getObstacle()) {
+            continue;
+        }
+
+        for (Polygon p : shape->getPolygons()) {
+            Eigen::Vector3d P = p.points[0];
+            Eigen::Vector3d Q = p.points[1];
+            Eigen::Vector3d R = p.points[2];
+
+            // PQ
+            Eigen::Vector3d e2 = Q - P;
+            Eigen::Vector3d n = e1.cross(e2);
+            Eigen::Vector3d q = P - P1;
+            n.normalize();
+            double s = (q.dot(e2.normalized().cross(n)))/(e1.dot(e2.normalized().cross(n)));
+            double t = (-q.dot(e1.normalized().cross(n)))/(e2.dot(e1.normalized().cross(n)));
+
+//            Eigen::Vector3d nPlus = e1Plus.cross(e2);
+//            nPlus.normalize();
+//            Eigen::Vector3d qPlus = P - P1Plus;
+//            double sPlus = (qPlus.dot(e2.normalized().cross(nPlus)))/(e1Plus.dot(e2.normalized().cross(nPlus)));
+//            double tPlus = (-qPlus.dot(e1Plus.normalized().cross(nPlus)))/(e2.dot(e1Plus.normalized().cross(nPlus)));
+
+            if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+                Eigen::Vector3d collPos = P1 + s * e1;
+                Eigen::Vector3d collPos2 = P + t * e2;
+                double dist = (collPos2 - collPos).norm();
+                if (dist < 1e-2) {
+                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+
+                    Eigen::Vector3d v0 = p0->vTemp;
+                    Eigen::Vector3d v1 = p1->vTemp;
+                    Eigen::Vector3d vColl = s * v0 + (1 - s) * v1;
+                    if (vColl.dot(n) > 0.0) {
+                        Eigen::Vector3d deltaVColl = (-vColl) - vColl;
+                        Eigen::Vector3d deltaVCollPrime = deltaVColl / (s*s + (1-s)*(1-s));
+                        Eigen::Vector3d deltaV0 = (1-s) * deltaVCollPrime;
+                        Eigen::Vector3d deltaV1 = ( s) * deltaVCollPrime;
+                        v0 += deltaV0;
+                        v1 += deltaV1;
+
+//                    v0 += deltaVColl;
+//                    v1 += deltaVColl;
+
+                        p0->v = v0;
+                        p0->vTemp = v0;
+                        p1->v = v1;
+                        p1->vTemp = v1;
+
+                        return;
+                    }
+                }
+            }
+
+            // QR
+            e2 = R - Q;
+            n = e1.cross(e2);
+            q = Q - P1;
+            n.normalize();
+            s = (q.dot(e2.normalized().cross(n)))/(e1.dot(e2.normalized().cross(n)));
+            t = (-q.dot(e1.normalized().cross(n)))/(e2.dot(e1.normalized().cross(n)));
+            if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+                Eigen::Vector3d collPos = P1 + s * e1;
+                Eigen::Vector3d collPos2 = Q + t * e2;
+                double dist = (collPos2 - collPos).norm();
+                if (dist < 1e-2) {
+                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+
+                    Eigen::Vector3d v0 = p0->vTemp;
+                    Eigen::Vector3d v1 = p1->vTemp;
+                    Eigen::Vector3d vColl = s * v0 + (1 - s) * v1;
+                    if (vColl.dot(n) > 0.0) {
+                        Eigen::Vector3d deltaVColl = (-vColl) - vColl;
+                        Eigen::Vector3d deltaVCollPrime = deltaVColl / (s*s + (1-s)*(1-s));
+                        Eigen::Vector3d deltaV0 = (1-s) * deltaVCollPrime;
+                        Eigen::Vector3d deltaV1 = ( s) * deltaVCollPrime;
+                        v0 += deltaV0;
+                        v1 += deltaV1;
+
+//                    v0 += deltaVColl;
+//                    v1 += deltaVColl;
+
+                        p0->v = v0;
+                        p0->vTemp = v0;
+                        p1->v = v1;
+                        p1->vTemp = v1;
+
+                        return;
+                    }
+                }
+            }
+
+            // RP
+            e2 = P - R;
+            n = e1.cross(e2);
+            q = R - P1;
+            n.normalize();
+            s = (q.dot(e2.normalized().cross(n)))/(e1.dot(e2.normalized().cross(n)));
+            t = (-q.dot(e1.normalized().cross(n)))/(e2.dot(e1.normalized().cross(n)));
+            if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+                Eigen::Vector3d collPos = P1 + s * e1;
+                Eigen::Vector3d collPos2 = R + t * e2;
+                double dist = (collPos2 - collPos).norm();
+                if (dist < 1e-3) {
+                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+
+                    Eigen::Vector3d v0 = p0->vTemp;
+                    Eigen::Vector3d v1 = p1->vTemp;
+                    Eigen::Vector3d vColl = s * v0 + (1 - s) * v1;
+
+                    if (vColl.dot(n) > 0.0) {
+                        Eigen::Vector3d deltaVColl = (-vColl) - vColl;
+                        Eigen::Vector3d deltaVCollPrime = deltaVColl / (s*s + (1-s)*(1-s));
+                        Eigen::Vector3d deltaV0 = (1-s) * deltaVCollPrime;
+                        Eigen::Vector3d deltaV1 = ( s) * deltaVCollPrime;
+                        v0 += deltaV0;
+                        v1 += deltaV1;
+
+//                    v0 += deltaVColl;
+//                    v1 += deltaVColl;
+
+                        p0->v = v0;
+                        p0->vTemp = v0;
+                        p1->v = v1;
+                        p1->vTemp = v1;
+
+                        return;
+                    }
+                }
+            }
+
+        }
+    }
 }
 
 void SingleSpring::detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes) {
@@ -457,7 +616,9 @@ void SingleSpring::detectCollision(std::shared_ptr<Particle> particle, std::vect
                 particle->nc = nc;
                 particle->xc = xc;
                 particle->x = xNew;
+                particle->xTemp = xNew;
                 particle->v = vel;
+                particle->vTemp = vel;
                 std::cout<<"Collided\n";
                 return;
             } else {
