@@ -15,36 +15,37 @@
 #include "IForceField.h"
 #include "Shape.h"
 #include "Polygon.h"
+#include "Edge.h"
 
 JelloCube::JelloCube() {
     double springConst = 500.0;
     double damperConst = 1.0;
     std::shared_ptr<Particle> p0 = std::make_shared<Particle>();
     std::shared_ptr<Particle> p1 = std::make_shared<Particle>();
-//    std::shared_ptr<Particle> p2 = std::make_shared<Particle>();
-//    std::shared_ptr<Particle> p3 = std::make_shared<Particle>();
-//    std::shared_ptr<Particle> p4 = std::make_shared<Particle>();
-//    std::shared_ptr<Particle> p5 = std::make_shared<Particle>();
-//    std::shared_ptr<Particle> p6 = std::make_shared<Particle>();
-//    std::shared_ptr<Particle> p7 = std::make_shared<Particle>();
+    std::shared_ptr<Particle> p2 = std::make_shared<Particle>();
+    std::shared_ptr<Particle> p3 = std::make_shared<Particle>();
+    std::shared_ptr<Particle> p4 = std::make_shared<Particle>();
+    std::shared_ptr<Particle> p5 = std::make_shared<Particle>();
+    std::shared_ptr<Particle> p6 = std::make_shared<Particle>();
+    std::shared_ptr<Particle> p7 = std::make_shared<Particle>();
 
     p0->x0 = Eigen::Vector3d(0.5, 1.0, 0.0);
     p1->x0 = Eigen::Vector3d(0.5, 0.5, 0.0);
-//    p2->x0 = Eigen::Vector3d(1.0, 2.0, 0.0);
-//    p3->x0 = Eigen::Vector3d(-1.0, 2.0, 0.0);
-//    p4->x0 = Eigen::Vector3d(-1.0, 2.0, 1.0);
-//    p5->x0 = Eigen::Vector3d(1.0, 2.0, 1.0);
-//    p6->x0 = Eigen::Vector3d(1.0, 1.0, 1.0);
-//    p7->x0 = Eigen::Vector3d(-1.0, 1.0, 1.0);
+    p2->x0 = Eigen::Vector3d(1.0, 2.0, 0.0);
+    p3->x0 = Eigen::Vector3d(-1.0, 2.0, 0.0);
+    p4->x0 = Eigen::Vector3d(-1.0, 2.0, 1.0);
+    p5->x0 = Eigen::Vector3d(1.0, 2.0, 1.0);
+    p6->x0 = Eigen::Vector3d(1.0, 1.0, 1.0);
+    p7->x0 = Eigen::Vector3d(-1.0, 1.0, 1.0);
 
     particles.push_back(p0);
     particles.push_back(p1);
-//    particles.push_back(p2);
-//    particles.push_back(p3);
-//    particles.push_back(p4);
-//    particles.push_back(p5);
-//    particles.push_back(p6);
-//    particles.push_back(p7);
+    particles.push_back(p2);
+    particles.push_back(p3);
+    particles.push_back(p4);
+    particles.push_back(p5);
+    particles.push_back(p6);
+    particles.push_back(p7);
 
     for (int i = 0; i < particles.size(); ++i) {
         particles[i]->v0 = Eigen::Vector3d(0.0, 0.0, 0.0);
@@ -55,75 +56,103 @@ JelloCube::JelloCube() {
     }
 
     std::shared_ptr<Spring> s0 = std::make_shared<Spring>(p0, p1, springConst, damperConst);
-//    std::shared_ptr<Spring> s1 = std::make_shared<Spring>(p1, p2, springConst, damperConst);
-//    std::shared_ptr<Spring> s2 = std::make_shared<Spring>(p2, p3, springConst, damperConst);
-//    std::shared_ptr<Spring> s3 = std::make_shared<Spring>(p3, p0, springConst, damperConst);
-//
-//    std::shared_ptr<Spring> s4 = std::make_shared<Spring>(p7, p6, springConst, damperConst);
-//    std::shared_ptr<Spring> s5 = std::make_shared<Spring>(p6, p5, springConst, damperConst);
-//    std::shared_ptr<Spring> s6 = std::make_shared<Spring>(p5, p4, springConst, damperConst);
-//    std::shared_ptr<Spring> s7 = std::make_shared<Spring>(p4, p7, springConst, damperConst);
-//
-//    std::shared_ptr<Spring> s8 = std::make_shared<Spring>(p0, p7, springConst, damperConst);
-//    std::shared_ptr<Spring> s9 = std::make_shared<Spring>(p1, p6, springConst, damperConst);
-//    std::shared_ptr<Spring> s10 = std::make_shared<Spring>(p3, p4, springConst, damperConst);
-//    std::shared_ptr<Spring> s11 = std::make_shared<Spring>(p2, p5, springConst, damperConst);
+    std::shared_ptr<Spring> s1 = std::make_shared<Spring>(p1, p2, springConst, damperConst);
+    std::shared_ptr<Spring> s2 = std::make_shared<Spring>(p2, p3, springConst, damperConst);
+    std::shared_ptr<Spring> s3 = std::make_shared<Spring>(p3, p0, springConst, damperConst);
+
+    std::shared_ptr<Spring> s4 = std::make_shared<Spring>(p7, p6, springConst, damperConst);
+    std::shared_ptr<Spring> s5 = std::make_shared<Spring>(p6, p5, springConst, damperConst);
+    std::shared_ptr<Spring> s6 = std::make_shared<Spring>(p5, p4, springConst, damperConst);
+    std::shared_ptr<Spring> s7 = std::make_shared<Spring>(p4, p7, springConst, damperConst);
+
+    std::shared_ptr<Spring> s8 = std::make_shared<Spring>(p0, p7, springConst, damperConst);
+    std::shared_ptr<Spring> s9 = std::make_shared<Spring>(p1, p6, springConst, damperConst);
+    std::shared_ptr<Spring> s10 = std::make_shared<Spring>(p3, p4, springConst, damperConst);
+    std::shared_ptr<Spring> s11 = std::make_shared<Spring>(p2, p5, springConst, damperConst);
+
+    std::shared_ptr<Edge> e0 = std::make_shared<Edge>(p0, p1);
+    std::shared_ptr<Edge> e1 = std::make_shared<Edge>(p1, p2);
+    std::shared_ptr<Edge> e2 = std::make_shared<Edge>(p2, p3);
+    std::shared_ptr<Edge> e3 = std::make_shared<Edge>(p3, p0);
+
+    std::shared_ptr<Edge> e4 = std::make_shared<Edge>(p7, p6);
+    std::shared_ptr<Edge> e5 = std::make_shared<Edge>(p6, p5);
+    std::shared_ptr<Edge> e6 = std::make_shared<Edge>(p5, p4);
+    std::shared_ptr<Edge> e7 = std::make_shared<Edge>(p4, p7);
+
+    std::shared_ptr<Edge> e8 = std::make_shared<Edge>(p0, p7);
+    std::shared_ptr<Edge> e9 = std::make_shared<Edge>(p1, p6);
+    std::shared_ptr<Edge> e10 = std::make_shared<Edge>(p3, p4);
+    std::shared_ptr<Edge> e11 = std::make_shared<Edge>(p2, p5);
+
+    edges.push_back(e0);
+    edges.push_back(e1);
+    edges.push_back(e2);
+    edges.push_back(e3);
+    edges.push_back(e4);
+    edges.push_back(e5);
+    edges.push_back(e6);
+    edges.push_back(e7);
+    edges.push_back(e8);
+    edges.push_back(e9);
+    edges.push_back(e10);
+    edges.push_back(e11);
 
     // cross springs
-//    std::shared_ptr<Spring> s12 = std::make_shared<Spring>(p1, p3, springConst, damperConst);
-//    std::shared_ptr<Spring> s13 = std::make_shared<Spring>(p0, p2, springConst, damperConst);
-//
-//    std::shared_ptr<Spring> s14 = std::make_shared<Spring>(p4, p6, springConst, damperConst);
-//    std::shared_ptr<Spring> s15 = std::make_shared<Spring>(p7, p5, springConst, damperConst);
-//
-//    std::shared_ptr<Spring> s16 = std::make_shared<Spring>(p4, p2, springConst, damperConst);
-//    std::shared_ptr<Spring> s17 = std::make_shared<Spring>(p3, p5, springConst, damperConst);
-//
-//    std::shared_ptr<Spring> s18 = std::make_shared<Spring>(p7, p1, springConst, damperConst);
-//    std::shared_ptr<Spring> s19 = std::make_shared<Spring>(p6, p0, springConst, damperConst);
-//
-//    std::shared_ptr<Spring> s20 = std::make_shared<Spring>(p3, p7, springConst, damperConst);
-//    std::shared_ptr<Spring> s21 = std::make_shared<Spring>(p0, p4, springConst, damperConst);
-//
-//    std::shared_ptr<Spring> s22 = std::make_shared<Spring>(p2, p6, springConst, damperConst);
-//    std::shared_ptr<Spring> s23 = std::make_shared<Spring>(p1, p5, springConst, damperConst);
-//
-//    std::shared_ptr<Spring> s24 = std::make_shared<Spring>(p0, p5, springConst, damperConst);
-//    std::shared_ptr<Spring> s25 = std::make_shared<Spring>(p1, p4, springConst, damperConst);
-//    std::shared_ptr<Spring> s26 = std::make_shared<Spring>(p6, p3, springConst, damperConst);
-//    std::shared_ptr<Spring> s27 = std::make_shared<Spring>(p7, p2, springConst, damperConst);
+    std::shared_ptr<Spring> s12 = std::make_shared<Spring>(p1, p3, springConst, damperConst);
+    std::shared_ptr<Spring> s13 = std::make_shared<Spring>(p0, p2, springConst, damperConst);
+
+    std::shared_ptr<Spring> s14 = std::make_shared<Spring>(p4, p6, springConst, damperConst);
+    std::shared_ptr<Spring> s15 = std::make_shared<Spring>(p7, p5, springConst, damperConst);
+
+    std::shared_ptr<Spring> s16 = std::make_shared<Spring>(p4, p2, springConst, damperConst);
+    std::shared_ptr<Spring> s17 = std::make_shared<Spring>(p3, p5, springConst, damperConst);
+
+    std::shared_ptr<Spring> s18 = std::make_shared<Spring>(p7, p1, springConst, damperConst);
+    std::shared_ptr<Spring> s19 = std::make_shared<Spring>(p6, p0, springConst, damperConst);
+
+    std::shared_ptr<Spring> s20 = std::make_shared<Spring>(p3, p7, springConst, damperConst);
+    std::shared_ptr<Spring> s21 = std::make_shared<Spring>(p0, p4, springConst, damperConst);
+
+    std::shared_ptr<Spring> s22 = std::make_shared<Spring>(p2, p6, springConst, damperConst);
+    std::shared_ptr<Spring> s23 = std::make_shared<Spring>(p1, p5, springConst, damperConst);
+
+    std::shared_ptr<Spring> s24 = std::make_shared<Spring>(p0, p5, springConst, damperConst);
+    std::shared_ptr<Spring> s25 = std::make_shared<Spring>(p1, p4, springConst, damperConst);
+    std::shared_ptr<Spring> s26 = std::make_shared<Spring>(p6, p3, springConst, damperConst);
+    std::shared_ptr<Spring> s27 = std::make_shared<Spring>(p7, p2, springConst, damperConst);
 
     springs.push_back(s0);
-//    springs.push_back(s1);
-//    springs.push_back(s2);
-//    springs.push_back(s3);
-//    springs.push_back(s4);
-//    springs.push_back(s5);
-//    springs.push_back(s6);
-//    springs.push_back(s7);
-//    springs.push_back(s8);
-//    springs.push_back(s9);
-//    springs.push_back(s10);
-//    springs.push_back(s11);
+    springs.push_back(s1);
+    springs.push_back(s2);
+    springs.push_back(s3);
+    springs.push_back(s4);
+    springs.push_back(s5);
+    springs.push_back(s6);
+    springs.push_back(s7);
+    springs.push_back(s8);
+    springs.push_back(s9);
+    springs.push_back(s10);
+    springs.push_back(s11);
 
-//    springs.push_back(s11);
-//    springs.push_back(s12);
-//    springs.push_back(s13);
-//    springs.push_back(s14);
-//    springs.push_back(s15);
-//    springs.push_back(s16);
-//    springs.push_back(s17);
-//    springs.push_back(s18);
-//    springs.push_back(s19);
-//    springs.push_back(s20);
-//    springs.push_back(s21);
-//    springs.push_back(s22);
-//    springs.push_back(s23);
+    springs.push_back(s11);
+    springs.push_back(s12);
+    springs.push_back(s13);
+    springs.push_back(s14);
+    springs.push_back(s15);
+    springs.push_back(s16);
+    springs.push_back(s17);
+    springs.push_back(s18);
+    springs.push_back(s19);
+    springs.push_back(s20);
+    springs.push_back(s21);
+    springs.push_back(s22);
+    springs.push_back(s23);
 
-//    springs.push_back(s24);
-//    springs.push_back(s25);
-//    springs.push_back(s26);
-//    springs.push_back(s27);
+    springs.push_back(s24);
+    springs.push_back(s25);
+    springs.push_back(s26);
+    springs.push_back(s27);
 
 //    for (int i = 0; i < springs.size(); ++i) {
 //        springs[i]->d = 0;
@@ -435,6 +464,8 @@ double JelloCube::sgn(double x) {
     if (x < 0) return -1;
     return 0;
 }
+
+void JelloCube::detectEdgeCollision(std::shared_ptr<Edge> edges, std::vector<std::shared_ptr<Shape> >& shapes) {}
 
 void JelloCube::detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes) {
     if (particle->fixed) {

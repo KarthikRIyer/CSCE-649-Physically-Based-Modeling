@@ -15,6 +15,7 @@ struct SimParams;
 class Program;
 class MatrixStack;
 class Shape;
+class Edge;
 
 class SingleSpring {
 public:
@@ -30,6 +31,7 @@ public:
 private:
     std::vector<std::shared_ptr<Particle>> particles;
     std::vector<std::shared_ptr<Spring>> springs;
+    std::vector<std::shared_ptr<Edge>> edges;
 
     std::vector<unsigned int> eleBuf;
     std::vector<float> posBuf;
@@ -40,6 +42,7 @@ private:
     std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> getVelAcc(double h,
                                                                                      std::vector<std::shared_ptr<IForceField>>& forceFields);
     void detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes);
+    void detectEdgeCollision(std::shared_ptr<Edge> edges, std::vector<std::shared_ptr<Shape> >& shapes);
     double sgn(double x);
 };
 

@@ -15,6 +15,7 @@
 #include "IForceField.h"
 #include "Shape.h"
 #include "Polygon.h"
+#include "Edge.h"
 
 SingleSpring::SingleSpring() {
     double springConst = 500.0;
@@ -37,8 +38,10 @@ SingleSpring::SingleSpring() {
     }
 
     std::shared_ptr<Spring> s0 = std::make_shared<Spring>(p0, p1, springConst, damperConst);
-
     springs.push_back(s0);
+
+    std::shared_ptr<Edge> e0 = std::make_shared<Edge>(p0, p1);
+    edges.push_back(e0);
 
 //    for (int i = 0; i < springs.size(); ++i) {
 //        springs[i]->d = 0;
@@ -349,6 +352,10 @@ double SingleSpring::sgn(double x) {
     if (x > 0) return 1;
     if (x < 0) return -1;
     return 0;
+}
+
+void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edges, std::vector<std::shared_ptr<Shape>> &shapes) {
+
 }
 
 void SingleSpring::detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes) {
