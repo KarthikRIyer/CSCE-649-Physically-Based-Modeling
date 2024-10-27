@@ -407,16 +407,16 @@ void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<s
                 Eigen::Vector3d collPos2 = P + t * e2;
                 double dist = (collPos2 - collPos).norm();
                 if (dist < 1e-2) {
-                    std::cout<<"Before: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+//                    std::cout<<"Before: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
                     Eigen::Vector3d mMinus = collPos2 - collPos;
                     collPos = P1Plus + sPlus * e1Plus;
                     collPos2 = P + tPlus * e2;
 
-                    std::cout<<"After: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+//                    std::cout<<"After: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
                     Eigen::Vector3d mPlus = collPos2 - collPos;
 
                     Eigen::Vector3d v0 = p0->vTemp;
@@ -424,7 +424,7 @@ void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<s
                     Eigen::Vector3d vColl = s * v0 + (1 - s) * v1;
 //                    return;
                     if (mMinus.dot(mPlus) < 0) {
-                        std::cout<<"Edge collided!\n";
+//                        std::cout<<"Edge collided!\n";
                         Eigen::Vector3d deltaVColl = (-vColl) - vColl;
                         Eigen::Vector3d deltaVCollPrime = deltaVColl / (s*s + (1-s)*(1-s));
                         Eigen::Vector3d deltaV0 = (1-s) * deltaVCollPrime;
@@ -467,23 +467,23 @@ void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<s
                 Eigen::Vector3d collPos2 = Q + t * e2;
                 double dist = (collPos2 - collPos).norm();
                 if (dist < 1e-2) {
-                    std::cout<<"Before: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+//                    std::cout<<"Before: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
                     Eigen::Vector3d mMinus = collPos2 - collPos;
                     collPos = P1Plus + sPlus * e1Plus;
                     collPos2 = Q + tPlus * e2;
 
-                    std::cout<<"After: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+//                    std::cout<<"After: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
                     Eigen::Vector3d mPlus = collPos2 - collPos;
                     Eigen::Vector3d v0 = p0->vTemp;
                     Eigen::Vector3d v1 = p1->vTemp;
                     Eigen::Vector3d vColl = s * v0 + (1 - s) * v1;
 //                    return;
                     if (mMinus.dot(mPlus) < 0) {
-                        std::cout<<"Edge collided!\n";
+//                        std::cout<<"Edge collided!\n";
                         Eigen::Vector3d deltaVColl = (-vColl) - vColl;
                         Eigen::Vector3d deltaVCollPrime = deltaVColl / (s*s + (1-s)*(1-s));
                         Eigen::Vector3d deltaV0 = (1-s) * deltaVCollPrime;
@@ -526,23 +526,23 @@ void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<s
                 Eigen::Vector3d collPos2 = R + t * e2;
                 double dist = (collPos2 - collPos).norm();
                 if (dist < 1e-2) {
-                    std::cout<<"Before: \n";
-                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+//                    std::cout<<"Before: \n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
                     Eigen::Vector3d mMinus = collPos2 - collPos;
                     collPos = P1Plus + sPlus * e1Plus;
                     collPos2 = R + tPlus * e2;
 
-                    std::cout<<"After: \n";
-                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
-                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+//                    std::cout<<"After: \n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
                     Eigen::Vector3d mPlus = collPos2 - collPos;
                     Eigen::Vector3d v0 = p0->vTemp;
                     Eigen::Vector3d v1 = p1->vTemp;
                     Eigen::Vector3d vColl = s * v0 + (1 - s) * v1;
 //                    return;
                     if (mMinus.dot(mPlus) < 0) {
-                        std::cout<<"Edge collided!\n";
+//                        std::cout<<"Edge collided!\n";
                         Eigen::Vector3d deltaVColl = (-vColl) - vColl;
                         Eigen::Vector3d deltaVCollPrime = deltaVColl / (s*s + (1-s)*(1-s));
                         Eigen::Vector3d deltaV0 = (1-s) * deltaVCollPrime;
