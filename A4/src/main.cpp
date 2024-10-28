@@ -44,10 +44,13 @@ shared_ptr<Scene> scene;
 int texUnit = 1;
 
 SimParams simParams;
-const char* sceneNames[] = {"Spring", "Spring Wedge"};
+const char* sceneNames[] = {"Spring", "Spring Wedge", "Springy Cube"};
 int currSceneIndex = 0;
 static const char* currentScene = sceneNames[currSceneIndex];
 int prevSceneIndex = 0;
+
+const char* integrationMethods[] = {"Explicit Euler", "RK 2", "RK4"};
+static const char* currentIntegrationMethod = integrationMethods[simParams.integrationMethod];
 
 // https://stackoverflow.com/questions/41470942/stop-infinite-loop-in-different-thread
 std::atomic<bool> stop_flag;
@@ -242,6 +245,17 @@ void render()
         }
         ImGui::EndCombo();
     }
+    if (ImGui::BeginCombo("Integration Method", currentIntegrationMethod)) {
+        for (int n = 0; n < IM_ARRAYSIZE(integrationMethods); n++) {
+            bool is_selected = (simParams.integrationMethod == n);
+            if (ImGui::Selectable(integrationMethods[n], is_selected)) {
+                simParams.integrationMethod = n;
+                currentIntegrationMethod = integrationMethods[n];
+            }
+            if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
     if (ImGui::Button("Load Scene")) {
 //    if (ImGui::Button("Load Scene") && prevSceneIndex != currSceneIndex) {
         std::cout<<"Clicked\n";
@@ -250,6 +264,7 @@ void render()
         keyToggles[(unsigned)' '] = false;
         while (!sim_paused) {}
         scene->cleanup();
+
         scene = make_shared<Scene>();
         scene->setSceneNum(currSceneIndex);
         scene->updateSimParams(simParams);

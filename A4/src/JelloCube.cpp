@@ -19,7 +19,7 @@
 #include "SimParams.h"
 
 JelloCube::JelloCube() {
-    double springConst = 500.0;
+    double springConst = 1000.0;
     double damperConst = 1.0;
     std::shared_ptr<Particle> p0 = std::make_shared<Particle>();
     std::shared_ptr<Particle> p1 = std::make_shared<Particle>();
@@ -30,8 +30,8 @@ JelloCube::JelloCube() {
     std::shared_ptr<Particle> p6 = std::make_shared<Particle>();
     std::shared_ptr<Particle> p7 = std::make_shared<Particle>();
 
-    p0->x0 = Eigen::Vector3d(0.5, 1.0, 0.0);
-    p1->x0 = Eigen::Vector3d(0.5, 0.5, 0.0);
+    p0->x0 = Eigen::Vector3d(-1.0, 1.0, 0.0);
+    p1->x0 = Eigen::Vector3d(1.0, 1.0, 0.0);
     p2->x0 = Eigen::Vector3d(1.0, 2.0, 0.0);
     p3->x0 = Eigen::Vector3d(-1.0, 2.0, 0.0);
     p4->x0 = Eigen::Vector3d(-1.0, 2.0, 1.0);
@@ -211,8 +211,8 @@ void JelloCube::reset() {
     }
 }
 
-std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> JelloCube::getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields) {
-    int integrationScheme = 2;
+std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> JelloCube::getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields,
+                                                                                            int integrationScheme) {
     std::vector<Eigen::Vector3d> v (particles.size(), Eigen::Vector3d());
     std::vector<Eigen::Vector3d> a (particles.size(), Eigen::Vector3d());
     for (const auto & particle : particles) {
@@ -435,7 +435,7 @@ void JelloCube::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
 //        spring->p1->f += -damperF;
 //    }
 
-    auto va = getVelAcc(h, forceFields);
+    auto va = getVelAcc(h, forceFields, simParams.integrationMethod);
 
     for (int i = 0; i < particles.size(); ++i) {
         particles[i]->xTemp = particles[i]->x;

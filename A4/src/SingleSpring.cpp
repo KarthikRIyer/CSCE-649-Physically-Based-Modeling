@@ -100,8 +100,8 @@ void SingleSpring::reset() {
     }
 }
 
-std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> SingleSpring::getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields) {
-    int integrationScheme = 2;
+std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> SingleSpring::getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields,
+                                                                                               int integrationScheme) {
     std::vector<Eigen::Vector3d> v (particles.size(), Eigen::Vector3d());
     std::vector<Eigen::Vector3d> a (particles.size(), Eigen::Vector3d());
     for (const auto & particle : particles) {
@@ -324,7 +324,7 @@ void SingleSpring::step(double h, std::vector<std::shared_ptr<IForceField>>& for
 //        spring->p1->f += -damperF;
 //    }
 
-    auto va = getVelAcc(h, forceFields);
+    auto va = getVelAcc(h, forceFields, simParams.integrationMethod);
 
     for (int i = 0; i < particles.size(); ++i) {
         particles[i]->xTemp = particles[i]->x;

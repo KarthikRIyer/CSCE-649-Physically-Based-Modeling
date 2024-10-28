@@ -40,7 +40,8 @@ private:
     unsigned posBufID;
 
     std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> getVelAcc(double h,
-                                                                                     std::vector<std::shared_ptr<IForceField>>& forceFields);
+                                                                                     std::vector<std::shared_ptr<IForceField>>& forceFields,
+                                                                                     int integrationScheme);
     void detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, double h);
     void detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, double h);
     double sgn(double x);
