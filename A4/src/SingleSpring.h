@@ -41,8 +41,8 @@ private:
 
     std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> getVelAcc(double h,
                                                                                      std::vector<std::shared_ptr<IForceField>>& forceFields);
-    void detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes);
-    void detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<std::shared_ptr<Shape> >& shapes);
+    void detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams);
+    void detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams);
     double sgn(double x);
 };
 

@@ -6,7 +6,7 @@
 #define A1_SIMPARAMS_H
 
 struct SimParams {
-    float airFrictionFactor = 0.01;
+    float restitutionCoefficient = 0.9;
     float timestep = 1e-3;
 };
 

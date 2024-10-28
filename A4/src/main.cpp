@@ -228,7 +228,7 @@ void render()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     ImGui::Begin("Simulation params");
-    ImGui::SliderFloat("Air Friction Factor", &simParams.airFrictionFactor, 0.0f, 0.1f);
+    ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoefficient, 0.0f, 1.0f);
 
     if (ImGui::BeginCombo("Choose scene", currentScene)) {
         for (int n = 0; n < IM_ARRAYSIZE(sceneNames); n++) {

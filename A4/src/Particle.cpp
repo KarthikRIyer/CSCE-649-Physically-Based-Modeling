@@ -163,7 +163,7 @@ void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFi
         fNet += forceField->getForce(x);
         vNew += (forceField->getForce(x) * h);
     }
-    vNew -= (h * (simParams.airFrictionFactor / m) * v);
+    vNew -= (h * (simParams.restitutionCoefficient / m) * v);
 
     Eigen::Vector3d xNew = x + (v * h);
 
