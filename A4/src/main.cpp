@@ -229,6 +229,7 @@ void render()
     ImGui::NewFrame();
     ImGui::Begin("Simulation params");
     ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoefficient, 0.0f, 1.0f);
+    ImGui::SliderFloat("Friction Coefficient", &simParams.frictionCoefficient, 0.0f, 10.0f);
 
     if (ImGui::BeginCombo("Choose scene", currentScene)) {
         for (int n = 0; n < IM_ARRAYSIZE(sceneNames); n++) {

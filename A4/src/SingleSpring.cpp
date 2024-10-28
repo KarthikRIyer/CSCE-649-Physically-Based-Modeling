@@ -335,7 +335,7 @@ void SingleSpring::step(double h, std::vector<std::shared_ptr<IForceField>>& for
     }
 
     for (int i = 0; i < particles.size(); ++i) {
-        detectCollision(particles[i], shapes, simParams);
+        detectCollision(particles[i], shapes, simParams, h);
     }
 
     for (int i = 0; i < edges.size(); ++i) {
@@ -345,7 +345,7 @@ void SingleSpring::step(double h, std::vector<std::shared_ptr<IForceField>>& for
 //        edges[i]->p1->xTemp = edges[i]->p1->x;
 //        edges[i]->p0->vTemp = edges[i]->p0->v;
 //        edges[i]->p1->vTemp = edges[i]->p1->v;
-        detectEdgeCollision(edges[i], shapes, simParams);
+        detectEdgeCollision(edges[i], shapes, simParams, h);
     }
 
     int posBufIndex = 0;
@@ -370,7 +370,7 @@ double SingleSpring::sgn(double x) {
 }
 
 void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<std::shared_ptr<Shape>> &shapes,
-                                       SimParams &simParams) {
+                                       SimParams &simParams, double h) {
     std::shared_ptr<Particle> p0 = edge->p0;
     std::shared_ptr<Particle> p1 = edge->p1;
 
@@ -435,6 +435,14 @@ void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<s
                     v0 += deltaV0;
                     v1 += deltaV1;
 
+                    Eigen::Vector3d fNet = p0->f + p1->f;
+                    if (fNet.dot(n) < 0.0) {
+                        Eigen::Vector3d fFric = simParams.frictionCoefficient * -fNet.dot(n) * -vCollT.normalized();
+                        Eigen::Vector3d deltaVFric = (fFric/(p0->m + p1->m)) * h;
+                        v0 += deltaVFric;
+                        v1 += deltaVFric;
+                    }
+
                     Eigen::Vector3d p0Offset = p0->x - collPos;
                     Eigen::Vector3d p1Offset = p1->x - collPos;
 
@@ -492,6 +500,14 @@ void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<s
                     Eigen::Vector3d deltaV1 = (s) * deltaVCollPrime;
                     v0 += deltaV0;
                     v1 += deltaV1;
+
+                    Eigen::Vector3d fNet = p0->f + p1->f;
+                    if (fNet.dot(n) < 0.0) {
+                        Eigen::Vector3d fFric = simParams.frictionCoefficient * -fNet.dot(n) * -vCollT.normalized();
+                        Eigen::Vector3d deltaVFric = (fFric/(p0->m + p1->m)) * h;
+                        v0 += deltaVFric;
+                        v1 += deltaVFric;
+                    }
 
                     Eigen::Vector3d p0Offset = p0->x - collPos;
                     Eigen::Vector3d p1Offset = p1->x - collPos;
@@ -551,6 +567,14 @@ void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<s
                     v0 += deltaV0;
                     v1 += deltaV1;
 
+                    Eigen::Vector3d fNet = p0->f + p1->f;
+                    if (fNet.dot(n) < 0.0) {
+                        Eigen::Vector3d fFric = simParams.frictionCoefficient * -fNet.dot(n) * -vCollT.normalized();
+                        Eigen::Vector3d deltaVFric = (fFric/(p0->m + p1->m)) * h;
+                        v0 += deltaVFric;
+                        v1 += deltaVFric;
+                    }
+
                     Eigen::Vector3d p0Offset = p0->x - collPos;
                     Eigen::Vector3d p1Offset = p1->x - collPos;
 
@@ -569,7 +593,7 @@ void SingleSpring::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<s
     }
 }
 
-void SingleSpring::detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams) {
+void SingleSpring::detectCollision(std::shared_ptr<Particle> particle, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, double h) {
     if (particle->fixed) {
         return;
     }
@@ -663,6 +687,13 @@ void SingleSpring::detectCollision(std::shared_ptr<Particle> particle, std::vect
 //                std::cout<<"Aa :" <<Aa<<"\n";
 //                std::cout<<"Ab :" <<Ab<<"\n";
 //                std::cout<<"Ac :" <<Ac<<"\n";
+
+                if (particle->f.dot(nc) < 0.0) {
+                    Eigen::Vector3d fn = simParams.frictionCoefficient * (-particle->f.dot(nc)) * -vt.normalized();
+                    Eigen::Vector3d deltaVFric = (fn/particle->m) * h;
+                    vel += deltaVFric;
+                }
+
                 particle->didCollide = true;
                 particle->hasCollided = true;
                 particle->nc = nc;
@@ -671,7 +702,7 @@ void SingleSpring::detectCollision(std::shared_ptr<Particle> particle, std::vect
                 particle->xTemp = xNew;
                 particle->v = vel;
                 particle->vTemp = vel;
-                std::cout<<"Collided\n";
+//                std::cout<<"Collided\n";
                 return;
             } else {
                 continue;
