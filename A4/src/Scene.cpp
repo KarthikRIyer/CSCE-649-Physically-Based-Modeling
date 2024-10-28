@@ -13,6 +13,7 @@
 #include "Wind.h"
 #include "JelloCube.h"
 #include "SingleSpring.h"
+#include "SpringyCube.h"
 
 using namespace std;
 using namespace Eigen;
@@ -170,7 +171,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
 
-        jelloCube = std::make_shared<JelloCube>();
+        springyCube = std::make_shared<SpringyCube>();
     }
 
     sphereTexture = make_shared<Texture>();
@@ -191,6 +192,8 @@ void Scene::init()
         sphereShape->init();
     if (jelloCube)
         jelloCube->init();
+    if (springyCube)
+        springyCube->init();
     if (singleSpring)
         singleSpring->init();
 }
@@ -200,6 +203,8 @@ void Scene::cleanup() {
         sphereShape->cleanupBuffers();
     if (jelloCube)
         jelloCube->cleanupBuffers();
+    if (springyCube)
+        springyCube->cleanupBuffers();
     if (singleSpring)
         singleSpring->cleanupBuffers();
     for (auto &shape: shapes) {
@@ -223,6 +228,8 @@ void Scene::tare()
     }
     if (jelloCube)
         jelloCube->tare();
+    if (springyCube)
+        springyCube->tare();
     if (singleSpring)
         singleSpring->tare();
 }
@@ -236,6 +243,8 @@ void Scene::reset()
     }
     if (jelloCube)
         jelloCube->reset();
+    if (springyCube)
+        springyCube->reset();
     if (singleSpring)
         singleSpring->reset();
 }
@@ -262,6 +271,8 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
 
     if (jelloCube)
         jelloCube->step(h, forceFields, simParams, shapes);
+    if (springyCube)
+        springyCube->step(h, forceFields, simParams, shapes);
     if (singleSpring)
         singleSpring->step(h, forceFields, simParams, shapes);
 
@@ -322,6 +333,8 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
 void Scene::drawJelloCube(const std::shared_ptr<Program> prog) const {
     if (jelloCube)
         jelloCube->draw(prog);
+    if (springyCube)
+        springyCube->draw(prog);
     if (singleSpring)
         singleSpring->draw(prog);
 }

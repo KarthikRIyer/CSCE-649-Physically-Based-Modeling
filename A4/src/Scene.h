@@ -22,6 +22,7 @@ class IForceField;
 class Gravity;
 class Wind;
 class JelloCube;
+class SpringyCube;
 
 class Scene
 {
@@ -52,6 +53,7 @@ private:
 	SimParams simParams;
 
     std::shared_ptr<JelloCube> jelloCube;
+    std::shared_ptr<SpringyCube> springyCube;
     std::shared_ptr<SingleSpring> singleSpring;
 
 	std::shared_ptr<Gravity> gravity;
