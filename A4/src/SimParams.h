@@ -10,6 +10,8 @@ struct SimParams {
     float frictionCoefficient = 5.0;
     float timestep = 1e-3;
     int integrationMethod = 0;
+    float springStiffness = 200.0f;
+    float springDamperConst = 1.0f;
 };
 
 #endif //A1_SIMPARAMS_H

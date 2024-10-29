@@ -233,6 +233,8 @@ void render()
     ImGui::Begin("Simulation params");
     ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoefficient, 0.0f, 1.0f);
     ImGui::SliderFloat("Friction Coefficient", &simParams.frictionCoefficient, 0.0f, 10.0f);
+    ImGui::SliderFloat("Spring stiffness", &simParams.springStiffness, 100.0f, 2075.0f);
+    ImGui::SliderFloat("Spring damping", &simParams.springDamperConst, 0.0f, 5.0f);
 
     if (ImGui::BeginCombo("Choose scene", currentScene)) {
         for (int n = 0; n < IM_ARRAYSIZE(sceneNames); n++) {

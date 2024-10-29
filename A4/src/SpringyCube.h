@@ -19,7 +19,7 @@ class Edge;
 
 class SpringyCube {
 public:
-    SpringyCube();
+    SpringyCube(double scale, Eigen::Vector3d pos, SimParams& simParams);
     virtual ~SpringyCube();
 
     void tare();

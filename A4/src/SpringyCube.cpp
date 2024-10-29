@@ -18,9 +18,9 @@
 #include "Edge.h"
 #include "SimParams.h"
 
-SpringyCube::SpringyCube() {
-    double springConst = 1000.0;
-    double damperConst = 1.0;
+SpringyCube::SpringyCube(double scale, Eigen::Vector3d pos, SimParams& simParams) {
+    double springConst = simParams.springStiffness;
+    double damperConst = simParams.springDamperConst;
     std::shared_ptr<Particle> p0 = std::make_shared<Particle>();
     std::shared_ptr<Particle> p1 = std::make_shared<Particle>();
     std::shared_ptr<Particle> p2 = std::make_shared<Particle>();
@@ -30,14 +30,14 @@ SpringyCube::SpringyCube() {
     std::shared_ptr<Particle> p6 = std::make_shared<Particle>();
     std::shared_ptr<Particle> p7 = std::make_shared<Particle>();
 
-    p0->x0 = Eigen::Vector3d(-1.0, 1.0, 0.0);
-    p1->x0 = Eigen::Vector3d(1.0, 1.0, 0.0);
-    p2->x0 = Eigen::Vector3d(1.0, 2.0, 0.0);
-    p3->x0 = Eigen::Vector3d(-1.0, 2.0, 0.0);
-    p4->x0 = Eigen::Vector3d(-1.0, 2.0, 1.0);
-    p5->x0 = Eigen::Vector3d(1.0, 2.0, 1.0);
-    p6->x0 = Eigen::Vector3d(1.0, 1.0, 1.0);
-    p7->x0 = Eigen::Vector3d(-1.0, 1.0, 1.0);
+//    p0->x0 = Eigen::Vector3d(-1.0, 1.0, 0.0);
+//    p1->x0 = Eigen::Vector3d(1.0, 1.0, 0.0);
+//    p2->x0 = Eigen::Vector3d(1.0, 2.0, 0.0);
+//    p3->x0 = Eigen::Vector3d(-1.0, 2.0, 0.0);
+//    p4->x0 = Eigen::Vector3d(-1.0, 2.0, 1.0);
+//    p5->x0 = Eigen::Vector3d(1.0, 2.0, 1.0);
+//    p6->x0 = Eigen::Vector3d(1.0, 1.0, 1.0);
+//    p7->x0 = Eigen::Vector3d(-1.0, 1.0, 1.0);
 
     particles.push_back(p0);
     particles.push_back(p1);
@@ -48,9 +48,20 @@ SpringyCube::SpringyCube() {
     particles.push_back(p6);
     particles.push_back(p7);
 
+    p0->x0 = Eigen::Vector3d(-1.0, -1.0, -1.0);
+    p1->x0 = Eigen::Vector3d(1.0, -1.0, -1.0);
+    p2->x0 = Eigen::Vector3d(1.0, 1.0, -1.0);
+    p3->x0 = Eigen::Vector3d(-1.0, 1.0, -1.0);
+    p4->x0 = Eigen::Vector3d(-1.0, 1.0, 1.0);
+    p5->x0 = Eigen::Vector3d(1.0, 1.0, 1.0);
+    p6->x0 = Eigen::Vector3d(1.0, -1.0, 1.0);
+    p7->x0 = Eigen::Vector3d(-1.0, -1.0, 1.0);
+
     for (int i = 0; i < particles.size(); ++i) {
         particles[i]->v0 = Eigen::Vector3d(0.0, 0.0, 0.0);
         particles[i]->v = particles[i]->v0;
+        particles[i]->x0 *= scale;
+        particles[i]->x0 += pos;
         particles[i]->x = particles[i]->x0;
         particles[i]->f = Eigen::Vector3d(0.0, 0.0, 0.0);
         particles[i]->fixed = false;
@@ -434,7 +445,7 @@ void SpringyCube::step(double h, std::vector<std::shared_ptr<IForceField>>& forc
 //        spring->p1->f += -springF;
 //        spring->p1->f += -damperF;
 //    }
-
+//    std::cout<<"step\n";
     auto va = getVelAcc(h, forceFields, simParams.integrationMethod);
 
     for (int i = 0; i < particles.size(); ++i) {
@@ -538,7 +549,7 @@ void SpringyCube::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<st
                 Eigen::Vector3d vCollT = vColl - vCollN;
 //                    return;
                 if (mMinus.dot(mPlus) < 0) {
-//                        std::cout<<"Edge collided!\n";
+//                        std::cout<<"Edge collided! 1\n";
                     Eigen::Vector3d deltaVColl = (-vCollN * simParams.restitutionCoefficient) - vCollN;
                     Eigen::Vector3d deltaVCollPrime = deltaVColl / (s * s + (1 - s) * (1 - s));
                     Eigen::Vector3d deltaV0 = (1 - s) * deltaVCollPrime;
@@ -604,7 +615,7 @@ void SpringyCube::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<st
                 Eigen::Vector3d vCollT = vColl - vCollN;
 //                    return;
                 if (mMinus.dot(mPlus) < 0) {
-//                        std::cout<<"Edge collided!\n";
+//                        std::cout<<"Edge collided! 2\n";
                     Eigen::Vector3d deltaVColl = (-vCollN * simParams.restitutionCoefficient) - vCollN;
                     Eigen::Vector3d deltaVCollPrime = deltaVColl / (s * s + (1 - s) * (1 - s));
                     Eigen::Vector3d deltaV0 = (1 - s) * deltaVCollPrime;
@@ -670,7 +681,7 @@ void SpringyCube::detectEdgeCollision(std::shared_ptr<Edge> edge, std::vector<st
                 Eigen::Vector3d vCollT = vColl - vCollN;
 //                    return;
                 if (mMinus.dot(mPlus) < 0) {
-//                        std::cout<<"Edge collided!\n";
+//                        std::cout<<"Edge collided! 3\n";
                     Eigen::Vector3d deltaVColl = (-vCollN * simParams.restitutionCoefficient) - vCollN;
                     Eigen::Vector3d deltaVCollPrime = deltaVColl / (s * s + (1 - s) * (1 - s));
                     Eigen::Vector3d deltaV0 = (1 - s) * deltaVCollPrime;

@@ -171,7 +171,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
 
-        springyCube = std::make_shared<SpringyCube>();
+        springyCube = std::make_shared<SpringyCube>(0.5, Eigen::Vector3d(0.0, 3.0, 0.0), simParams);
     }
 
     sphereTexture = make_shared<Texture>();
