@@ -19,7 +19,7 @@ class Edge;
 
 class JelloCube {
 public:
-    JelloCube();
+    JelloCube(double scale, Eigen::Vector3d pos, SimParams& simParams);
     virtual ~JelloCube();
 
     void tare();
@@ -38,6 +38,10 @@ private:
     unsigned VAO;
     unsigned eleBufID;
     unsigned posBufID;
+
+    std::shared_ptr<Particle> createParticle(int i, int j, int k, double spacing);
+    bool areAdjacent(std::shared_ptr<Particle> p1, std::shared_ptr<Particle> p2, double spacing);
+    bool areCrossAdjacent(std::shared_ptr<Particle> p1, std::shared_ptr<Particle> p2, double spacing);
 
     std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> getVelAcc(double h,
                                                                                      std::vector<std::shared_ptr<IForceField>>& forceFields,

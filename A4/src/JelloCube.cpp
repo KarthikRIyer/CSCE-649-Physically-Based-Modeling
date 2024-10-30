@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 
 #include <iostream>
+#include <unordered_set>
 
 #include "JelloCube.h"
 #include "Particle.h"
@@ -18,142 +19,206 @@
 #include "Edge.h"
 #include "SimParams.h"
 
-JelloCube::JelloCube() {
-    double springConst = 1000.0;
-    double damperConst = 1.0;
-    std::shared_ptr<Particle> p0 = std::make_shared<Particle>();
-    std::shared_ptr<Particle> p1 = std::make_shared<Particle>();
-    std::shared_ptr<Particle> p2 = std::make_shared<Particle>();
-    std::shared_ptr<Particle> p3 = std::make_shared<Particle>();
-    std::shared_ptr<Particle> p4 = std::make_shared<Particle>();
-    std::shared_ptr<Particle> p5 = std::make_shared<Particle>();
-    std::shared_ptr<Particle> p6 = std::make_shared<Particle>();
-    std::shared_ptr<Particle> p7 = std::make_shared<Particle>();
+namespace std {
+    template <> struct hash<std::pair<int, int>> {
+        inline size_t operator() (const std::pair<int, int> &v) const {
+            std::hash<int> int_hasher;
+            return int_hasher(v.first) ^ int_hasher(v.second);
+        }
+    };
+};
 
-    p0->x0 = Eigen::Vector3d(-1.0, 1.0, 0.0);
-    p1->x0 = Eigen::Vector3d(1.0, 1.0, 0.0);
-    p2->x0 = Eigen::Vector3d(1.0, 2.0, 0.0);
-    p3->x0 = Eigen::Vector3d(-1.0, 2.0, 0.0);
-    p4->x0 = Eigen::Vector3d(-1.0, 2.0, 1.0);
-    p5->x0 = Eigen::Vector3d(1.0, 2.0, 1.0);
-    p6->x0 = Eigen::Vector3d(1.0, 1.0, 1.0);
-    p7->x0 = Eigen::Vector3d(-1.0, 1.0, 1.0);
+JelloCube::JelloCube(double scale, Eigen::Vector3d pos, SimParams& simParams) {
+    double springConst = simParams.springStiffness;
+    double damperConst = simParams.springDamperConst;
+    int gridSize = 3;
+    double spacing = 1.0;
 
-    particles.push_back(p0);
-    particles.push_back(p1);
-    particles.push_back(p2);
-    particles.push_back(p3);
-    particles.push_back(p4);
-    particles.push_back(p5);
-    particles.push_back(p6);
-    particles.push_back(p7);
-
-    for (int i = 0; i < particles.size(); ++i) {
-        particles[i]->v0 = Eigen::Vector3d(0.0, 0.0, 0.0);
-        particles[i]->v = particles[i]->v0;
-        particles[i]->x = particles[i]->x0;
-        particles[i]->f = Eigen::Vector3d(0.0, 0.0, 0.0);
-        particles[i]->fixed = false;
+    // Create particles in a 4x4x4 grid
+    for (int i = 0; i < gridSize; ++i) {
+        for (int j = 0; j < gridSize; ++j) {
+            for (int k = 0; k < gridSize; ++k) {
+                std::shared_ptr<Particle> p = std::make_shared<Particle>();
+                p->x0 = Eigen::Vector3d(i * spacing, j * spacing, k * spacing);
+                p->v0 = Eigen::Vector3d(0.0, 0.0, 0.0);
+                p->v = p->v0;
+                p->x = p->x0;
+                p->f = Eigen::Vector3d(0.0, 0.0, 0.0);
+                p->fixed = false;
+                particles.push_back(p);
+            }
+        }
     }
 
-    std::shared_ptr<Spring> s0 = std::make_shared<Spring>(p0, p1, springConst, damperConst);
-    std::shared_ptr<Spring> s1 = std::make_shared<Spring>(p1, p2, springConst, damperConst);
-    std::shared_ptr<Spring> s2 = std::make_shared<Spring>(p2, p3, springConst, damperConst);
-    std::shared_ptr<Spring> s3 = std::make_shared<Spring>(p3, p0, springConst, damperConst);
+    for (int i = 0; i < particles.size(); ++i) {
+        particles[i]->x0 *= scale;
+        particles[i]->x0 -= (scale * Eigen::Vector3d(0.5 * ((gridSize - 1) * spacing), 0.5 * ((gridSize - 1) * spacing), 0.5 * ((gridSize - 1) * spacing)));
+        particles[i]->x0 += pos;
+        particles[i]->x = particles[i]->x0;
+    }
 
-    std::shared_ptr<Spring> s4 = std::make_shared<Spring>(p7, p6, springConst, damperConst);
-    std::shared_ptr<Spring> s5 = std::make_shared<Spring>(p6, p5, springConst, damperConst);
-    std::shared_ptr<Spring> s6 = std::make_shared<Spring>(p5, p4, springConst, damperConst);
-    std::shared_ptr<Spring> s7 = std::make_shared<Spring>(p4, p7, springConst, damperConst);
+    std::unordered_set<std::pair<int, int>> edgeIndices;
+    std::vector<std::pair<int, int>> edgeIndicesVec;
 
-    std::shared_ptr<Spring> s8 = std::make_shared<Spring>(p0, p7, springConst, damperConst);
-    std::shared_ptr<Spring> s9 = std::make_shared<Spring>(p1, p6, springConst, damperConst);
-    std::shared_ptr<Spring> s10 = std::make_shared<Spring>(p3, p4, springConst, damperConst);
-    std::shared_ptr<Spring> s11 = std::make_shared<Spring>(p2, p5, springConst, damperConst);
+    // Create edge springs
+    for (int i = 0; i < gridSize; ++i) {
+        for (int j = 0; j < gridSize; ++j) {
+            for (int k = 0; k < gridSize; ++k) {
+                int index = i * gridSize * gridSize + j * gridSize + k;
+                if (i < gridSize - 1) {
+                    int right = (i + 1) * gridSize * gridSize + j * gridSize + k;
+                    springs.push_back(std::make_shared<Spring>(particles[index], particles[right], springConst, damperConst));
+                }
+                if (j < gridSize - 1) {
+                    int up = i * gridSize * gridSize + (j + 1) * gridSize + k;
+                    springs.push_back(std::make_shared<Spring>(particles[index], particles[up], springConst, damperConst));
+                }
+                if (k < gridSize - 1) {
+                    int forward = i * gridSize * gridSize + j * gridSize + (k + 1);
+                    springs.push_back(std::make_shared<Spring>(particles[index], particles[forward], springConst, damperConst));
+                }
 
-    std::shared_ptr<Edge> e0 = std::make_shared<Edge>(p0, p1);
-    std::shared_ptr<Edge> e1 = std::make_shared<Edge>(p1, p2);
-    std::shared_ptr<Edge> e2 = std::make_shared<Edge>(p2, p3);
-    std::shared_ptr<Edge> e3 = std::make_shared<Edge>(p3, p0);
+                // create edges
+                if (i == 0 || i == gridSize - 1) {
+                    int index1 = i * gridSize * gridSize + j * gridSize + k;
+                    if (j < gridSize - 1) {
+                        int index2 = i * gridSize * gridSize + (j+1) * gridSize + k;
+                        edgeIndices.insert(std::make_pair(index1, index2));
+                        edgeIndicesVec.push_back(std::make_pair(index1, index2));
+                    }
 
-    std::shared_ptr<Edge> e4 = std::make_shared<Edge>(p7, p6);
-    std::shared_ptr<Edge> e5 = std::make_shared<Edge>(p6, p5);
-    std::shared_ptr<Edge> e6 = std::make_shared<Edge>(p5, p4);
-    std::shared_ptr<Edge> e7 = std::make_shared<Edge>(p4, p7);
+                    if (k < gridSize - 1) {
+                        int index2 = i * gridSize * gridSize + j * gridSize + (k + 1);
+                        edgeIndices.insert(std::make_pair(index1, index2));
+                        edgeIndicesVec.push_back(std::make_pair(index1, index2));
+                    }
+                }
 
-    std::shared_ptr<Edge> e8 = std::make_shared<Edge>(p0, p7);
-    std::shared_ptr<Edge> e9 = std::make_shared<Edge>(p1, p6);
-    std::shared_ptr<Edge> e10 = std::make_shared<Edge>(p3, p4);
-    std::shared_ptr<Edge> e11 = std::make_shared<Edge>(p2, p5);
+                if (j == 0 || j == gridSize - 1) {
+                    int index1 = i * gridSize * gridSize + j * gridSize + k;
+                    if (i < gridSize - 1) {
+                        int index2 = (i+1) * gridSize * gridSize + (j) * gridSize + (k);
+                        edgeIndices.insert(std::make_pair(index1, index2));
+                        edgeIndicesVec.push_back(std::make_pair(index1, index2));
+                    }
 
-    edges.push_back(e0);
-    edges.push_back(e1);
-    edges.push_back(e2);
-    edges.push_back(e3);
-    edges.push_back(e4);
-    edges.push_back(e5);
-    edges.push_back(e6);
-    edges.push_back(e7);
-    edges.push_back(e8);
-    edges.push_back(e9);
-    edges.push_back(e10);
-    edges.push_back(e11);
+                    if (k < gridSize - 1) {
+                        int index2 = i * gridSize * gridSize + j * gridSize + (k + 1);
+                        edgeIndices.insert(std::make_pair(index1, index2));
+                        edgeIndicesVec.push_back(std::make_pair(index1, index2));
+                    }
+                }
 
-    // cross springs
-    std::shared_ptr<Spring> s12 = std::make_shared<Spring>(p1, p3, springConst, damperConst);
-    std::shared_ptr<Spring> s13 = std::make_shared<Spring>(p0, p2, springConst, damperConst);
+                if (k == 0 || k == gridSize - 1) {
+                    int index1 = i * gridSize * gridSize + j * gridSize + k;
+                    if (i < gridSize - 1) {
+                        int index2 = (i+1) * gridSize * gridSize + (j) * gridSize + (k);
+                        edgeIndices.insert(std::make_pair(index1, index2));
+                        edgeIndicesVec.push_back(std::make_pair(index1, index2));
+                    }
 
-    std::shared_ptr<Spring> s14 = std::make_shared<Spring>(p4, p6, springConst, damperConst);
-    std::shared_ptr<Spring> s15 = std::make_shared<Spring>(p7, p5, springConst, damperConst);
+                    if (j < gridSize - 1) {
+                        int index2 = i * gridSize * gridSize + (j+1) * gridSize + k;
+                        edgeIndices.insert(std::make_pair(index1, index2));
+                        edgeIndicesVec.push_back(std::make_pair(index1, index2));
+                    }
+                }
+            }
+        }
+    }
+    for (auto it: edgeIndices) {
+//        std::cout<<it.first<<" "<<it.second<<"\n";
+        edges.push_back(std::make_shared<Edge>(particles[it.first], particles[it.second]));
+    }
 
-    std::shared_ptr<Spring> s16 = std::make_shared<Spring>(p4, p2, springConst, damperConst);
-    std::shared_ptr<Spring> s17 = std::make_shared<Spring>(p3, p5, springConst, damperConst);
+    // Create cross springs
+    for (int i = 0; i < gridSize; ++i) {
+        for (int j = 0; j < gridSize; ++j) {
+            for (int k = 0; k < gridSize; ++k) {
+                int index = i * gridSize * gridSize + j * gridSize + k;
+                if (i < gridSize - 1 && j < gridSize - 1) {
+                    int right = (i + 1) * gridSize * gridSize + (j+1) * gridSize + k;
+                    springs.push_back(std::make_shared<Spring>(particles[index], particles[right], springConst, damperConst));
+                }
+                if (i < gridSize - 1 && k < gridSize - 1) {
+                    int up = (i + 1) * gridSize * gridSize + j * gridSize + (k + 1);
+                    springs.push_back(std::make_shared<Spring>(particles[index], particles[up], springConst, damperConst));
+                }
+                if (j < gridSize - 1 && k < gridSize - 1) {
+                    int forward = i * gridSize * gridSize + (j + 1) * gridSize + (k + 1);
+                    springs.push_back(std::make_shared<Spring>(particles[index], particles[forward], springConst, damperConst));
+                }
 
-    std::shared_ptr<Spring> s18 = std::make_shared<Spring>(p7, p1, springConst, damperConst);
-    std::shared_ptr<Spring> s19 = std::make_shared<Spring>(p6, p0, springConst, damperConst);
+                if (i < gridSize - 1 && j < gridSize - 1) {
+                    int index1 = (i+1) * gridSize * gridSize + (j) * gridSize + (k);
+                    int index2 = i * gridSize * gridSize + (j + 1) * gridSize + (k);
+                    springs.push_back(std::make_shared<Spring>(particles[index1], particles[index2], springConst, damperConst));
+                }
 
-    std::shared_ptr<Spring> s20 = std::make_shared<Spring>(p3, p7, springConst, damperConst);
-    std::shared_ptr<Spring> s21 = std::make_shared<Spring>(p0, p4, springConst, damperConst);
+                if (i < gridSize - 1 && k < gridSize - 1) {
+                    int index1 = (i+1) * gridSize * gridSize + (j) * gridSize + (k);
+                    int index2 = i * gridSize * gridSize + (j) * gridSize + (k+1);
+                    springs.push_back(std::make_shared<Spring>(particles[index1], particles[index2], springConst, damperConst));
+                }
 
-    std::shared_ptr<Spring> s22 = std::make_shared<Spring>(p2, p6, springConst, damperConst);
-    std::shared_ptr<Spring> s23 = std::make_shared<Spring>(p1, p5, springConst, damperConst);
+                if (j < gridSize - 1 && k < gridSize - 1) {
+                    int index1 = i * gridSize * gridSize + (j+1) * gridSize + (k);
+                    int index2 = i * gridSize * gridSize + (j) * gridSize + (k+1);
+                    springs.push_back(std::make_shared<Spring>(particles[index1], particles[index2], springConst, damperConst));
+                }
+            }
+        }
+    }
 
-    std::shared_ptr<Spring> s24 = std::make_shared<Spring>(p0, p5, springConst, damperConst);
-    std::shared_ptr<Spring> s25 = std::make_shared<Spring>(p1, p4, springConst, damperConst);
-    std::shared_ptr<Spring> s26 = std::make_shared<Spring>(p6, p3, springConst, damperConst);
-    std::shared_ptr<Spring> s27 = std::make_shared<Spring>(p7, p2, springConst, damperConst);
+    // Create diagonal springs
+    for (int i = 0; i < gridSize; ++i) {
+        for (int j = 0; j < gridSize; ++j) {
+            for (int k = 0; k < gridSize; ++k) {
+                int index = i * gridSize * gridSize + j * gridSize + k;
 
-    springs.push_back(s0);
-    springs.push_back(s1);
-    springs.push_back(s2);
-    springs.push_back(s3);
-    springs.push_back(s4);
-    springs.push_back(s5);
-    springs.push_back(s6);
-    springs.push_back(s7);
-    springs.push_back(s8);
-    springs.push_back(s9);
-    springs.push_back(s10);
-    springs.push_back(s11);
+                if (i < gridSize - 1 && j < gridSize - 1 && k < gridSize - 1) {
+                    int index1 = i * gridSize * gridSize + j * gridSize + k;
+                    int index2 = (i+1) * gridSize * gridSize + (j + 1) * gridSize + (k+1);
+                    springs.push_back(std::make_shared<Spring>(particles[index1], particles[index2], springConst, damperConst));
+                }
 
-    springs.push_back(s11);
-    springs.push_back(s12);
-    springs.push_back(s13);
-    springs.push_back(s14);
-    springs.push_back(s15);
-    springs.push_back(s16);
-    springs.push_back(s17);
-    springs.push_back(s18);
-    springs.push_back(s19);
-    springs.push_back(s20);
-    springs.push_back(s21);
-    springs.push_back(s22);
-    springs.push_back(s23);
+                if (i < gridSize - 1 && j < gridSize - 1) {
+                    int index1 = (i+1) * gridSize * gridSize + (j) * gridSize + (k+1);
+                    int index2 = i * gridSize * gridSize + (j+1) * gridSize + (k);
+                    springs.push_back(std::make_shared<Spring>(particles[index1], particles[index2], springConst, damperConst));
+                }
 
-    springs.push_back(s24);
-    springs.push_back(s25);
-    springs.push_back(s26);
-    springs.push_back(s27);
+                if (i < gridSize - 1 && j < gridSize - 1 && k < gridSize - 1) {
+                    int index1 = (i+1) * gridSize * gridSize + (j+1) * gridSize + (k);
+                    int index2 = i * gridSize * gridSize + (j) * gridSize + (k+1);
+                    springs.push_back(std::make_shared<Spring>(particles[index1], particles[index2], springConst, damperConst));
+                }
+            }
+        }
+    }
+
+    // Create edges from the outermost points
+//    for (int i = 0; i < gridSize; ++i) {
+//        for (int j = 0; j < gridSize; ++j) {
+//            for (int k = 0; k < gridSize; ++k) {
+//                int index = i * gridSize * gridSize + j * gridSize + k;
+//                if (i == 0 || i == gridSize - 1 || j == 0 || j == gridSize - 1 || k == 0 || k == gridSize - 1) {
+//                    if (i < gridSize - 1) {
+//                        int right = (i + 1) * gridSize * gridSize + j * gridSize + k;
+//                        edges.push_back(std::make_shared<Edge>(particles[index], particles[right]));
+//                    }
+//                    if (j < gridSize - 1) {
+//                        int up = i * gridSize * gridSize + (j + 1) * gridSize + k;
+//                        edges.push_back(std::make_shared<Edge>(particles[index], particles[up]));
+//                    }
+//                    if (k < gridSize - 1) {
+//                        int forward = i * gridSize * gridSize + j * gridSize + (k + 1);
+//                        edges.push_back(std::make_shared<Edge>(particles[index], particles[forward]));
+//                    }
+//                }
+//            }
+//        }
+//    }
 
 //    for (int i = 0; i < springs.size(); ++i) {
 //        springs[i]->d = 0;
@@ -185,6 +250,27 @@ JelloCube::JelloCube() {
 }
 
 JelloCube::~JelloCube() = default;
+
+std::shared_ptr<Particle> JelloCube::createParticle(int i, int j, int k, double spacing) {
+    std::shared_ptr<Particle> p = std::make_shared<Particle>();
+    p->x0 = Eigen::Vector3d(i * spacing, j * spacing, k * spacing);
+    p->v0 = Eigen::Vector3d(0.0, 0.0, 0.0);
+    p->v = p->v0;
+    p->x = p->x0;
+    p->f = Eigen::Vector3d(0.0, 0.0, 0.0);
+    p->fixed = false;
+    return p;
+}
+
+bool JelloCube::areAdjacent(std::shared_ptr<Particle> p1, std::shared_ptr<Particle> p2, double spacing) {
+    Eigen::Vector3d diff = p1->x0 - p2->x0;
+    return diff.norm() == spacing;
+}
+
+bool JelloCube::areCrossAdjacent(std::shared_ptr<Particle> p1, std::shared_ptr<Particle> p2, double spacing) {
+    Eigen::Vector3d diff = p1->x0 - p2->x0;
+    return diff.norm() == std::sqrt(2) * spacing;
+}
 
 void JelloCube::tare() {
     for (const auto & particle : particles) {
@@ -712,15 +798,15 @@ void JelloCube::detectCollision(std::shared_ptr<Particle> particle, std::vector<
     Eigen::Vector3d xNew = particle->x;
     Eigen::Vector3d vel = particle->vTemp;
 
-    if (vel.norm() <= 0.08) { // v close to zero
-        if (particle->hasCollided && (xNew - particle->xc).norm() <= 1e-2) { // position on surface
+//    if (vel.norm() <= 0.08) { // v close to zero
+//        if (particle->hasCollided && (xNew - particle->xc).norm() <= 1e-2) { // position on surface
 //            if (particle->f.dot(particle->nc) < 0.0) { // check this
-            particle->x = x;
-            particle->v = Eigen::Vector3d(0.0, 0.0, 0.0);
-            return;
+//            particle->x = x;
+//            particle->v = Eigen::Vector3d(0.0, 0.0, 0.0);
+//            return;
 //            }
-        }
-    }
+//        }
+//    }
 
     for (auto shape: shapes) {
         if (!shape->getObstacle()) {
