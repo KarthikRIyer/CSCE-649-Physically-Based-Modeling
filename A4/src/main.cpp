@@ -49,7 +49,7 @@ int currSceneIndex = 0;
 static const char* currentScene = sceneNames[currSceneIndex];
 int prevSceneIndex = 0;
 
-const char* integrationMethods[] = {"Explicit Euler", "RK 2", "RK4"};
+const char* integrationMethods[] = {"Explicit Euler", "RK 2", "RK4", "Semi-Implicit Euler"};
 static const char* currentIntegrationMethod = integrationMethods[simParams.integrationMethod];
 
 // https://stackoverflow.com/questions/41470942/stop-infinite-loop-in-different-thread

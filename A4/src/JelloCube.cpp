@@ -31,7 +31,7 @@ namespace std {
 JelloCube::JelloCube(double scale, Eigen::Vector3d pos, SimParams& simParams) {
     double springConst = simParams.springStiffness;
     double damperConst = simParams.springDamperConst;
-    int gridSize = 3;
+    int gridSize = 4;
     double spacing = 1.0;
 
     // Create particles in a 4x4x4 grid
@@ -489,6 +489,12 @@ std::pair<std::vector<Eigen::Vector3d>, std::vector<Eigen::Vector3d >> JelloCube
         //     particles[i]->x += va.first[i] * h;
         //     particles[i]->v += va.second[i] * h;
         // }
+    } else if (integrationScheme == 3) {
+        for (int i = 0; i < particles.size(); ++i) {
+            v[i] = particles[i]->v;
+            a[i] = particles[i]->f / particles[i]->m;
+            v[i] += a[i] * h;
+        }
     }
 
     return std::make_pair(v, a);
