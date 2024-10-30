@@ -28,11 +28,11 @@ namespace std {
     };
 };
 
-JelloCube::JelloCube(double scale, Eigen::Vector3d pos, SimParams& simParams) {
+JelloCube::JelloCube(double width, int gridSize, double scale, Eigen::Vector3d pos, SimParams& simParams) {
     double springConst = simParams.springStiffness;
     double damperConst = simParams.springDamperConst;
-    int gridSize = 4;
-    double spacing = 1.0;
+//    int gridSize = 4;
+    double spacing = width/gridSize;
 
     // Create particles in a 4x4x4 grid
     for (int i = 0; i < gridSize; ++i) {

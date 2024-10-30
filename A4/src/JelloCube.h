@@ -19,7 +19,7 @@ class Edge;
 
 class JelloCube {
 public:
-    JelloCube(double scale, Eigen::Vector3d pos, SimParams& simParams);
+    JelloCube(double width, int gridSize, double scale, Eigen::Vector3d pos, SimParams& simParams);
     virtual ~JelloCube();
 
     void tare();

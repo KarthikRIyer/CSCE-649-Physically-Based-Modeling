@@ -200,7 +200,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
 
-        jelloCube = std::make_shared<JelloCube>(0.5, Eigen::Vector3d(0.3, 3.0, 0.0), simParams);
+        jelloCube = std::make_shared<JelloCube>(4, 4, 0.5, Eigen::Vector3d(0.3, 3.0, 0.0), simParams);
     }
 
     sphereTexture = make_shared<Texture>();
