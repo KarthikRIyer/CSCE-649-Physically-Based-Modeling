@@ -120,6 +120,16 @@ void RigidBody::reset() {
     R = R0;
 }
 
+inline glm::mat4 RigidBody::convertToGLMMat(Eigen::Matrix3d rot) {
+    glm::mat4 glmR = glm::mat4(1.0f);
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            glmR[i][j] = rot(i, j);
+        }
+    }
+    return glmR;
+}
+
 void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
     Eigen::Vector3d fNet;
     for (const auto & forceField : forceFields) {
@@ -128,6 +138,15 @@ void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
     Eigen::Vector3d acc = fNet / mass;
     x += h * v;
     v += h * acc;
+
+    Eigen::Matrix3d wstar;
+    wstar << 0, -angV.z(), angV.y(),
+            angV.z(), 0, -angV.x(),
+            -angV.y(), angV.x(), 0;
+    R += h * (wstar * R);
+    R.col(0).normalize();
+    R.col(1).normalize();
+    R.col(2).normalize();
 //    std::cout<<"x: "<<x.transpose()<<"\n";
 
     for (int i = 0; i < polygons.size(); ++i) {
@@ -209,6 +228,7 @@ void RigidBody::draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Prog
     glUniform1f(prog->getUniform("s"), 200.0f);
     MV->pushMatrix();
     MV->translate(x(0), x(1), x(2));
+    MV->multMatrix(convertToGLMMat(R));
     MV->scale(1.0);
 
     glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));

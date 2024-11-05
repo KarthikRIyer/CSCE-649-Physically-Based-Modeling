@@ -109,7 +109,8 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         }
 
         for(const auto &mesh : rigidBodyData) {
-            auto rigidBody = make_shared<RigidBody>(1.0, Eigen::Vector3d(), Eigen::Vector3d(), Eigen::Vector3d());
+            auto rigidBody = make_shared<RigidBody>(1.0, Eigen::Vector3d(),
+                                                    Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0.0, 1.0, 0.0));
             rigidBodies.push_back(rigidBody);
             rigidBody->loadMesh(DATA_DIR + mesh[0]);
             rigidBody->setTextureFilename(mesh[1]);

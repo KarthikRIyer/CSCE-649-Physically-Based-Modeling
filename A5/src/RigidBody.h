@@ -11,6 +11,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <Eigen/Core>
+#include <glm/glm.hpp>
 
 class MatrixStack;
 class Program;
@@ -38,6 +39,7 @@ public:
     void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams);
 private:
     void computeMomentOfInertia();
+    glm::mat4 convertToGLMMat(Eigen::Matrix3d mat);
 protected:
     double mass;
 
