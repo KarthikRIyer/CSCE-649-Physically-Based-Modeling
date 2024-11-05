@@ -5,6 +5,7 @@
 
 #include "Scene.h"
 #include "Shape.h"
+#include "RigidBody.h"
 #include "Program.h"
 #include "Texture.h"
 #include "MatrixStack.h"
@@ -56,6 +57,14 @@ void Scene::loadDataInputFile(const std::string &DATA_DIR, const std::string &FI
             ss >> value;
             mesh.push_back(value); // isObstacle
             meshData.push_back(mesh);
+        } else if(key.compare("RB") == 0) {
+            vector<string> mesh;
+            ss >> value;
+            mesh.push_back(value); // obj
+            ss >> value;
+            mesh.push_back(value); // texture
+            ss >> value;
+            rigidBodyData.push_back(mesh);
         } else {
             cout << "Unknown key word: " << key << endl;
         }
@@ -97,6 +106,15 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             std::cout<<"isObstacle: "<<mesh[2]<<"\n";
             shape->setObstacle(isObstacle);
             shape->init();
+        }
+
+        for(const auto &mesh : rigidBodyData) {
+            auto rigidBody = make_shared<RigidBody>();
+            rigidBodies.push_back(rigidBody);
+            rigidBody->loadMesh(DATA_DIR + mesh[0]);
+            rigidBody->setTextureFilename(mesh[1]);
+            rigidBody->setObstacle(true);
+            rigidBody->init();
         }
 
 
@@ -217,6 +235,17 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
         shape->setProgram(prog);
         shape->draw();
         textureMap.at(shape->getTextureFilename())->unbind();
+    }
+
+    for(const auto &rigidBody : rigidBodies) {
+        textureMap.at(rigidBody->getTextureFilename())->bind(prog->getUniform("kdTex"));
+        glLineWidth(1.0f); // for wireframe
+        glUniform3f(prog->getUniform("ka"), 0.1f, 0.1f, 0.1f);
+        glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
+        glUniform1f(prog->getUniform("s"), 200.0f);
+        rigidBody->setProgram(prog);
+        rigidBody->draw();
+        textureMap.at(rigidBody->getTextureFilename())->unbind();
     }
 
     sphereTexture->bind(prog->getUniform("kdTex"));

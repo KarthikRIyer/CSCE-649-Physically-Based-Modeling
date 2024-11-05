@@ -1,6 +1,9 @@
+//
+// Created by Karthik Iyer on 04/11/24.
+//
 #pragma once
-#ifndef SHAPE_H
-#define SHAPE_H
+#ifndef A5_RIGIDBODY_H
+#define A5_RIGIDBODY_H
 
 #include <memory>
 #include <vector>
@@ -13,11 +16,10 @@ class Program;
 class Polygon;
 struct SimParams;
 
-class Shape
-{
+class RigidBody {
 public:
-    Shape();
-    virtual ~Shape();
+    RigidBody();
+    virtual ~RigidBody();
     void loadObj(const std::string &filename, std::vector<float> &pos, std::vector<float> &nor, std::vector<float> &tex, bool loadNor = true, bool loadTex = true);
     void loadMesh(const std::string &meshName);
     void setProgram(std::shared_ptr<Program> p) { prog = p; }
@@ -44,4 +46,5 @@ protected:
     GLuint texBufID;
 };
 
-#endif
+
+#endif //A5_RIGIDBODY_H

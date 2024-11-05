@@ -1,3 +1,9 @@
+//
+// Created by Karthik Iyer on 04/11/24.
+//
+
+#include "RigidBody.h"
+
 #include <iostream>
 #include <fstream>
 
@@ -5,12 +11,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 #include <random>
 
-#include "Shape.h"
+#include "RigidBody.h"
 #include "GLSL.h"
 #include "Program.h"
 #include "Polygon.h"
@@ -20,7 +25,7 @@
 using namespace std;
 using namespace glm;
 
-Shape::Shape() :
+RigidBody::RigidBody() :
         prog(NULL),
         posBufID(0),
         norBufID(0),
@@ -29,11 +34,11 @@ Shape::Shape() :
 {
 }
 
-Shape::~Shape()
+RigidBody::~RigidBody()
 {
 }
 
-void Shape::loadObj(const string &filename, vector<float> &pos, vector<float> &nor, vector<float> &tex, bool loadNor, bool loadTex)
+void RigidBody::loadObj(const string &filename, vector<float> &pos, vector<float> &nor, vector<float> &tex, bool loadNor, bool loadTex)
 {
 
     tinyobj::attrib_t attrib;
@@ -86,11 +91,11 @@ void Shape::loadObj(const string &filename, vector<float> &pos, vector<float> &n
     }
 }
 
-std::vector<Polygon>& Shape::getPolygons() {
+std::vector<Polygon>& RigidBody::getPolygons() {
     return polygons;
 }
 
-void Shape::loadMesh(const string &meshName)
+void RigidBody::loadMesh(const string &meshName)
 {
     // Load geometry
     meshFilename = meshName;
@@ -98,15 +103,15 @@ void Shape::loadMesh(const string &meshName)
     std::cout<<"Loaded obj\n";
 }
 
-void Shape::setObstacle(bool isObstacle) {
+void RigidBody::setObstacle(bool isObstacle) {
     this->isObstacle = isObstacle;
 }
 
-bool Shape::getObstacle() {
+bool RigidBody::getObstacle() {
     return isObstacle;
 }
 
-void Shape::init()
+void RigidBody::init()
 {
     glGenVertexArrays(1, &VAO);
     glBindVertexArray(VAO);
@@ -142,14 +147,14 @@ void Shape::init()
     GLSL::checkError(GET_FILE_LINE);
 }
 
-void Shape::cleanupBuffers() {
+void RigidBody::cleanupBuffers() {
     glDeleteBuffers(1, &posBufID);
     glDeleteBuffers(1, &norBufID);
     glDeleteBuffers(1, &texBufID);
     glDeleteVertexArrays(1, &VAO);
 }
 
-void Shape::draw() const
+void RigidBody::draw() const
 {
     assert(prog);
     glBindVertexArray(VAO);

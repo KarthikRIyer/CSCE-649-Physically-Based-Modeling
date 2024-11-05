@@ -16,6 +16,7 @@ class Particle;
 class MatrixStack;
 class Program;
 class Shape;
+class RigidBody;
 class Texture;
 class IForceField;
 class Gravity;
@@ -55,11 +56,14 @@ private:
 	std::shared_ptr<Shape> sphereShape;
 	std::vector< std::shared_ptr<Particle> > spheres;
 
+    std::vector<std::shared_ptr<RigidBody> > rigidBodies;
+
     std::vector<std::shared_ptr<Shape> > shapes;
     std::map<std::string, std::shared_ptr<Texture>> textureMap;
 
     std::vector<std::string> textureData;
     std::vector<std::vector<std::string>> meshData;
+    std::vector<std::vector<std::string>> rigidBodyData;
 
     void loadDataInputFile(const std::string &DATA_DIR, const std::string &FILE_NAME);
     int sceneIndex = 0;

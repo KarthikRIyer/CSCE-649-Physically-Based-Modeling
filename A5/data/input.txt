@@ -3,3 +3,4 @@
 # - MESH <obj file> <texture file>
 TEXTURE grey.jpg
 MESH plane.obj grey.jpg true
+RB cube.obj grey.jpg
