@@ -15,23 +15,34 @@
 
 #include <random>
 
+#include "MatrixStack.h"
 #include "RigidBody.h"
 #include "GLSL.h"
 #include "Program.h"
 #include "Polygon.h"
 #include "SimParams.h"
 #include "Vertex.h"
+#include "IForceField.h"
 
 using namespace std;
 using namespace glm;
 
-RigidBody::RigidBody() :
+RigidBody::RigidBody(double m, Eigen::Vector3d pos, Eigen::Vector3d v, Eigen::Vector3d angV) :
+        mass(m),
+        x0(pos),
+        x(pos),
+        v0(v),
+        v(v),
+        angV0(angV),
+        angV(angV),
         prog(NULL),
         posBufID(0),
         norBufID(0),
         texBufID(0),
         isObstacle(true)
 {
+    R0 = Eigen::Matrix3d::Identity();
+    R = R0;
 }
 
 RigidBody::~RigidBody()
@@ -86,9 +97,45 @@ void RigidBody::loadObj(const string &filename, vector<float> &pos, vector<float
                 }
             }
             polygons.push_back(polygon);
+            polygons0.push_back(polygon);
             index_offset += fv;
         }
     }
+    computeMomentOfInertia();
+}
+
+void RigidBody::computeMomentOfInertia() {
+
+}
+
+void RigidBody::reset() {
+    for (int i = 0; i < polygons.size(); ++i) {
+        for (int j = 0; j < polygons[i].points.size(); ++j) {
+            polygons[i].points[j] =  polygons0[i].points[j];
+        }
+    }
+    x = x0;
+    v = v0;
+    angV = angV0;
+    R = R0;
+}
+
+void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
+    Eigen::Vector3d fNet;
+    for (const auto & forceField : forceFields) {
+        fNet += forceField->getForce(x);
+    }
+    Eigen::Vector3d acc = fNet / mass;
+    x += h * v;
+    v += h * acc;
+//    std::cout<<"x: "<<x.transpose()<<"\n";
+
+    for (int i = 0; i < polygons.size(); ++i) {
+        for (int j = 0; j < polygons[i].points.size(); ++j) {
+            polygons[i].points[j] =  (R * polygons0[i].points[j]) + x;
+        }
+    }
+
 }
 
 std::vector<Polygon>& RigidBody::getPolygons() {
@@ -154,8 +201,18 @@ void RigidBody::cleanupBuffers() {
     glDeleteVertexArrays(1, &VAO);
 }
 
-void RigidBody::draw() const
+void RigidBody::draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Program> p)
 {
+    this->setProgram(p);
+    glUniform3f(prog->getUniform("ka"), 0.1f, 0.1f, 0.1f);
+    glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
+    glUniform1f(prog->getUniform("s"), 200.0f);
+    MV->pushMatrix();
+    MV->translate(x(0), x(1), x(2));
+    MV->scale(1.0);
+
+    glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
+
     assert(prog);
     glBindVertexArray(VAO);
     int h_pos = prog->getAttribute("aPos");
@@ -183,4 +240,6 @@ void RigidBody::draw() const
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
     GLSL::checkError(GET_FILE_LINE);
+
+    MV->popMatrix();
 }

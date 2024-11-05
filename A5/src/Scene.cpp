@@ -86,7 +86,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 {
 
 	gravity = std::make_shared<Gravity>(Eigen::Vector3d(0.0, -9.8, 0.0));
-	forceFields.push_back(gravity);
+//	forceFields.push_back(gravity);
     spheres.clear();
     meshData.clear();
     textureData.clear();
@@ -109,7 +109,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         }
 
         for(const auto &mesh : rigidBodyData) {
-            auto rigidBody = make_shared<RigidBody>();
+            auto rigidBody = make_shared<RigidBody>(1.0, Eigen::Vector3d(), Eigen::Vector3d(), Eigen::Vector3d());
             rigidBodies.push_back(rigidBody);
             rigidBody->loadMesh(DATA_DIR + mesh[0]);
             rigidBody->setTextureFilename(mesh[1]);
@@ -177,6 +177,10 @@ void Scene::reset()
         sphere->x = sphere->x0;
         sphere->v = sphere->v0;
     }
+
+    for (const auto & rigidBody : rigidBodies) {
+        rigidBody->reset();
+    }
 }
 
 void Scene::step(std::ofstream &outputFile, bool writeToFile)
@@ -197,6 +201,10 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
 //                s->step(h, forceFields, simParams);
 //            }
 //        }
+    }
+
+    for (int i = 0; i < rigidBodies.size(); ++i) {
+        rigidBodies[i]->step(h, forceFields, simParams);
     }
 
     /*
@@ -240,11 +248,11 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
     for(const auto &rigidBody : rigidBodies) {
         textureMap.at(rigidBody->getTextureFilename())->bind(prog->getUniform("kdTex"));
         glLineWidth(1.0f); // for wireframe
-        glUniform3f(prog->getUniform("ka"), 0.1f, 0.1f, 0.1f);
-        glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
-        glUniform1f(prog->getUniform("s"), 200.0f);
-        rigidBody->setProgram(prog);
-        rigidBody->draw();
+//        glUniform3f(prog->getUniform("ka"), 0.1f, 0.1f, 0.1f);
+//        glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
+//        glUniform1f(prog->getUniform("s"), 200.0f);
+//        rigidBody->setProgram(prog);
+        rigidBody->draw(MV, prog);
         textureMap.at(rigidBody->getTextureFilename())->unbind();
     }
 
