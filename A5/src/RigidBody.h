@@ -18,6 +18,7 @@ class Program;
 class Polygon;
 class IForceField;
 struct SimParams;
+class Shape;
 
 class RigidBody {
 public:
@@ -37,11 +38,16 @@ public:
     void reset();
 
     void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams);
+    void detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams);
 private:
+    void computeAABB();
     void computeMomentOfInertia();
     glm::mat4 convertToGLMMat(Eigen::Matrix3d mat);
+    bool intersectsTri(Polygon p, Eigen::Vector3d pt, Eigen::Vector3d ray);
 protected:
     double mass;
+    double massInv;
+    bool collided = false;
 
     Eigen::Vector3d x0;
     Eigen::Vector3d x;
@@ -52,7 +58,13 @@ protected:
     Eigen::Matrix3d R;
     Eigen::Matrix3d R0;
 
+    Eigen::Matrix3d I0;
     Eigen::Matrix3d I;
+    Eigen::Matrix3d I0inv;
+    Eigen::Matrix3d Iinv;
+
+    // AABB
+    double xMin, xMax, yMin, yMax, zMin, zMax;
 
     std::string meshFilename;
     std::string textureFilename;

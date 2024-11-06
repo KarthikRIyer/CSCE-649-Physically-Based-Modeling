@@ -133,7 +133,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             Eigen::Vector3d pos(std::stod(mesh[2]), std::stod(mesh[3]), std::stod(mesh[4]) );
             Eigen::Vector3d v(std::stod(mesh[5]), std::stod(mesh[6]), std::stod(mesh[7]) );
             Eigen::Vector3d angV(std::stod(mesh[8]), std::stod(mesh[9]), std::stod(mesh[10]) );
-
+//            std::cout<<"v init: "<<v.transpose()<<"\n";
             auto rigidBody = std::make_shared<RigidBody>(1.0, pos,
                                                     v, angV);
             rigidBodies.push_back(rigidBody);
@@ -230,6 +230,7 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
     }
 
     for (int i = 0; i < rigidBodies.size(); ++i) {
+        rigidBodies[i]->detectCollision(h, shapes, simParams);
         rigidBodies[i]->step(h, forceFields, simParams);
     }
 
