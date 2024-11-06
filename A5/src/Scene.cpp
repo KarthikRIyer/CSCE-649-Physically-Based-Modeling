@@ -64,6 +64,27 @@ void Scene::loadDataInputFile(const std::string &DATA_DIR, const std::string &FI
             ss >> value;
             mesh.push_back(value); // texture
             ss >> value;
+
+            mesh.push_back(value); // pos x
+            ss >> value;
+            mesh.push_back(value); // pos y
+            ss >> value;
+            mesh.push_back(value); // pos z
+            ss >> value;
+
+            mesh.push_back(value); // v x
+            ss >> value;
+            mesh.push_back(value); // v y
+            ss >> value;
+            mesh.push_back(value); // v z
+            ss >> value;
+
+            mesh.push_back(value); // angV x
+            ss >> value;
+            mesh.push_back(value); // angV y
+            ss >> value;
+            mesh.push_back(value); // angV z
+            ss >> value;
             rigidBodyData.push_back(mesh);
         } else {
             cout << "Unknown key word: " << key << endl;
@@ -109,8 +130,12 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         }
 
         for(const auto &mesh : rigidBodyData) {
-            auto rigidBody = make_shared<RigidBody>(1.0, Eigen::Vector3d(),
-                                                    Eigen::Vector3d(0, 0, 0), Eigen::Vector3d(0.0, 1.0, 0.0));
+            Eigen::Vector3d pos(std::stod(mesh[2]), std::stod(mesh[3]), std::stod(mesh[4]) );
+            Eigen::Vector3d v(std::stod(mesh[5]), std::stod(mesh[6]), std::stod(mesh[7]) );
+            Eigen::Vector3d angV(std::stod(mesh[8]), std::stod(mesh[9]), std::stod(mesh[10]) );
+
+            auto rigidBody = std::make_shared<RigidBody>(1.0, pos,
+                                                    v, angV);
             rigidBodies.push_back(rigidBody);
             rigidBody->loadMesh(DATA_DIR + mesh[0]);
             rigidBody->setTextureFilename(mesh[1]);
