@@ -71,6 +71,15 @@ void RigidBody::loadObj(const string &filename, vector<float> &pos, vector<float
     if(!ret) {
         return;
     }
+    // Loop over vertices
+    for (size_t s = 0; s < attrib.vertices.size()/3; s++) {
+        float px = attrib.vertices[3*s + 0];
+        float py = attrib.vertices[3*s + 1];
+        float pz = attrib.vertices[3*s + 2];
+        vertices.push_back(Eigen::Vector3d(px, py, pz));
+        vertices0.push_back(Eigen::Vector3d(px, py, pz));
+        verticesTemp.push_back(Eigen::Vector3d(px, py, pz));
+    }
     // Loop over shapes
     for (size_t s = 0; s < shapes.size(); s++) {
         // Loop over faces(polygon)
@@ -89,6 +98,7 @@ void RigidBody::loadObj(const string &filename, vector<float> &pos, vector<float
                 polygon.addPoint(attrib.vertices[3*idx.vertex_index+0],
                                  attrib.vertices[3*idx.vertex_index+1],
                                  attrib.vertices[3*idx.vertex_index+2]);
+                polygon.addPoint(idx.vertex_index);
 
                 if(!attrib.normals.empty() && loadNor) {
                     nor.push_back(attrib.normals[3*idx.normal_index+0]);
@@ -102,6 +112,7 @@ void RigidBody::loadObj(const string &filename, vector<float> &pos, vector<float
             }
             polygons.push_back(polygon);
             polygons0.push_back(polygon);
+            polygonsTemp.push_back(polygon);
             index_offset += fv;
         }
     }
@@ -115,24 +126,39 @@ void RigidBody::computeAABB() {
     xMax = DBL_MIN;
     yMax = DBL_MIN;
     zMax = DBL_MIN;
-    for (int i = 0; i < polygons.size(); ++i) {
-        for (int j = 0; j < polygons[i].points.size(); ++j) {
-            Eigen::Vector3d p = polygons[i].points[j];
-            xMin = std::min(xMin, p.x());
-            yMin = std::min(yMin, p.y());
-            zMin = std::min(zMin, p.z());
-            xMax = std::max(xMax, p.x());
-            yMax = std::max(yMax, p.y());
-            zMax = std::max(zMax, p.z());
-        }
+    for (int i = 0; i < vertices.size(); ++i) {
+        Eigen::Vector3d p = vertices[i];
+        xMin = std::min(xMin, p.x());
+        yMin = std::min(yMin, p.y());
+        zMin = std::min(zMin, p.z());
+        xMax = std::max(xMax, p.x());
+        yMax = std::max(yMax, p.y());
+        zMax = std::max(zMax, p.z());
     }
+//    for (int i = 0; i < polygons.size(); ++i) {
+//        for (int j = 0; j < polygons[i].points.size(); ++j) {
+//            Eigen::Vector3d p = polygons[i].points[j];
+//            xMin = std::min(xMin, p.x());
+//            yMin = std::min(yMin, p.y());
+//            zMin = std::min(zMin, p.z());
+//            xMax = std::max(xMax, p.x());
+//            yMax = std::max(yMax, p.y());
+//            zMax = std::max(zMax, p.z());
+//        }
+//    }
 }
 
 
 // from https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/moller-trumbore-ray-triangle-intersection.html
 bool RigidBody::intersectsTri(Polygon p, Eigen::Vector3d pt, Eigen::Vector3d ray) {
-    Eigen::Vector3d edge1 = p.points[1] - p.points[0];
-    Eigen::Vector3d edge2 = p.points[2] - p.points[0];
+    Eigen::Vector3d p0 = vertices[p.vertIndices[0]];
+    Eigen::Vector3d p1 = vertices[p.vertIndices[1]];
+    Eigen::Vector3d p2 = vertices[p.vertIndices[2]];
+
+//    Eigen::Vector3d edge1 = p.points[1] - p.points[0];
+//    Eigen::Vector3d edge2 = p.points[2] - p.points[0];
+    Eigen::Vector3d edge1 = p1 - p0;
+    Eigen::Vector3d edge2 = p2 - p0;
 
     Eigen::Vector3d pVec = ray.cross(edge2);
     double det = edge1.dot(pVec);
@@ -142,8 +168,9 @@ bool RigidBody::intersectsTri(Polygon p, Eigen::Vector3d pt, Eigen::Vector3d ray
 
     double invDet = 1.0 / det;
 
-    Eigen::Vector3d tVec = pt - p.points[0];
-    
+//    Eigen::Vector3d tVec = pt - p.points[0];
+    Eigen::Vector3d tVec = pt - p0;
+
     double u = tVec.dot(pVec) * invDet;
     
     if (u < 0 || u > 1) {
@@ -160,7 +187,36 @@ bool RigidBody::intersectsTri(Polygon p, Eigen::Vector3d pt, Eigen::Vector3d ray
     return true;
 }
 
+void RigidBody::initObjWithRot() {
+    for (int i = 0; i < vertices.size(); ++i) {
+        vertices0[i] = R * vertices0[i];
+        vertices[i] = vertices0[i];
+        verticesTemp[i] = vertices0[i];
+    }
+    for (int i = 0; i < polygons.size(); ++i) {
+        for (int j = 0; j < polygons[i].points.size(); ++j) {
+            polygons0[i].points[j] =  (R * polygons0[i].points[j]);
+            polygons[i].points[j] =  polygons0[i].points[j];
+            polygonsTemp[i].points[j] =  polygons0[i].points[j];
+        }
+    }
+}
+
+void RigidBody::initObjWithLoc() {
+    for (int i = 0; i < vertices.size(); ++i) {
+        vertices[i] = vertices0[i] + x;
+        verticesTemp[i] = vertices0[i];
+    }
+    for (int i = 0; i < polygons.size(); ++i) {
+        for (int j = 0; j < polygons[i].points.size(); ++j) {
+            polygons[i].points[j] =  polygons0[i].points[j] + x;
+            polygonsTemp[i].points[j] =  polygons[i].points[j];
+        }
+    }
+}
+
 void RigidBody::computeMomentOfInertia() {
+    initObjWithRot();
     computeAABB();
     Eigen::Vector3d minPt(xMin, yMin, zMin);
     double spacing = 1e-2;
@@ -209,23 +265,25 @@ void RigidBody::computeMomentOfInertia() {
     I0 = R * I0 * R.transpose();
     I = I0;
     I0inv = I0.inverse();
-    I0inv = R * I0inv * R.transpose();
     Iinv = I0inv;
+
+    initObjWithLoc();
 }
 
 void RigidBody::reset() {
-    for (int i = 0; i < polygons.size(); ++i) {
-        for (int j = 0; j < polygons[i].points.size(); ++j) {
-            polygons[i].points[j] =  polygons0[i].points[j];
-        }
-    }
+//    for (int i = 0; i < polygons.size(); ++i) {
+//        for (int j = 0; j < polygons[i].points.size(); ++j) {
+//            polygons[i].points[j] =  polygons0[i].points[j];
+//            polygonsTemp[i].points[j] =  polygons0[i].points[j];
+//        }
+//    }
     x = x0;
     v = v0;
     angV = angV0;
     R = R0;
     I = I0;
     Iinv = I0inv;
-    collided = false;
+    initObjWithLoc();
 }
 
 inline glm::mat4 RigidBody::convertToGLMMat(Eigen::Matrix3d rot) {
@@ -238,39 +296,146 @@ inline glm::mat4 RigidBody::convertToGLMMat(Eigen::Matrix3d rot) {
     return glmR;
 }
 
+double RigidBody::sgn(double x) {
+    if (x > 0) return 1;
+    if (x < 0) return -1;
+    return 0;
+}
+
+bool RigidBody::pointTriCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, CollisionData& collData) {
+    for (int i = 0; i < polygonsTemp.size(); ++i) {
+        for (int j = 0; j < polygonsTemp[i].points.size(); ++j) {
+
+//            Eigen::Vector3d pt = polygonsTemp[i].points[j];
+//            Eigen::Vector3d ptNew = polygons[i].points[j];
+
+            Eigen::Vector3d pt = verticesTemp[polygons[i].vertIndices[j]];
+            Eigen::Vector3d ptNew = vertices[polygons[i].vertIndices[j]];
+
+            for (auto shape: shapes) {
+                if (!shape->getObstacle())
+                    continue;
+
+                for (Polygon p: shape->getPolygons()) {
+                    Eigen::Vector3d P = p.points[0];
+                    Eigen::Vector3d Q = p.points[1];
+                    Eigen::Vector3d R = p.points[2];
+
+                    Eigen::Vector3d u = Q - P;
+                    Eigen::Vector3d v = R - P;
+                    Eigen::Vector3d n = u.cross(v);
+                    n.normalize();
+                    if (n.norm() == 0) continue;
+
+                    double pn = P.dot(n);
+                    double d0 = (n.dot(pt) - pn);
+                    double d1 = (n.dot(ptNew) - pn);
+
+                    if (sgn(d0) * sgn(d1) >= 0) continue;
+
+                    Eigen::Vector3d dir = ptNew - pt;
+                    dir.normalize();
+                    double t = (pn - n.dot(pt))/(n.dot(dir));
+                    Eigen::Vector3d xColl = pt + (t * dir);
+
+                    // check if point is inside polygon by projecting along axis with highest normal value
+                    Eigen::Vector3d Pproj, Qproj, Rproj, xCollProj;
+                    if (std::abs(n.x()) >= std::max(std::abs(n.y()), std::abs(n.z()))) {
+                        Pproj = Eigen::Vector3d(P.y(), P.z(), 0.0);
+                        Qproj = Eigen::Vector3d(Q.y(), Q.z(), 0.0);
+                        Rproj = Eigen::Vector3d(R.y(), R.z(), 0.0);
+                        xCollProj = Eigen::Vector3d(xColl.y(), xColl.z(), 0.0);
+                    } else if (std::abs(n.y()) >= std::max(std::abs(n.x()), std::abs(n.z()))) {
+                        Pproj = Eigen::Vector3d(P.z(), P.x(), 0.0);
+                        Qproj = Eigen::Vector3d(Q.z(), Q.x(), 0.0);
+                        Rproj = Eigen::Vector3d(R.z(), R.x(), 0.0);
+                        xCollProj = Eigen::Vector3d(xColl.z(), xColl.x(), 0.0);
+                    } else {
+                        Pproj = Eigen::Vector3d(P.x(), P.y(), 0.0);
+                        Qproj = Eigen::Vector3d(Q.x(), Q.y(), 0.0);
+                        Rproj = Eigen::Vector3d(R.x(), R.y(), 0.0);
+                        xCollProj = Eigen::Vector3d(xColl.x(), xColl.y(), 0.0);
+                    }
+
+                    Eigen::Vector3d edge1Proj = (Pproj - Qproj);
+                    Eigen::Vector3d edge2Proj = (Pproj - Rproj);
+                    Eigen::Vector3d areaProj = edge1Proj.cross(edge2Proj);
+                    double S = 0.5 * areaProj.norm() * (areaProj.z() / std::abs(areaProj.z()));
+                    Eigen::Vector3d AaVec = (Qproj - xCollProj).cross(Rproj - xCollProj);
+                    double Aa = 0.5 * AaVec.norm() * (AaVec.z()/std::abs(AaVec.z()));
+                    Eigen::Vector3d AbVec = (Rproj - xCollProj).cross(Pproj - xCollProj);
+                    double Ab = 0.5 * AbVec.norm() * (AbVec.z()/std::abs(AbVec.z()));
+                    Eigen::Vector3d AcVec = (Pproj - xCollProj).cross(Qproj - xCollProj);
+                    double Ac = 0.5 * AcVec.norm() * (AcVec.z()/std::abs(AcVec.z()));
+                    double a = Aa/S;
+                    double b = Ab/S;
+                    double c = Ac/S;
+
+                    if (a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
+                        collData.xColl = xColl;
+                        collData.nColl = n;
+                        collData.corrVec = xColl - ptNew;
+                        std::cout<<"Collision!\n";
+                        std::cout<<"xColl: "<<xColl.transpose()<<"\n";
+                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
+                        return true;
+                    } else {
+                        continue;
+                    }
+                }
+            }
+
+        }
+    }
+    return false;
+}
+
 void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams) {
-    if (!collided) {
-        std::cout<<"Here!\n";
-        std::cout<<"I:\n"<< I<< "\n";
-        std::cout<<"Iinv:\n"<< Iinv<< "\n";
+//    std::cout << "Here!\n";
+//    std::cout << "I:\n" << I << "\n";
+//    std::cout << "Iinv:\n" << Iinv << "\n";
 
-        // for testing
-        Eigen::Vector3d collPt(1, 1, -1);
-        Eigen::Vector3d nColl(0, 1, 0);
+    CollisionData collData;
+    bool collided = pointTriCollision(h, shapes, simParams, collData);
+    if (!collided)
+        return;
+//    return;
+    // for testing
+//    Eigen::Vector3d collPt(1, 1, -1);
+//    Eigen::Vector3d nColl(0, 1, 0);
+    Eigen::Vector3d collPt = collData.xColl;
+    Eigen::Vector3d nColl = collData.nColl;
 
-        // calc coll pos in c.o.m. frame
-        Eigen::Vector3d rColl = collPt - x;
+    // calc coll pos in c.o.m. frame
+    Eigen::Vector3d rColl = collPt - x;
 
-        Eigen::Vector3d vCollPt = v + angV.cross(rColl);
-        double vCollPtNor = vCollPt.dot(nColl);
+    Eigen::Vector3d vCollPt = v + angV.cross(rColl);
+    double vCollPtNor = vCollPt.dot(nColl);
 
-        Iinv = R * I0inv * R.transpose();
+    Iinv = R * I0inv * R.transpose();
 
-        double jDen = massInv + nColl.dot(Iinv * (rColl.cross(nColl).cross(rColl)));
-        double jn = (-(1.0 + simParams.restitutionCoefficient) * vCollPtNor) / jDen;
+    double jDen = massInv + nColl.dot((Iinv * (rColl.cross(nColl)).cross(rColl)));
+    double jn = (-(1.0 + simParams.restitutionCoefficient) * vCollPtNor) / jDen;
 
-        // for testing
+    // for testing
 //        jn = 0.0;
 
-        Eigen::Vector3d deltaAngV = jn * Iinv * (rColl.cross(nColl));
-        std::cout<<"deltaAngV: "<<deltaAngV.transpose()<<"\n";
-        angV += deltaAngV;
-        std::cout<<"angV: "<<angV.transpose()<<"\n";
-        Eigen::Vector3d deltaV = massInv * jn * nColl;
-        v += deltaV;
+    Eigen::Vector3d deltaAngV = jn * Iinv * (rColl.cross(nColl));
+    std::cout << "I: \n" << I << "\n";
+    std::cout << "Iinv: \n" << Iinv << "\n";
+    std::cout << "deltaAngV: " << deltaAngV.transpose() << "\n";
+    std::cout << "vn bef: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
+    angV += deltaAngV;
+    std::cout << "angV: " << angV.transpose() << "\n";
+    Eigen::Vector3d deltaV = massInv * jn * nColl;
+    std::cout << "v bef: " << v.transpose() << "\n";
+    v += deltaV;
+    std::cout << "deltaV: " << deltaV.transpose() << "\n";
+    std::cout << "v aft: " << v.transpose() << "\n";
+    std::cout << "vn aft: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
 
-        collided = true;
-    }
+
+    x += ((1 + 1e-2) * collData.corrVec);
 }
 
 void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
@@ -296,8 +461,14 @@ void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
 
     for (int i = 0; i < polygons.size(); ++i) {
         for (int j = 0; j < polygons[i].points.size(); ++j) {
+            polygonsTemp[i].points[j] =  polygons[i].points[j];
             polygons[i].points[j] =  (R * polygons0[i].points[j]) + x;
         }
+    }
+
+    for (int i = 0; i < vertices.size(); ++i) {
+        verticesTemp[i] = vertices[i];
+        vertices[i] = (R * vertices0[i]) + x;
     }
 
 }

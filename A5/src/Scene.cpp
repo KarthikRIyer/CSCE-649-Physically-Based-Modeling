@@ -107,7 +107,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 {
 
 	gravity = std::make_shared<Gravity>(Eigen::Vector3d(0.0, -9.8, 0.0));
-//	forceFields.push_back(gravity);
+	forceFields.push_back(gravity);
     spheres.clear();
     meshData.clear();
     textureData.clear();
@@ -230,8 +230,8 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
     }
 
     for (int i = 0; i < rigidBodies.size(); ++i) {
-        rigidBodies[i]->detectCollision(h, shapes, simParams);
         rigidBodies[i]->step(h, forceFields, simParams);
+        rigidBodies[i]->detectCollision(h, shapes, simParams);
     }
 
     /*

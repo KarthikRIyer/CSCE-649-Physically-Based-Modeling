@@ -11,3 +11,7 @@ Polygon::Polygon() {
 void Polygon::addPoint(float x, float y, float z) {
     points.emplace_back(x, y, z);
 }
+
+void Polygon::addPoint(int index) {
+    vertIndices.push_back(index);
+}

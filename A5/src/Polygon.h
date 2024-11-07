@@ -13,8 +13,10 @@ class Polygon {
 public:
     Polygon();
     void addPoint(float x, float y, float z);
+    void addPoint(int index);
 
     std::vector<Eigen::Vector3d> points;
+    std::vector<int> vertIndices;
 };
 
 

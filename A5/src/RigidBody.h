@@ -20,6 +20,12 @@ class IForceField;
 struct SimParams;
 class Shape;
 
+struct CollisionData {
+    Eigen::Vector3d xColl;
+    Eigen::Vector3d nColl;
+    Eigen::Vector3d corrVec;
+};
+
 class RigidBody {
 public:
     RigidBody(double m, Eigen::Vector3d pos, Eigen::Vector3d v, Eigen::Vector3d angV);
@@ -40,14 +46,17 @@ public:
     void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams);
     void detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams);
 private:
+    void initObjWithRot();
+    void initObjWithLoc();
     void computeAABB();
     void computeMomentOfInertia();
     glm::mat4 convertToGLMMat(Eigen::Matrix3d mat);
     bool intersectsTri(Polygon p, Eigen::Vector3d pt, Eigen::Vector3d ray);
+    bool pointTriCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, CollisionData& collData);
+    double sgn(double x);
 protected:
     double mass;
     double massInv;
-    bool collided = false;
 
     Eigen::Vector3d x0;
     Eigen::Vector3d x;
@@ -74,7 +83,11 @@ protected:
     std::vector<float> texBuf;
     bool isObstacle;
     std::vector<Polygon> polygons0;
+    std::vector<Polygon> polygonsTemp;
     std::vector<Polygon> polygons;
+    std::vector<Eigen::Vector3d> verticesTemp;
+    std::vector<Eigen::Vector3d> vertices0;
+    std::vector<Eigen::Vector3d> vertices;
     GLuint VAO;
     GLuint posBufID;
     GLuint norBufID;
