@@ -260,14 +260,14 @@ void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& 
         double jn = (-(1.0 + simParams.restitutionCoefficient) * vCollPtNor) / jDen;
 
         // for testing
-        jn = 1.0;
+//        jn = 0.0;
 
         Eigen::Vector3d deltaAngV = jn * Iinv * (rColl.cross(nColl));
         std::cout<<"deltaAngV: "<<deltaAngV.transpose()<<"\n";
         angV += deltaAngV;
         std::cout<<"angV: "<<angV.transpose()<<"\n";
-//        Eigen::Vector3d deltaV = massInv * jn * nColl;
-//        v += deltaV;
+        Eigen::Vector3d deltaV = massInv * jn * nColl;
+        v += deltaV;
 
         collided = true;
     }
