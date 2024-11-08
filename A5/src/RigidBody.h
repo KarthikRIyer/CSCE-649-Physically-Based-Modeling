@@ -82,8 +82,8 @@ protected:
     std::vector<float> norBuf;
     std::vector<float> texBuf;
     bool isObstacle;
-    std::vector<Polygon> polygons0;
-    std::vector<Polygon> polygonsTemp;
+//    std::vector<Polygon> polygons0;
+//    std::vector<Polygon> polygonsTemp;
     std::vector<Polygon> polygons;
     std::vector<Eigen::Vector3d> verticesTemp;
     std::vector<Eigen::Vector3d> vertices0;

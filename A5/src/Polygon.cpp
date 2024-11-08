@@ -6,6 +6,7 @@
 
 Polygon::Polygon() {
     points.clear();
+    vertIndices.clear();
 }
 
 void Polygon::addPoint(float x, float y, float z) {
