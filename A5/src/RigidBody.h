@@ -52,7 +52,7 @@ private:
     void computeMomentOfInertia();
     glm::mat4 convertToGLMMat(Eigen::Matrix3d mat);
     bool intersectsTri(Polygon p, Eigen::Vector3d pt, Eigen::Vector3d ray);
-    bool pointTriCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, CollisionData& collData);
+    bool pointTriCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, std::vector<CollisionData>& collData);
     double sgn(double x);
 protected:
     double mass;

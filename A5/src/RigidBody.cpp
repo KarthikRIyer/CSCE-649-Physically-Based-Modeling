@@ -264,7 +264,8 @@ double RigidBody::sgn(double x) {
     return 0;
 }
 
-bool RigidBody::pointTriCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, CollisionData& collData) {
+bool RigidBody::pointTriCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, std::vector<CollisionData>& collData) {
+    collData.clear();
     for (int i = 0; i < verticesTemp.size(); ++i) {
 
         Eigen::Vector3d pt = verticesTemp[i];
@@ -330,20 +331,22 @@ bool RigidBody::pointTriCollision(double h, std::vector<std::shared_ptr<Shape> >
                 double c = Ac/S;
 
                 if (a >= 0 && a <= 1.0 && b >= 0 && b <= 1 && c >= 0 && c <= 1) { // collision
-                    collData.xColl = xColl;
-                    collData.nColl = n;
-                    collData.corrVec = xColl - ptNew;
+                    CollisionData cData;
+                    cData.xColl = xColl;
+                    cData.nColl = n;
+                    cData.corrVec = xColl - ptNew;
+                    collData.push_back(cData);
                     std::cout<<"Collision!\n";
                     std::cout<<"xColl: "<<xColl.transpose()<<"\n";
                     std::cout<<"nColl: "<<n.transpose()<<"\n\n";
-                    return true;
+//                    return true;
                 } else {
                     continue;
                 }
             }
         }
     }
-    return false;
+    return !collData.empty();
 }
 
 void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams) {
@@ -351,7 +354,8 @@ void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& 
 //    std::cout << "I:\n" << I << "\n";
 //    std::cout << "Iinv:\n" << Iinv << "\n";
 
-    CollisionData collData;
+//    CollisionData collData;
+    std::vector<CollisionData> collData;
     bool collided = pointTriCollision(h, shapes, simParams, collData);
     if (!collided)
         return;
@@ -359,39 +363,47 @@ void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& 
     // for testing
 //    Eigen::Vector3d collPt(1, 1, -1);
 //    Eigen::Vector3d nColl(0, 1, 0);
-    Eigen::Vector3d collPt = collData.xColl;
-    Eigen::Vector3d nColl = collData.nColl;
+    Eigen::Vector3d corrVec(0, 0, 0);
+    for (auto cData: collData) {
+        Eigen::Vector3d collPt = cData.xColl;
+        Eigen::Vector3d nColl = cData.nColl;
 
-    // calc coll pos in c.o.m. frame
-    Eigen::Vector3d rColl = collPt - x;
+        // calc coll pos in c.o.m. frame
+        Eigen::Vector3d rColl = collPt - x;
 
-    Eigen::Vector3d vCollPt = v + angV.cross(rColl);
-    double vCollPtNor = vCollPt.dot(nColl);
+        Eigen::Vector3d vCollPt = v + angV.cross(rColl);
+        double vCollPtNor = vCollPt.dot(nColl);
 
-    Iinv = R * I0inv * R.transpose();
+        Iinv = R * I0inv * R.transpose();
 
-    double jDen = massInv + nColl.dot((Iinv * (rColl.cross(nColl)).cross(rColl)));
-    double jn = (-(1.0 + simParams.restitutionCoefficient) * vCollPtNor) / jDen;
+        double jDen = massInv + nColl.dot((Iinv * (rColl.cross(nColl)).cross(rColl)));
+        double jn = (-(1.0 + simParams.restitutionCoefficient) * vCollPtNor) / jDen;
 
-    // for testing
+        // for testing
 //        jn = 0.0;
 
-    Eigen::Vector3d deltaAngV = jn * Iinv * (rColl.cross(nColl));
-    std::cout << "I: \n" << I << "\n";
-    std::cout << "Iinv: \n" << Iinv << "\n";
-    std::cout << "deltaAngV: " << deltaAngV.transpose() << "\n";
-    std::cout << "vn bef: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
-    angV += deltaAngV;
-    std::cout << "angV: " << angV.transpose() << "\n";
-    Eigen::Vector3d deltaV = massInv * jn * nColl;
-    std::cout << "v bef: " << v.transpose() << "\n";
-    v += deltaV;
-    std::cout << "deltaV: " << deltaV.transpose() << "\n";
-    std::cout << "v aft: " << v.transpose() << "\n";
-    std::cout << "vn aft: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
-
-
-    x += ((1 + 1e-2) * collData.corrVec);
+        Eigen::Vector3d deltaAngV = jn * Iinv * (rColl.cross(nColl));
+        std::cout << "I: \n" << I << "\n";
+        std::cout << "Iinv: \n" << Iinv << "\n";
+        std::cout << "deltaAngV: " << deltaAngV.transpose() << "\n";
+        std::cout << "vn bef: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
+        angV += deltaAngV;
+        std::cout << "angV: " << angV.transpose() << "\n";
+        Eigen::Vector3d deltaV = massInv * jn * nColl;
+        std::cout << "v bef: " << v.transpose() << "\n";
+        v += deltaV;
+        std::cout << "deltaV: " << deltaV.transpose() << "\n";
+        std::cout << "v aft: " << v.transpose() << "\n";
+        std::cout << "vn aft: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
+        corrVec += cData.corrVec;
+    }
+    std::cout<<"collDataSize: "<<collData.size()<<"\n";
+    corrVec /= collData.size();
+    x += ((1 + 1e-2) * corrVec);
+    for (int i = 0; i < vertices.size(); ++i) {
+//        verticesTemp[i] = vertices[i];
+        vertices[i] = (R * vertices0[i]) + x;
+    }
 }
 
 void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
