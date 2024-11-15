@@ -363,7 +363,9 @@ void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& 
     // for testing
 //    Eigen::Vector3d collPt(1, 1, -1);
 //    Eigen::Vector3d nColl(0, 1, 0);
-    Eigen::Vector3d corrVec(0, 0, 0);
+    double corrVecX = 0;
+    double corrVecY = 0;
+    double corrVecZ = 0;
     for (auto cData: collData) {
         Eigen::Vector3d collPt = cData.xColl;
         Eigen::Vector3d nColl = cData.nColl;
@@ -395,10 +397,19 @@ void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& 
         std::cout << "deltaV: " << deltaV.transpose() << "\n";
         std::cout << "v aft: " << v.transpose() << "\n";
         std::cout << "vn aft: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
-        corrVec += cData.corrVec;
+
+        if (std::abs(cData.corrVec.x()) > std::abs(corrVecX))
+            corrVecX = cData.corrVec.x();
+        if (std::abs(cData.corrVec.y()) > std::abs(corrVecY))
+            corrVecY = cData.corrVec.y();
+        if (std::abs(cData.corrVec.z()) > std::abs(corrVecZ))
+            corrVecZ = cData.corrVec.z();
+
+//        corrVec += cData.corrVec;
     }
     std::cout<<"collDataSize: "<<collData.size()<<"\n";
-    corrVec /= collData.size();
+    Eigen::Vector3d corrVec(corrVecX, corrVecY, corrVecZ);
+//    corrVec /= collData.size();
     x += ((1 + 1e-2) * corrVec);
     for (int i = 0; i < vertices.size(); ++i) {
 //        verticesTemp[i] = vertices[i];
