@@ -235,6 +235,8 @@ void RigidBody::computeMomentOfInertia() {
     I0inv = I0.inverse();
     Iinv = I0inv;
 
+    std::cout<<"I: \n";
+    std::cout<<I<<"\n";
     initObjWithLoc();
 }
 
@@ -484,9 +486,13 @@ void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
             angV.z(), 0, -angV.x(),
             -angV.y(), angV.x(), 0;
     R += h * (wstar * R);
-    R.col(0).normalize();
-    R.col(1).normalize();
-    R.col(2).normalize();
+//    R.col(0).normalize();
+//    R.col(1).normalize();
+//    R.col(2).normalize();
+
+    R.row(0).normalize();
+    R.row(1).normalize();
+    R.row(2).normalize();
 //    std::cout<<"x: "<<x.transpose()<<"\n";
 
     for (int i = 0; i < vertices.size(); ++i) {

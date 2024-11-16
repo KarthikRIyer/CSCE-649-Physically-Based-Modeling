@@ -152,7 +152,48 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->init();
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
-	}
+	} else if (sceneIndex == 1) {
+        sphereShape = make_shared<Shape>();
+        sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
+
+        loadDataInputFile(DATA_DIR, "inputbox.txt");
+
+        // Create shapes
+        for(const auto &mesh : meshData) {
+            auto shape = make_shared<Shape>();
+            shapes.push_back(shape);
+            shape->loadMesh(DATA_DIR + mesh[0]);
+            shape->setTextureFilename(mesh[1]);
+            bool isObstacle = (mesh[2] == "true");
+            std::cout<<"isObstacle: "<<mesh[2]<<"\n";
+            shape->setObstacle(isObstacle);
+            shape->init();
+        }
+
+        for(const auto &mesh : rigidBodyData) {
+            Eigen::Vector3d pos(std::stod(mesh[2]), std::stod(mesh[3]), std::stod(mesh[4]) );
+            Eigen::Vector3d v(std::stod(mesh[5]), std::stod(mesh[6]), std::stod(mesh[7]) );
+            Eigen::Vector3d angV(std::stod(mesh[8]), std::stod(mesh[9]), std::stod(mesh[10]) );
+//            std::cout<<"v init: "<<v.transpose()<<"\n";
+            auto rigidBody = std::make_shared<RigidBody>(1.0, pos,
+                                                         v, angV);
+            rigidBodies.push_back(rigidBody);
+            rigidBody->loadMesh(DATA_DIR + mesh[0]);
+            rigidBody->setTextureFilename(mesh[1]);
+            rigidBody->setObstacle(true);
+            rigidBody->init();
+        }
+
+
+        for(const auto &filename : textureData) {
+            auto textureKd = make_shared<Texture>();
+            textureMap[filename] = textureKd;
+            textureKd->setFilename(DATA_DIR + filename);
+            textureKd->setUnit(texUnit); // Bind to unit 1
+            textureKd->init();
+            textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
+        }
+    }
 
     sphereTexture = make_shared<Texture>();
     sphereTexture->setFilename(DATA_DIR + "white.png");
