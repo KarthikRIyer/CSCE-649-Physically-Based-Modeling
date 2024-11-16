@@ -2,5 +2,5 @@
 # - TEXTURE <texture file>
 # - MESH <obj file> <texture file>
 TEXTURE grey.jpg
-MESH plane.obj grey.jpg true
-RB cube.obj grey.jpg 0 5 0 0 0 0 0 0 0
+MESH largeplane.obj grey.jpg true
+RB cube.obj grey.jpg 5 5 0 0 0 0 0 0 0

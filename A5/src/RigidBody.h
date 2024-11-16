@@ -24,6 +24,8 @@ struct CollisionData {
     Eigen::Vector3d xColl;
     Eigen::Vector3d nColl;
     Eigen::Vector3d corrVec;
+    Eigen::Vector3d deltaV;
+    Eigen::Vector3d deltaAngV;
 };
 
 class RigidBody {
@@ -44,7 +46,7 @@ public:
     void reset();
 
     void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams);
-    void detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams);
+    void detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, std::vector<Eigen::Vector3d> &c);
 private:
     void initObjWithRot();
     void initObjWithLoc();

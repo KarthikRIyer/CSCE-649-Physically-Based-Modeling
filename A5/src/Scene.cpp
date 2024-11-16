@@ -160,6 +160,11 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
     sphereTexture->init();
     sphereTexture->setWrapModes(GL_REPEAT, GL_REPEAT);
 
+    for (int i = 0; i < 100; ++i) {
+        Particle p(sphereShape, true);
+        p.x = Eigen::Vector3d(0, 0, 0);
+        particles.push_back(p);
+    }
 }
 
 void Scene::init()
@@ -229,9 +234,13 @@ void Scene::step(std::ofstream &outputFile, bool writeToFile)
 //        }
     }
 
+    cX.clear();
     for (int i = 0; i < rigidBodies.size(); ++i) {
         rigidBodies[i]->step(h, forceFields, simParams);
-        rigidBodies[i]->detectCollision(h, shapes, simParams);
+        rigidBodies[i]->detectCollision(h, shapes, simParams, cX);
+    }
+    for (int i = 0; i < cX.size(); ++i) {
+        particles[i].x = cX[i];
     }
 
     /*
@@ -271,6 +280,10 @@ void Scene::draw(std::shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog
         shape->draw();
         textureMap.at(shape->getTextureFilename())->unbind();
     }
+
+//    for (int i = 0; i < cX.size(); ++i) {
+//        particles[i].draw(MV, prog);
+//    }
 
     for(const auto &rigidBody : rigidBodies) {
         textureMap.at(rigidBody->getTextureFilename())->bind(prog->getUniform("kdTex"));

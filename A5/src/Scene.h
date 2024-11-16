@@ -57,6 +57,8 @@ private:
 	std::vector< std::shared_ptr<Particle> > spheres;
 
     std::vector<std::shared_ptr<RigidBody> > rigidBodies;
+    std::vector<Particle> particles;
+    std::vector<Eigen::Vector3d> cX;
 
     std::vector<std::shared_ptr<Shape> > shapes;
     std::map<std::string, std::shared_ptr<Texture>> textureMap;
