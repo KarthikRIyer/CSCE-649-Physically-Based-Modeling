@@ -430,16 +430,54 @@ void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& 
     }
 }
 
-void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
+std::pair<Eigen::Vector3d, Eigen::Vector3d> RigidBody::getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, int integrationScheme) {
     Eigen::Vector3d fNet(0,0,0);
     for (const auto & forceField : forceFields) {
         fNet += forceField->getForce(x);
     }
     Eigen::Vector3d acc = fNet / mass;
+
+    if (integrationScheme == 0) { // Euler
+        Eigen::Vector3d vel = v;
+        Eigen::Vector3d a = acc;
+        return std::make_pair(vel, a);
+    } else if (integrationScheme == 1) { // RK4
+        // K1
+        Eigen::Vector3d vk1 = v;
+        Eigen::Vector3d ak1 = acc;
+
+        // K2
+        Eigen::Vector3d vk2 = v + ak1 * h * 0.5;
+        Eigen::Vector3d ak2 = acc;
+
+        // K3
+        Eigen::Vector3d vk3 = v + ak2 * h * 0.5;
+        Eigen::Vector3d ak3 = acc;
+
+        // K4
+        Eigen::Vector3d vk4 = v + ak3 * h;
+        Eigen::Vector3d ak4 = acc;
+
+        Eigen::Vector3d vel = (1.0 / 6.0) * (vk1 + 2 * vk2 + 2 * vk3 + vk4);
+        Eigen::Vector3d a = (1.0 / 6.0) * (ak1 + 2 * ak2 + 2 * ak3 + ak4);
+        return std::make_pair(vel, a);
+    } else if (integrationScheme == 2) { // semi implicit euler
+        Eigen::Vector3d vel = v;
+        Eigen::Vector3d a = acc;
+        vel += a * h;
+        return std::make_pair(vel, a);
+    }
+    return std::make_pair(v, acc);
+}
+
+void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
+    auto velAcc = getVelAcc(h, forceFields, simParams.integrationMethod);
+    Eigen::Vector3d vel = velAcc.first;
+    Eigen::Vector3d acc = velAcc.second;
 //    std::cout<<"v: "<<v.transpose()<<"\n";
 //    std::cout<<"fNet: "<<fNet.transpose()<<"\n";
 //    std::cout<<"acc: "<<acc.transpose()<<"\n";
-    x += h * v;
+    x += h * vel;
     v += h * acc;
     Eigen::Matrix3d wstar;
     wstar << 0, -angV.z(), angV.y(),

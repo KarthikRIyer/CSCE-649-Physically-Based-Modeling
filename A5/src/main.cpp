@@ -49,8 +49,8 @@ int currSceneIndex = 0;
 static const char* currentScene = sceneNames[currSceneIndex];
 int prevSceneIndex = 0;
 
-//const char* integrationMethods[] = {"Explicit Euler", "RK 2", "RK4", "Semi-Implicit Euler"};
-//static const char* currentIntegrationMethod = integrationMethods[simParams.integrationMethod];
+const char* integrationMethods[] = {"Explicit Euler", "RK4", "Semi-Implicit Euler"};
+static const char* currentIntegrationMethod = integrationMethods[simParams.integrationMethod];
 
 // https://stackoverflow.com/questions/41470942/stop-infinite-loop-in-different-thread
 std::atomic<bool> stop_flag;
@@ -225,7 +225,17 @@ void render()
     ImGui::NewFrame();
     ImGui::Begin("Simulation params");
     ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoefficient, 0.0f, 1.0f);
-
+    if (ImGui::BeginCombo("Integration Method", currentIntegrationMethod)) {
+        for (int n = 0; n < IM_ARRAYSIZE(integrationMethods); n++) {
+            bool is_selected = (simParams.integrationMethod == n);
+            if (ImGui::Selectable(integrationMethods[n], is_selected)) {
+                simParams.integrationMethod = n;
+                currentIntegrationMethod = integrationMethods[n];
+            }
+            if (is_selected) ImGui::SetItemDefaultFocus();
+        }
+        ImGui::EndCombo();
+    }
     if (ImGui::BeginCombo("Choose scene", currentScene)) {
         for (int n = 0; n < IM_ARRAYSIZE(sceneNames); n++) {
             bool is_selected = (currentScene == sceneNames[n]);

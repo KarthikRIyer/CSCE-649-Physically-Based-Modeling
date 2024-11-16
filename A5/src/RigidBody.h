@@ -47,6 +47,7 @@ public:
 
     void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams);
     void detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, std::vector<Eigen::Vector3d> &c);
+    std::pair<Eigen::Vector3d, Eigen::Vector3d> getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, int integrationScheme);
 private:
     void initObjWithRot();
     void initObjWithLoc();
