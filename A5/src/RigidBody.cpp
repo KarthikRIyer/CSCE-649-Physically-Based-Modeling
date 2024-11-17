@@ -130,6 +130,14 @@ void RigidBody::loadObj(const string &filename, vector<float> &pos, vector<float
             index_offset += fv;
         }
     }
+
+    for (Polygon p: polygons) {
+        for (int i = 0; i < p.vertIndices.size() - 1; i++) {
+            edges.insert(std::make_pair(p.vertIndices[i], p.vertIndices[i+1]));
+        }
+        edges.insert(std::make_pair(p.vertIndices[p.vertIndices.size()-1], p.vertIndices[0]));
+    }
+
     computeMomentOfInertia();
 }
 

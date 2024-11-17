@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_set>
 
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -26,6 +27,12 @@ struct CollisionData {
     Eigen::Vector3d corrVec;
     Eigen::Vector3d deltaV;
     Eigen::Vector3d deltaAngV;
+};
+
+struct pair_hash {
+    inline std::size_t operator()(const std::pair<int,int> & v) const {
+        return v.first*31+v.second;
+    }
 };
 
 class RigidBody {
@@ -89,6 +96,7 @@ protected:
 //    std::vector<Polygon> polygons0;
 //    std::vector<Polygon> polygonsTemp;
     std::vector<Polygon> polygons;
+    std::unordered_set<std::pair<int, int>, pair_hash> edges;
     std::vector<Eigen::Vector3d> verticesTemp;
     std::vector<Eigen::Vector3d> vertices0;
     std::vector<Eigen::Vector3d> vertices;
