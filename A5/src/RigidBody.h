@@ -31,6 +31,7 @@ struct CollisionData {
 class RigidBody {
 public:
     RigidBody(double m, Eigen::Vector3d pos, Eigen::Vector3d v, Eigen::Vector3d angV);
+    RigidBody(double m, Eigen::Vector3d pos, Eigen::Vector3d v, Eigen::Vector3d angV, Eigen::Matrix3d rotMat);
     virtual ~RigidBody();
     void loadObj(const std::string &filename, std::vector<float> &pos, std::vector<float> &nor, std::vector<float> &tex, bool loadNor = true, bool loadTex = true);
     void loadMesh(const std::string &meshName);

@@ -49,6 +49,25 @@ RigidBody::RigidBody(double m, Eigen::Vector3d pos, Eigen::Vector3d v, Eigen::Ve
     massInv = 1.0 / mass;
 }
 
+RigidBody::RigidBody(double m, Eigen::Vector3d pos, Eigen::Vector3d v, Eigen::Vector3d angV, Eigen::Matrix3d rotMat) :
+        mass(m),
+        x0(pos),
+        x(pos),
+        v0(v),
+        v(v),
+        angV0(angV),
+        angV(angV),
+        prog(NULL),
+        posBufID(0),
+        norBufID(0),
+        texBufID(0),
+        isObstacle(true) {
+    R0 = Eigen::Matrix3d::Identity();
+    R0 *= rotMat;
+    R = R0;
+    massInv = 1.0 / mass;
+}
+
 RigidBody::~RigidBody()
 {
 }
@@ -184,7 +203,6 @@ void RigidBody::initObjWithLoc() {
 }
 
 void RigidBody::computeMomentOfInertia() {
-    initObjWithRot();
     computeAABB();
     Eigen::Vector3d minPt(xMin, yMin, zMin);
     double spacing = 1e-2;
@@ -234,6 +252,8 @@ void RigidBody::computeMomentOfInertia() {
     I = I0;
     I0inv = I0.inverse();
     Iinv = I0inv;
+
+    initObjWithRot();
 
     std::cout<<"I: \n";
     std::cout<<I<<"\n";
@@ -486,13 +506,13 @@ void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
             angV.z(), 0, -angV.x(),
             -angV.y(), angV.x(), 0;
     R += h * (wstar * R);
-//    R.col(0).normalize();
-//    R.col(1).normalize();
-//    R.col(2).normalize();
+    R.col(0).normalize();
+    R.col(1).normalize();
+    R.col(2).normalize();
 
-    R.row(0).normalize();
-    R.row(1).normalize();
-    R.row(2).normalize();
+//    R.row(0).normalize();
+//    R.row(1).normalize();
+//    R.row(2).normalize();
 //    std::cout<<"x: "<<x.transpose()<<"\n";
 
     for (int i = 0; i < vertices.size(); ++i) {
