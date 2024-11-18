@@ -197,16 +197,16 @@ bool RigidBody::intersectsTri(Polygon p, Eigen::Vector3d pt, Eigen::Vector3d ray
 
 void RigidBody::initObjWithRot() {
     for (int i = 0; i < vertices.size(); ++i) {
-        vertices0[i] = R * vertices0[i];
-        vertices[i] = vertices0[i];
-        verticesTemp[i] = vertices0[i];
+//        vertices0[i] = R * vertices0[i];
+        vertices[i] = R * vertices0[i];
+        verticesTemp[i] = vertices[i];
     }
 }
 
 void RigidBody::initObjWithLoc() {
     for (int i = 0; i < vertices.size(); ++i) {
         vertices[i] = vertices0[i] + x;
-        verticesTemp[i] = vertices0[i];
+        verticesTemp[i] = vertices[i];
     }
 }
 
@@ -261,11 +261,14 @@ void RigidBody::computeMomentOfInertia() {
     I0inv = I0.inverse();
     Iinv = I0inv;
 
-    initObjWithRot();
-
     std::cout<<"I: \n";
     std::cout<<I<<"\n";
+    initObjWithRot();
     initObjWithLoc();
+//    R = Eigen::Matrix3d::Identity();
+//    R0 = Eigen::Matrix3d::Identity();
+
+//    reset();
 }
 
 void RigidBody::reset() {
@@ -275,6 +278,7 @@ void RigidBody::reset() {
     R = R0;
     I = I0;
     Iinv = I0inv;
+    initObjWithRot();
     initObjWithLoc();
 }
 
@@ -455,7 +459,247 @@ void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& 
 //    corrVec /= collData.size();
     x += ((1 + 1e-2) * corrVec);
     for (int i = 0; i < vertices.size(); ++i) {
-//        verticesTemp[i] = vertices[i];
+        verticesTemp[i] = vertices[i];
+        vertices[i] = (R * vertices0[i]) + x;
+    }
+}
+
+bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, std::vector<CollisionData>& collData) {
+    for (std::pair<int, int> e: edges) {
+        Eigen::Vector3d p0 = vertices[e.first];
+        Eigen::Vector3d p1 = vertices[e.second];
+
+        Eigen::Vector3d p0Temp = verticesTemp[e.first];
+        Eigen::Vector3d p1Temp = verticesTemp[e.second];
+
+        Eigen::Vector3d e1 = p1Temp - p0Temp;
+        Eigen::Vector3d P1 = p0Temp;
+
+        Eigen::Vector3d e1Plus = p1 - p0;
+        Eigen::Vector3d P1Plus = p0;
+
+        for (auto shape: shapes) {
+            if (!shape->getObstacle()) {
+                continue;
+            }
+
+            for (Polygon p: shape->getPolygons()) {
+                Eigen::Vector3d P = p.points[0];
+                Eigen::Vector3d Q = p.points[1];
+                Eigen::Vector3d R = p.points[2];
+
+                // PQ
+                Eigen::Vector3d e2 = Q - P;
+                Eigen::Vector3d n = e1.cross(e2);
+                Eigen::Vector3d q = P - P1;
+                n.normalize();
+                double s = (q.dot(e2.normalized().cross(n))) / (e1.dot(e2.normalized().cross(n)));
+                double t = (-q.dot(e1.normalized().cross(n))) / (e2.dot(e1.normalized().cross(n)));
+
+                Eigen::Vector3d nPlus = e1Plus.cross(e2);
+                nPlus.normalize();
+                Eigen::Vector3d qPlus = P - P1Plus;
+                double sPlus = (qPlus.dot(e2.normalized().cross(nPlus))) / (e1Plus.dot(e2.normalized().cross(nPlus)));
+                double tPlus = (-qPlus.dot(e1Plus.normalized().cross(nPlus))) / (e2.dot(e1Plus.normalized().cross(nPlus)));
+
+                if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
+                    Eigen::Vector3d collPos = P1 + s * e1;
+                    Eigen::Vector3d collPos2 = P + t * e2;
+//                    std::cout<<"Before: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+                    Eigen::Vector3d mMinus = collPos2 - collPos;
+                    collPos = P1Plus + sPlus * e1Plus;
+                    collPos2 = P + tPlus * e2;
+
+//                    std::cout<<"After: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+                    Eigen::Vector3d mPlus = collPos2 - collPos;
+//                    return;
+                    if (mMinus.dot(mPlus) < 0) {
+
+                        CollisionData cData;
+                        cData.xColl = collPos2;
+                        cData.nColl = n;
+                        cData.corrVec = mPlus - mMinus;
+                        collData.push_back(cData);
+                        std::cout<<"Edge Collision!\n";
+                        std::cout<<"xColl: "<<collPos2.transpose()<<"\n";
+                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
+
+                        return !collData.empty();
+                    }
+                }
+
+                // QR
+                e2 = R - Q;
+                n = e1.cross(e2);
+                q = Q - P1;
+                n.normalize();
+                s = (q.dot(e2.normalized().cross(n))) / (e1.dot(e2.normalized().cross(n)));
+                t = (-q.dot(e1.normalized().cross(n))) / (e2.dot(e1.normalized().cross(n)));
+
+                nPlus = e1Plus.cross(e2);
+                nPlus.normalize();
+                qPlus = Q - P1Plus;
+                sPlus = (qPlus.dot(e2.normalized().cross(nPlus))) / (e1Plus.dot(e2.normalized().cross(nPlus)));
+                tPlus = (-qPlus.dot(e1Plus.normalized().cross(nPlus))) / (e2.dot(e1Plus.normalized().cross(nPlus)));
+
+                if ((s >= 0 && s <= 1 && t >= 0 && t <= 1) || (sPlus >= 0 && sPlus <= 1 && tPlus >= 0 && tPlus <= 1)) {
+                    Eigen::Vector3d collPos = P1 + s * e1;
+                    Eigen::Vector3d collPos2 = Q + t * e2;
+                    double dist = (collPos2 - collPos).norm();
+//                    std::cout<<"Before: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+                    Eigen::Vector3d mMinus = collPos2 - collPos;
+                    collPos = P1Plus + sPlus * e1Plus;
+                    collPos2 = Q + tPlus * e2;
+
+//                    std::cout<<"After: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+                    Eigen::Vector3d mPlus = collPos2 - collPos;
+//                    return;
+                    if (mMinus.dot(mPlus) < 0) {
+                        CollisionData cData;
+                        cData.xColl = collPos2;
+                        cData.nColl = n;
+                        cData.corrVec = mPlus - mMinus;
+                        collData.push_back(cData);
+                        std::cout<<"Edge Collision!\n";
+                        std::cout<<"xColl: "<<collPos2.transpose()<<"\n";
+                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
+                        return !collData.empty();
+                    }
+                }
+
+                // RP
+                e2 = P - R;
+                n = e1.cross(e2);
+                q = R - P1;
+                n.normalize();
+                s = (q.dot(e2.normalized().cross(n))) / (e1.dot(e2.normalized().cross(n)));
+                t = (-q.dot(e1.normalized().cross(n))) / (e2.dot(e1.normalized().cross(n)));
+
+                nPlus = e1Plus.cross(e2);
+                nPlus.normalize();
+                qPlus = R - P1Plus;
+                sPlus = (qPlus.dot(e2.normalized().cross(nPlus))) / (e1Plus.dot(e2.normalized().cross(nPlus)));
+                tPlus = (-qPlus.dot(e1Plus.normalized().cross(nPlus))) / (e2.dot(e1Plus.normalized().cross(nPlus)));
+
+                if ((s >= 0 && s <= 1 && t >= 0 && t <= 1) || (sPlus >= 0 && sPlus <= 1 && tPlus >= 0 && tPlus <= 1)) {
+                    Eigen::Vector3d collPos = P1 + s * e1;
+                    Eigen::Vector3d collPos2 = R + t * e2;
+                    double dist = (collPos2 - collPos).norm();
+//                    std::cout<<"Before: \n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+                    Eigen::Vector3d mMinus = collPos2 - collPos;
+                    collPos = P1Plus + sPlus * e1Plus;
+                    collPos2 = R + tPlus * e2;
+
+//                    std::cout<<"After: \n";
+//                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
+//                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
+                    Eigen::Vector3d mPlus = collPos2 - collPos;
+//                    return;
+                    if (mMinus.dot(mPlus) < 0) {
+                        CollisionData cData;
+                        cData.xColl = collPos2;
+                        cData.nColl = n;
+                        cData.corrVec = mPlus - mMinus;
+                        collData.push_back(cData);
+                        std::cout<<"Edge Collision!\n";
+                        std::cout<<"xColl: "<<collPos2.transpose()<<"\n";
+                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
+                        return !collData.empty();
+                    }
+                }
+
+            }
+        }
+    }
+    return !collData.empty();
+}
+
+void RigidBody::detectEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams) {
+    //    std::cout << "Here!\n";
+//    std::cout << "I:\n" << I << "\n";
+//    std::cout << "Iinv:\n" << Iinv << "\n";
+
+//    CollisionData collData;
+    std::vector<CollisionData> collData;
+    bool collided = edgeEdgeCollision(h, shapes, simParams, collData);
+    if (!collided)
+        return;
+//    return;
+    // for testing
+//    Eigen::Vector3d collPt(1, 1, -1);
+//    Eigen::Vector3d nColl(0, 1, 0);
+    double corrVecX = 0;
+    double corrVecY = 0;
+    double corrVecZ = 0;
+    for (CollisionData& cData: collData) {
+        Eigen::Vector3d collPt = cData.xColl;
+        Eigen::Vector3d nColl = cData.nColl;
+
+        // calc coll pos in c.o.m. frame
+        Eigen::Vector3d rColl = collPt - x;
+
+        Eigen::Vector3d vCollPt = v + angV.cross(rColl);
+        double vCollPtNor = vCollPt.dot(nColl);
+
+        Iinv = R * I0inv * R.transpose();
+
+        double jDen = massInv + nColl.dot((Iinv * (rColl.cross(nColl)).cross(rColl)));
+        double jn = (-(1.0 + simParams.restitutionCoefficient) * vCollPtNor) / jDen;
+
+        // for testing
+//        jn = 0.0;
+
+        Eigen::Vector3d deltaAngV = jn * Iinv * (rColl.cross(nColl));
+//        std::cout << "I: \n" << I << "\n";
+//        std::cout << "Iinv: \n" << Iinv << "\n";
+        std::cout << "deltaAngV: " << deltaAngV.transpose() << "\n";
+//        std::cout << "vn bef: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
+//        angV += deltaAngV;
+//        std::cout << "angV: " << angV.transpose() << "\n";
+        Eigen::Vector3d deltaV = massInv * jn * nColl;
+//        std::cout << "v bef: " << v.transpose() << "\n";
+//        v += deltaV;
+        std::cout << "deltaV: " << deltaV.transpose() << "\n";
+//        std::cout << "v aft: " << v.transpose() << "\n";
+//        std::cout << "vn aft: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
+
+        if (std::abs(cData.corrVec.x()) > std::abs(corrVecX))
+            corrVecX = cData.corrVec.x();
+        if (std::abs(cData.corrVec.y()) > std::abs(corrVecY))
+            corrVecY = cData.corrVec.y();
+        if (std::abs(cData.corrVec.z()) > std::abs(corrVecZ))
+            corrVecZ = cData.corrVec.z();
+        cData.deltaV = deltaV;
+        cData.deltaAngV = deltaAngV;
+//        corrVec += cData.corrVec;
+    }
+    std::cout<<"collDataSize: "<<collData.size()<<"\n";
+
+    std::cout<<"v bef: "<<v.transpose()<<"\n";
+    std::cout<<"ang v bef: "<<angV.transpose()<<"\n";
+    for (int i = 0; i < collData.size(); ++i) {
+        v += collData[i].deltaV;
+        angV += collData[i].deltaAngV;
+//        x += ((1 + 2e-2) * collData[i].corrVec);
+    }
+    std::cout<<"v aft: "<<v.transpose()<<"\n";
+    std::cout<<"ang v afte: "<<angV.transpose()<<"\n";
+
+    Eigen::Vector3d corrVec(corrVecX, corrVecY, corrVecZ);
+//    corrVec /= collData.size();
+    x += ((1 + 1e-2) * corrVec);
+    for (int i = 0; i < vertices.size(); ++i) {
+        verticesTemp[i] = vertices[i];
         vertices[i] = (R * vertices0[i]) + x;
     }
 }

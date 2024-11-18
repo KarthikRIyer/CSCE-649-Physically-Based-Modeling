@@ -55,6 +55,7 @@ public:
 
     void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams);
     void detectCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, std::vector<Eigen::Vector3d> &c);
+    void detectEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams);
     std::pair<Eigen::Vector3d, Eigen::Vector3d> getVelAcc(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, int integrationScheme);
 private:
     void initObjWithRot();
@@ -64,6 +65,7 @@ private:
     glm::mat4 convertToGLMMat(Eigen::Matrix3d mat);
     bool intersectsTri(Polygon p, Eigen::Vector3d pt, Eigen::Vector3d ray);
     bool pointTriCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, std::vector<CollisionData>& collData);
+    bool edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams, std::vector<CollisionData>& collData);
     double sgn(double x);
 protected:
     double mass;

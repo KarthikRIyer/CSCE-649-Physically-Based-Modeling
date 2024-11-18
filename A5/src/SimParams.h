@@ -7,7 +7,7 @@
 
 struct SimParams {
     float restitutionCoefficient = 0.6;
-    float timestep = 1e-3;
+    float timestep = 5e-4;
     int integrationMethod = 0;
 };
 
