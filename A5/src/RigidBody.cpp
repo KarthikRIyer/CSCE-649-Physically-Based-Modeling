@@ -273,26 +273,26 @@ void RigidBody::computeMomentOfInertia() {
     std::cout<<I<<"\n";
     initObjWithRot();
     initObjWithLoc();
-    for (int i = 0; i < posBuf.size(); i+=3) {
-        float px = posBuf0[i];
-        float py = posBuf0[i+1];
-        float pz = posBuf0[i+2];
-        Eigen::Vector3d p(px, py, pz);
-        p = R * p + x;
-        posBuf[i] = p.x();
-        posBuf[i+1] = p.y();
-        posBuf[i+2] = p.z();
-    }
-    for (int i = 0; i < norBuf.size(); i+=3) {
-        float px = norBuf0[i];
-        float py = norBuf0[i + 1];
-        float pz = norBuf0[i + 2];
-        Eigen::Vector3d p(px, py, pz);
-        p = R * p;
-        norBuf[i] = p.x();
-        norBuf[i + 1] = p.y();
-        norBuf[i + 2] = p.z();
-    }
+//    for (int i = 0; i < posBuf.size(); i+=3) {
+//        float px = posBuf0[i];
+//        float py = posBuf0[i+1];
+//        float pz = posBuf0[i+2];
+//        Eigen::Vector3d p(px, py, pz);
+//        p = R * p + x;
+//        posBuf[i] = p.x();
+//        posBuf[i+1] = p.y();
+//        posBuf[i+2] = p.z();
+//    }
+//    for (int i = 0; i < norBuf.size(); i+=3) {
+//        float px = norBuf0[i];
+//        float py = norBuf0[i + 1];
+//        float pz = norBuf0[i + 2];
+//        Eigen::Vector3d p(px, py, pz);
+//        p = R * p;
+//        norBuf[i] = p.x();
+//        norBuf[i + 1] = p.y();
+//        norBuf[i + 2] = p.z();
+//    }
 //    R = Eigen::Matrix3d::Identity();
 //    R0 = Eigen::Matrix3d::Identity();
 
@@ -308,33 +308,33 @@ void RigidBody::reset() {
     Iinv = I0inv;
     initObjWithRot();
     initObjWithLoc();
-    for (int i = 0; i < posBuf.size(); i+=3) {
-        float px = posBuf0[i];
-        float py = posBuf0[i+1];
-        float pz = posBuf0[i+2];
-        Eigen::Vector3d p(px, py, pz);
-        p = R * p + x;
-        posBuf[i] = p.x();
-        posBuf[i+1] = p.y();
-        posBuf[i+2] = p.z();
-    }
-    for (int i = 0; i < norBuf.size(); i+=3) {
-        float px = norBuf0[i];
-        float py = norBuf0[i + 1];
-        float pz = norBuf0[i + 2];
-        Eigen::Vector3d p(px, py, pz);
-        p = R * p;
-        norBuf[i] = p.x();
-        norBuf[i + 1] = p.y();
-        norBuf[i + 2] = p.z();
-    }
+//    for (int i = 0; i < posBuf.size(); i+=3) {
+//        float px = posBuf0[i];
+//        float py = posBuf0[i+1];
+//        float pz = posBuf0[i+2];
+//        Eigen::Vector3d p(px, py, pz);
+//        p = R * p + x;
+//        posBuf[i] = p.x();
+//        posBuf[i+1] = p.y();
+//        posBuf[i+2] = p.z();
+//    }
+//    for (int i = 0; i < norBuf.size(); i+=3) {
+//        float px = norBuf0[i];
+//        float py = norBuf0[i + 1];
+//        float pz = norBuf0[i + 2];
+//        Eigen::Vector3d p(px, py, pz);
+//        p = R * p;
+//        norBuf[i] = p.x();
+//        norBuf[i + 1] = p.y();
+//        norBuf[i + 2] = p.z();
+//    }
 }
 
 inline glm::mat4 RigidBody::convertToGLMMat(Eigen::Matrix3d rot) {
     glm::mat4 glmR = glm::mat4(1.0f);
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            glmR[i][j] = rot(i, j);
+            glmR[i][j] = rot.transpose()(i, j);
         }
     }
     return glmR;
@@ -875,26 +875,26 @@ void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
         verticesTemp[i] = vertices[i];
         vertices[i] = (R * vertices0[i]) + x;
     }
-    for (int i = 0; i < posBuf.size(); i+=3) {
-        float px = posBuf0[i];
-        float py = posBuf0[i+1];
-        float pz = posBuf0[i+2];
-        Eigen::Vector3d p(px, py, pz);
-        p = R * p + x;
-        posBuf[i] = p.x();
-        posBuf[i+1] = p.y();
-        posBuf[i+2] = p.z();
-    }
-    for (int i = 0; i < norBuf.size(); i+=3) {
-        float px = norBuf0[i];
-        float py = norBuf0[i + 1];
-        float pz = norBuf0[i + 2];
-        Eigen::Vector3d p(px, py, pz);
-        p = R * p;
-        norBuf[i] = p.x();
-        norBuf[i + 1] = p.y();
-        norBuf[i + 2] = p.z();
-    }
+//    for (int i = 0; i < posBuf.size(); i+=3) {
+//        float px = posBuf0[i];
+//        float py = posBuf0[i+1];
+//        float pz = posBuf0[i+2];
+//        Eigen::Vector3d p(px, py, pz);
+//        p = R * p + x;
+//        posBuf[i] = p.x();
+//        posBuf[i+1] = p.y();
+//        posBuf[i+2] = p.z();
+//    }
+//    for (int i = 0; i < norBuf.size(); i+=3) {
+//        float px = norBuf0[i];
+//        float py = norBuf0[i + 1];
+//        float pz = norBuf0[i + 2];
+//        Eigen::Vector3d p(px, py, pz);
+//        p = R * p;
+//        norBuf[i] = p.x();
+//        norBuf[i + 1] = p.y();
+//        norBuf[i + 2] = p.z();
+//    }
 //    for (int i = 0; i < posBuf.size(); i+=3) {
 //        float px = posBuf[i];
 //        float py = posBuf[i+1];
@@ -980,9 +980,9 @@ void RigidBody::draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Prog
     glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
     glUniform1f(prog->getUniform("s"), 200.0f);
     MV->pushMatrix();
-//    MV->translate(x(0), x(1), x(2));
-//    MV->multMatrix(convertToGLMMat(R));
-//    MV->scale(1.0);
+    MV->translate(x(0), x(1), x(2));
+    MV->multMatrix(convertToGLMMat(R));
+    MV->scale(1.0);
 //
     glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
 
@@ -991,13 +991,13 @@ void RigidBody::draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Prog
     int h_pos = prog->getAttribute("aPos");
     glEnableVertexAttribArray(h_pos);
     glBindBuffer(GL_ARRAY_BUFFER, posBufID);
-    glBufferData(GL_ARRAY_BUFFER, posBuf.size()*sizeof(float), &posBuf[0], GL_DYNAMIC_DRAW);
+//    glBufferData(GL_ARRAY_BUFFER, posBuf.size()*sizeof(float), &posBuf[0], GL_DYNAMIC_DRAW);
     glVertexAttribPointer(h_pos, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
 
     int h_nor = prog->getAttribute("aNor");
     glEnableVertexAttribArray(h_nor);
     glBindBuffer(GL_ARRAY_BUFFER, norBufID);
-    glBufferData(GL_ARRAY_BUFFER, norBuf.size()*sizeof(float), &norBuf[0], GL_DYNAMIC_DRAW);
+//    glBufferData(GL_ARRAY_BUFFER, norBuf.size()*sizeof(float), &norBuf[0], GL_DYNAMIC_DRAW);
     glVertexAttribPointer(h_nor, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
 
     int h_tex = prog->getAttribute("aTex");
