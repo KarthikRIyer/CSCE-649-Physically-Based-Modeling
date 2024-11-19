@@ -45,7 +45,7 @@ int texUnit = 1;
 
 SimParams simParams;
 const char* sceneNames[] = {"Cube", "Big Box", "Wedge Plane"};
-int currSceneIndex = 0;
+int currSceneIndex = 2;
 static const char* currentScene = sceneNames[currSceneIndex];
 int prevSceneIndex = 0;
 
@@ -162,6 +162,7 @@ static void init()
 	camera = make_shared<Camera>();
 
 	scene = make_shared<Scene>();
+    scene->setSceneNum(currSceneIndex);
 	scene->load(RESOURCE_DIR, DATA_DIR, texUnit);
 	scene->tare();
 	scene->init();

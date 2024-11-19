@@ -92,7 +92,9 @@ protected:
     std::string textureFilename;
     std::shared_ptr<Program> prog;
     std::vector<float> posBuf;
+    std::vector<float> posBuf0;
     std::vector<float> norBuf;
+    std::vector<float> norBuf0;
     std::vector<float> texBuf;
     bool isObstacle;
 //    std::vector<Polygon> polygons0;

@@ -114,12 +114,20 @@ void RigidBody::loadObj(const string &filename, vector<float> &pos, vector<float
                 pos.push_back(attrib.vertices[3*idx.vertex_index+1]);
                 pos.push_back(attrib.vertices[3*idx.vertex_index+2]);
 
+                posBuf0.push_back(attrib.vertices[3*idx.vertex_index+0]);
+                posBuf0.push_back(attrib.vertices[3*idx.vertex_index+1]);
+                posBuf0.push_back(attrib.vertices[3*idx.vertex_index+2]);
+
                 polygon.addPoint(idx.vertex_index);
 
                 if(!attrib.normals.empty() && loadNor) {
                     nor.push_back(attrib.normals[3*idx.normal_index+0]);
                     nor.push_back(attrib.normals[3*idx.normal_index+1]);
                     nor.push_back(attrib.normals[3*idx.normal_index+2]);
+
+                    norBuf0.push_back(attrib.normals[3*idx.normal_index+0]);
+                    norBuf0.push_back(attrib.normals[3*idx.normal_index+1]);
+                    norBuf0.push_back(attrib.normals[3*idx.normal_index+2]);
                 }
                 if(!attrib.texcoords.empty() && loadTex) {
                     tex.push_back(attrib.texcoords[2*idx.texcoord_index+0]);
@@ -205,7 +213,7 @@ void RigidBody::initObjWithRot() {
 
 void RigidBody::initObjWithLoc() {
     for (int i = 0; i < vertices.size(); ++i) {
-        vertices[i] = vertices0[i] + x;
+        vertices[i] = vertices[i] + x;
         verticesTemp[i] = vertices[i];
     }
 }
@@ -265,6 +273,26 @@ void RigidBody::computeMomentOfInertia() {
     std::cout<<I<<"\n";
     initObjWithRot();
     initObjWithLoc();
+    for (int i = 0; i < posBuf.size(); i+=3) {
+        float px = posBuf0[i];
+        float py = posBuf0[i+1];
+        float pz = posBuf0[i+2];
+        Eigen::Vector3d p(px, py, pz);
+        p = R * p + x;
+        posBuf[i] = p.x();
+        posBuf[i+1] = p.y();
+        posBuf[i+2] = p.z();
+    }
+    for (int i = 0; i < norBuf.size(); i+=3) {
+        float px = norBuf0[i];
+        float py = norBuf0[i + 1];
+        float pz = norBuf0[i + 2];
+        Eigen::Vector3d p(px, py, pz);
+        p = R * p;
+        norBuf[i] = p.x();
+        norBuf[i + 1] = p.y();
+        norBuf[i + 2] = p.z();
+    }
 //    R = Eigen::Matrix3d::Identity();
 //    R0 = Eigen::Matrix3d::Identity();
 
@@ -280,6 +308,26 @@ void RigidBody::reset() {
     Iinv = I0inv;
     initObjWithRot();
     initObjWithLoc();
+    for (int i = 0; i < posBuf.size(); i+=3) {
+        float px = posBuf0[i];
+        float py = posBuf0[i+1];
+        float pz = posBuf0[i+2];
+        Eigen::Vector3d p(px, py, pz);
+        p = R * p + x;
+        posBuf[i] = p.x();
+        posBuf[i+1] = p.y();
+        posBuf[i+2] = p.z();
+    }
+    for (int i = 0; i < norBuf.size(); i+=3) {
+        float px = norBuf0[i];
+        float py = norBuf0[i + 1];
+        float pz = norBuf0[i + 2];
+        Eigen::Vector3d p(px, py, pz);
+        p = R * p;
+        norBuf[i] = p.x();
+        norBuf[i + 1] = p.y();
+        norBuf[i + 2] = p.z();
+    }
 }
 
 inline glm::mat4 RigidBody::convertToGLMMat(Eigen::Matrix3d rot) {
@@ -472,6 +520,11 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
         Eigen::Vector3d p0Temp = verticesTemp[e.first];
         Eigen::Vector3d p1Temp = verticesTemp[e.second];
 
+//        std::cout<<"p0: "<<p0.transpose()<<"\n";
+//        std::cout<<"p1: "<<p1.transpose()<<"\n";
+//        std::cout<<"p0Temp: "<<p0Temp.transpose()<<"\n";
+//        std::cout<<"p1Temp: "<<p1Temp.transpose()<<"\n";
+
         Eigen::Vector3d e1 = p1Temp - p0Temp;
         Eigen::Vector3d P1 = p0Temp;
 
@@ -505,6 +558,8 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
                 if (s >= 0 && s <= 1 && t >= 0 && t <= 1) {
                     Eigen::Vector3d collPos = P1 + s * e1;
                     Eigen::Vector3d collPos2 = P + t * e2;
+                    Eigen::Vector3d collPosBef = collPos;
+                    Eigen::Vector3d collPos2Bef = collPos2;
 //                    std::cout<<"Before: " << collPos.transpose() << "\n";
 //                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
 //                    std::cout<<"Edge collision p2: " << collPos2.transpose() << "\n";
@@ -518,7 +573,20 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
                     Eigen::Vector3d mPlus = collPos2 - collPos;
 //                    return;
                     if (mMinus.dot(mPlus) < 0) {
+//                        std::cout<<"P1 obj: "<<P1.transpose()<<"\n";
+//                        std::cout<<"P1 mesh: "<<P.transpose()<<"\n";
+//                        std::cout<<"s obj: "<<s<<"\n";
+//                        std::cout<<"t mesh: "<<t<<"\n";
 
+                        std::cout<<"Before: \n";
+                        std::cout<<"collPos obj: "<<collPosBef.transpose()<<"\n";
+                        std::cout<<"collPos mesh: "<<collPos2Bef.transpose()<<"\n";
+                        std::cout<<"mMinus: "<<mMinus.transpose()<<"\n";
+                        std::cout<<"After: \n";
+                        std::cout<<"collPos obj: "<<collPos.transpose()<<"\n";
+                        std::cout<<"collPos mesh: "<<collPos2.transpose()<<"\n";
+                        std::cout<<"mPlus: "<<mPlus.transpose()<<"\n";
+                        std::cout<<"mMinus.dot(mPlus): "<<mMinus.dot(mPlus)<<"\n";
                         CollisionData cData;
                         cData.xColl = collPos2;
                         cData.nColl = n;
@@ -549,6 +617,8 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
                 if ((s >= 0 && s <= 1 && t >= 0 && t <= 1) || (sPlus >= 0 && sPlus <= 1 && tPlus >= 0 && tPlus <= 1)) {
                     Eigen::Vector3d collPos = P1 + s * e1;
                     Eigen::Vector3d collPos2 = Q + t * e2;
+                    Eigen::Vector3d collPosBef = collPos;
+                    Eigen::Vector3d collPos2Bef = collPos2;
                     double dist = (collPos2 - collPos).norm();
 //                    std::cout<<"Before: " << collPos.transpose() << "\n";
 //                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
@@ -563,6 +633,15 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
                     Eigen::Vector3d mPlus = collPos2 - collPos;
 //                    return;
                     if (mMinus.dot(mPlus) < 0) {
+                        std::cout<<"Before: \n";
+                        std::cout<<"collPos obj: "<<collPosBef.transpose()<<"\n";
+                        std::cout<<"collPos mesh: "<<collPos2Bef.transpose()<<"\n";
+                        std::cout<<"mMinus: "<<mMinus.transpose()<<"\n";
+                        std::cout<<"After: \n";
+                        std::cout<<"collPos obj: "<<collPos.transpose()<<"\n";
+                        std::cout<<"collPos mesh: "<<collPos2.transpose()<<"\n";
+                        std::cout<<"mPlus: "<<mPlus.transpose()<<"\n";
+                        std::cout<<"mMinus.dot(mPlus): "<<mMinus.dot(mPlus)<<"\n";
                         CollisionData cData;
                         cData.xColl = collPos2;
                         cData.nColl = n;
@@ -592,6 +671,8 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
                 if ((s >= 0 && s <= 1 && t >= 0 && t <= 1) || (sPlus >= 0 && sPlus <= 1 && tPlus >= 0 && tPlus <= 1)) {
                     Eigen::Vector3d collPos = P1 + s * e1;
                     Eigen::Vector3d collPos2 = R + t * e2;
+                    Eigen::Vector3d collPosBef = collPos;
+                    Eigen::Vector3d collPos2Bef = collPos2;
                     double dist = (collPos2 - collPos).norm();
 //                    std::cout<<"Before: \n";
 //                    std::cout<<"Edge collision p1: " << collPos.transpose() << "\n";
@@ -606,6 +687,15 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
                     Eigen::Vector3d mPlus = collPos2 - collPos;
 //                    return;
                     if (mMinus.dot(mPlus) < 0) {
+                        std::cout<<"Before: \n";
+                        std::cout<<"collPos obj: "<<collPosBef.transpose()<<"\n";
+                        std::cout<<"collPos mesh: "<<collPos2Bef.transpose()<<"\n";
+                        std::cout<<"mMinus: "<<mMinus.transpose()<<"\n";
+                        std::cout<<"After: \n";
+                        std::cout<<"collPos obj: "<<collPos.transpose()<<"\n";
+                        std::cout<<"collPos mesh: "<<collPos2.transpose()<<"\n";
+                        std::cout<<"mPlus: "<<mPlus.transpose()<<"\n";
+                        std::cout<<"mMinus.dot(mPlus): "<<mMinus.dot(mPlus)<<"\n";
                         CollisionData cData;
                         cData.xColl = collPos2;
                         cData.nColl = n;
@@ -690,7 +780,7 @@ void RigidBody::detectEdgeCollision(double h, std::vector<std::shared_ptr<Shape>
     for (int i = 0; i < collData.size(); ++i) {
         v += collData[i].deltaV;
         angV += collData[i].deltaAngV;
-//        x += ((1 + 2e-2) * collData[i].corrVec);
+        x += ((1 + 2e-2) * collData[i].corrVec);
     }
     std::cout<<"v aft: "<<v.transpose()<<"\n";
     std::cout<<"ang v afte: "<<angV.transpose()<<"\n";
@@ -767,11 +857,57 @@ void RigidBody::step(double h, std::vector<std::shared_ptr<IForceField>>& forceF
 //    R.row(2).normalize();
 //    std::cout<<"x: "<<x.transpose()<<"\n";
 
+//    std::cout<<"vertices0: \n";
+//    for (int i = 0; i < vertices.size(); ++i) {
+//        std::cout<<vertices0[i].transpose()<<"\n";
+//    }
+//    std::cout<<"vertices: \n";
+//    for (int i = 0; i < vertices.size(); ++i) {
+//        std::cout<<vertices[i].transpose()<<"\n";
+//    }
+//    std::cout<<"verticesTemp: \n";
+//    for (int i = 0; i < vertices.size(); ++i) {
+//        std::cout<<verticesTemp[i].transpose()<<"\n";
+//    }
+//    std::cout<<"R: \n"<<R<<"\n";
+
     for (int i = 0; i < vertices.size(); ++i) {
         verticesTemp[i] = vertices[i];
         vertices[i] = (R * vertices0[i]) + x;
     }
-
+    for (int i = 0; i < posBuf.size(); i+=3) {
+        float px = posBuf0[i];
+        float py = posBuf0[i+1];
+        float pz = posBuf0[i+2];
+        Eigen::Vector3d p(px, py, pz);
+        p = R * p + x;
+        posBuf[i] = p.x();
+        posBuf[i+1] = p.y();
+        posBuf[i+2] = p.z();
+    }
+    for (int i = 0; i < norBuf.size(); i+=3) {
+        float px = norBuf0[i];
+        float py = norBuf0[i + 1];
+        float pz = norBuf0[i + 2];
+        Eigen::Vector3d p(px, py, pz);
+        p = R * p;
+        norBuf[i] = p.x();
+        norBuf[i + 1] = p.y();
+        norBuf[i + 2] = p.z();
+    }
+//    for (int i = 0; i < posBuf.size(); i+=3) {
+//        float px = posBuf[i];
+//        float py = posBuf[i+1];
+//        float pz = posBuf[i+2];
+//        Eigen::Vector3d p(px, py, pz);
+//        std::cout<<p.transpose()<<"\n";
+//    }
+//    std::cout<<"Here\n";
+//    GLSL::checkError(GET_FILE_LINE);
+//    glBindBuffer(GL_ARRAY_BUFFER, posBufID);
+//    GLSL::checkError(GET_FILE_LINE);
+//    glBufferData(GL_ARRAY_BUFFER, posBuf.size()*sizeof(float), &posBuf[0], GL_DYNAMIC_DRAW);
+//    GLSL::checkError(GET_FILE_LINE);
 }
 
 std::vector<Polygon>& RigidBody::getPolygons() {
@@ -806,7 +942,7 @@ void RigidBody::init()
 
     // Send the position array to the GPU
     glBindBuffer(GL_ARRAY_BUFFER, posBufID);
-    glBufferData(GL_ARRAY_BUFFER, posBuf.size()*sizeof(float), &posBuf[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, posBuf.size()*sizeof(float), &posBuf[0], GL_DYNAMIC_DRAW);
 
     // Send the normal array to the GPU
     glBindBuffer(GL_ARRAY_BUFFER, norBufID);
@@ -844,10 +980,10 @@ void RigidBody::draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Prog
     glUniform3f(prog->getUniform("ks"), 0.1f, 0.1f, 0.1f);
     glUniform1f(prog->getUniform("s"), 200.0f);
     MV->pushMatrix();
-    MV->translate(x(0), x(1), x(2));
-    MV->multMatrix(convertToGLMMat(R));
-    MV->scale(1.0);
-
+//    MV->translate(x(0), x(1), x(2));
+//    MV->multMatrix(convertToGLMMat(R));
+//    MV->scale(1.0);
+//
     glUniformMatrix4fv(prog->getUniform("MV"), 1, GL_FALSE, glm::value_ptr(MV->topMatrix()));
 
     assert(prog);
@@ -855,11 +991,13 @@ void RigidBody::draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Prog
     int h_pos = prog->getAttribute("aPos");
     glEnableVertexAttribArray(h_pos);
     glBindBuffer(GL_ARRAY_BUFFER, posBufID);
+    glBufferData(GL_ARRAY_BUFFER, posBuf.size()*sizeof(float), &posBuf[0], GL_DYNAMIC_DRAW);
     glVertexAttribPointer(h_pos, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
 
     int h_nor = prog->getAttribute("aNor");
     glEnableVertexAttribArray(h_nor);
     glBindBuffer(GL_ARRAY_BUFFER, norBufID);
+    glBufferData(GL_ARRAY_BUFFER, norBuf.size()*sizeof(float), &norBuf[0], GL_DYNAMIC_DRAW);
     glVertexAttribPointer(h_nor, 3, GL_FLOAT, GL_FALSE, 0, (const void *)0);
 
     int h_tex = prog->getAttribute("aTex");
