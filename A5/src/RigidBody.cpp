@@ -419,8 +419,8 @@ bool RigidBody::pointTriCollision(double h, std::vector<std::shared_ptr<Shape> >
                     cData.corrVec = xColl - ptNew;
                     collData.push_back(cData);
                     std::cout<<"Collision!\n";
-                    std::cout<<"xColl: "<<xColl.transpose()<<"\n";
-                    std::cout<<"nColl: "<<n.transpose()<<"\n\n";
+//                    std::cout<<"xColl: "<<xColl.transpose()<<"\n";
+//                    std::cout<<"nColl: "<<n.transpose()<<"\n\n";
 //                    return true;
                 } else {
                     continue;
@@ -469,14 +469,14 @@ void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& 
         Eigen::Vector3d deltaAngV = jn * Iinv * (rColl.cross(nColl));
 //        std::cout << "I: \n" << I << "\n";
 //        std::cout << "Iinv: \n" << Iinv << "\n";
-        std::cout << "deltaAngV: " << deltaAngV.transpose() << "\n";
+//        std::cout << "deltaAngV: " << deltaAngV.transpose() << "\n";
 //        std::cout << "vn bef: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
 //        angV += deltaAngV;
 //        std::cout << "angV: " << angV.transpose() << "\n";
         Eigen::Vector3d deltaV = massInv * jn * nColl;
 //        std::cout << "v bef: " << v.transpose() << "\n";
 //        v += deltaV;
-        std::cout << "deltaV: " << deltaV.transpose() << "\n";
+//        std::cout << "deltaV: " << deltaV.transpose() << "\n";
 //        std::cout << "v aft: " << v.transpose() << "\n";
 //        std::cout << "vn aft: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
 
@@ -491,17 +491,17 @@ void RigidBody::detectCollision(double h, std::vector<std::shared_ptr<Shape> >& 
 //        corrVec += cData.corrVec;
         c.push_back(cData.xColl);
     }
-    std::cout<<"collDataSize: "<<collData.size()<<"\n";
+//    std::cout<<"collDataSize: "<<collData.size()<<"\n";
 
-    std::cout<<"v bef: "<<v.transpose()<<"\n";
-    std::cout<<"ang v bef: "<<angV.transpose()<<"\n";
+//    std::cout<<"v bef: "<<v.transpose()<<"\n";
+//    std::cout<<"ang v bef: "<<angV.transpose()<<"\n";
     for (int i = 0; i < collData.size(); ++i) {
         v += collData[i].deltaV;
         angV += collData[i].deltaAngV;
 //        x += ((1 + 2e-2) * collData[i].corrVec);
     }
-    std::cout<<"v aft: "<<v.transpose()<<"\n";
-    std::cout<<"ang v afte: "<<angV.transpose()<<"\n";
+//    std::cout<<"v aft: "<<v.transpose()<<"\n";
+//    std::cout<<"ang v afte: "<<angV.transpose()<<"\n";
 
     Eigen::Vector3d corrVec(corrVecX, corrVecY, corrVecZ);
 //    corrVec /= collData.size();
@@ -578,23 +578,23 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
 //                        std::cout<<"s obj: "<<s<<"\n";
 //                        std::cout<<"t mesh: "<<t<<"\n";
 
-                        std::cout<<"Before: \n";
-                        std::cout<<"collPos obj: "<<collPosBef.transpose()<<"\n";
-                        std::cout<<"collPos mesh: "<<collPos2Bef.transpose()<<"\n";
-                        std::cout<<"mMinus: "<<mMinus.transpose()<<"\n";
-                        std::cout<<"After: \n";
-                        std::cout<<"collPos obj: "<<collPos.transpose()<<"\n";
-                        std::cout<<"collPos mesh: "<<collPos2.transpose()<<"\n";
-                        std::cout<<"mPlus: "<<mPlus.transpose()<<"\n";
-                        std::cout<<"mMinus.dot(mPlus): "<<mMinus.dot(mPlus)<<"\n";
+//                        std::cout<<"Before: \n";
+//                        std::cout<<"collPos obj: "<<collPosBef.transpose()<<"\n";
+//                        std::cout<<"collPos mesh: "<<collPos2Bef.transpose()<<"\n";
+//                        std::cout<<"mMinus: "<<mMinus.transpose()<<"\n";
+//                        std::cout<<"After: \n";
+//                        std::cout<<"collPos obj: "<<collPos.transpose()<<"\n";
+//                        std::cout<<"collPos mesh: "<<collPos2.transpose()<<"\n";
+//                        std::cout<<"mPlus: "<<mPlus.transpose()<<"\n";
+//                        std::cout<<"mMinus.dot(mPlus): "<<mMinus.dot(mPlus)<<"\n";
                         CollisionData cData;
                         cData.xColl = collPos2;
                         cData.nColl = n;
                         cData.corrVec = mPlus - mMinus;
                         collData.push_back(cData);
                         std::cout<<"Edge Collision!\n";
-                        std::cout<<"xColl: "<<collPos2.transpose()<<"\n";
-                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
+//                        std::cout<<"xColl: "<<collPos2.transpose()<<"\n";
+//                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
 
                         return !collData.empty();
                     }
@@ -633,23 +633,23 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
                     Eigen::Vector3d mPlus = collPos2 - collPos;
 //                    return;
                     if (mMinus.dot(mPlus) < 0) {
-                        std::cout<<"Before: \n";
-                        std::cout<<"collPos obj: "<<collPosBef.transpose()<<"\n";
-                        std::cout<<"collPos mesh: "<<collPos2Bef.transpose()<<"\n";
-                        std::cout<<"mMinus: "<<mMinus.transpose()<<"\n";
-                        std::cout<<"After: \n";
-                        std::cout<<"collPos obj: "<<collPos.transpose()<<"\n";
-                        std::cout<<"collPos mesh: "<<collPos2.transpose()<<"\n";
-                        std::cout<<"mPlus: "<<mPlus.transpose()<<"\n";
-                        std::cout<<"mMinus.dot(mPlus): "<<mMinus.dot(mPlus)<<"\n";
+//                        std::cout<<"Before: \n";
+//                        std::cout<<"collPos obj: "<<collPosBef.transpose()<<"\n";
+//                        std::cout<<"collPos mesh: "<<collPos2Bef.transpose()<<"\n";
+//                        std::cout<<"mMinus: "<<mMinus.transpose()<<"\n";
+//                        std::cout<<"After: \n";
+//                        std::cout<<"collPos obj: "<<collPos.transpose()<<"\n";
+//                        std::cout<<"collPos mesh: "<<collPos2.transpose()<<"\n";
+//                        std::cout<<"mPlus: "<<mPlus.transpose()<<"\n";
+//                        std::cout<<"mMinus.dot(mPlus): "<<mMinus.dot(mPlus)<<"\n";
                         CollisionData cData;
                         cData.xColl = collPos2;
                         cData.nColl = n;
                         cData.corrVec = mPlus - mMinus;
                         collData.push_back(cData);
                         std::cout<<"Edge Collision!\n";
-                        std::cout<<"xColl: "<<collPos2.transpose()<<"\n";
-                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
+//                        std::cout<<"xColl: "<<collPos2.transpose()<<"\n";
+//                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
                         return !collData.empty();
                     }
                 }
@@ -687,23 +687,23 @@ bool RigidBody::edgeEdgeCollision(double h, std::vector<std::shared_ptr<Shape> >
                     Eigen::Vector3d mPlus = collPos2 - collPos;
 //                    return;
                     if (mMinus.dot(mPlus) < 0) {
-                        std::cout<<"Before: \n";
-                        std::cout<<"collPos obj: "<<collPosBef.transpose()<<"\n";
-                        std::cout<<"collPos mesh: "<<collPos2Bef.transpose()<<"\n";
-                        std::cout<<"mMinus: "<<mMinus.transpose()<<"\n";
-                        std::cout<<"After: \n";
-                        std::cout<<"collPos obj: "<<collPos.transpose()<<"\n";
-                        std::cout<<"collPos mesh: "<<collPos2.transpose()<<"\n";
-                        std::cout<<"mPlus: "<<mPlus.transpose()<<"\n";
-                        std::cout<<"mMinus.dot(mPlus): "<<mMinus.dot(mPlus)<<"\n";
+//                        std::cout<<"Before: \n";
+//                        std::cout<<"collPos obj: "<<collPosBef.transpose()<<"\n";
+//                        std::cout<<"collPos mesh: "<<collPos2Bef.transpose()<<"\n";
+//                        std::cout<<"mMinus: "<<mMinus.transpose()<<"\n";
+//                        std::cout<<"After: \n";
+//                        std::cout<<"collPos obj: "<<collPos.transpose()<<"\n";
+//                        std::cout<<"collPos mesh: "<<collPos2.transpose()<<"\n";
+//                        std::cout<<"mPlus: "<<mPlus.transpose()<<"\n";
+//                        std::cout<<"mMinus.dot(mPlus): "<<mMinus.dot(mPlus)<<"\n";
                         CollisionData cData;
                         cData.xColl = collPos2;
                         cData.nColl = n;
                         cData.corrVec = mPlus - mMinus;
                         collData.push_back(cData);
                         std::cout<<"Edge Collision!\n";
-                        std::cout<<"xColl: "<<collPos2.transpose()<<"\n";
-                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
+//                        std::cout<<"xColl: "<<collPos2.transpose()<<"\n";
+//                        std::cout<<"nColl: "<<n.transpose()<<"\n\n";
                         return !collData.empty();
                     }
                 }
@@ -752,14 +752,14 @@ void RigidBody::detectEdgeCollision(double h, std::vector<std::shared_ptr<Shape>
         Eigen::Vector3d deltaAngV = jn * Iinv * (rColl.cross(nColl));
 //        std::cout << "I: \n" << I << "\n";
 //        std::cout << "Iinv: \n" << Iinv << "\n";
-        std::cout << "deltaAngV: " << deltaAngV.transpose() << "\n";
+//        std::cout << "deltaAngV: " << deltaAngV.transpose() << "\n";
 //        std::cout << "vn bef: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
 //        angV += deltaAngV;
 //        std::cout << "angV: " << angV.transpose() << "\n";
         Eigen::Vector3d deltaV = massInv * jn * nColl;
 //        std::cout << "v bef: " << v.transpose() << "\n";
 //        v += deltaV;
-        std::cout << "deltaV: " << deltaV.transpose() << "\n";
+//        std::cout << "deltaV: " << deltaV.transpose() << "\n";
 //        std::cout << "v aft: " << v.transpose() << "\n";
 //        std::cout << "vn aft: " << (v + angV.cross(rColl)).dot(nColl) << "\n";
 
@@ -773,17 +773,17 @@ void RigidBody::detectEdgeCollision(double h, std::vector<std::shared_ptr<Shape>
         cData.deltaAngV = deltaAngV;
 //        corrVec += cData.corrVec;
     }
-    std::cout<<"collDataSize: "<<collData.size()<<"\n";
-
-    std::cout<<"v bef: "<<v.transpose()<<"\n";
-    std::cout<<"ang v bef: "<<angV.transpose()<<"\n";
+//    std::cout<<"collDataSize: "<<collData.size()<<"\n";
+//
+//    std::cout<<"v bef: "<<v.transpose()<<"\n";
+//    std::cout<<"ang v bef: "<<angV.transpose()<<"\n";
     for (int i = 0; i < collData.size(); ++i) {
         v += collData[i].deltaV;
         angV += collData[i].deltaAngV;
         x += ((1 + 2e-2) * collData[i].corrVec);
     }
-    std::cout<<"v aft: "<<v.transpose()<<"\n";
-    std::cout<<"ang v afte: "<<angV.transpose()<<"\n";
+//    std::cout<<"v aft: "<<v.transpose()<<"\n";
+//    std::cout<<"ang v afte: "<<angV.transpose()<<"\n";
 
     Eigen::Vector3d corrVec(corrVecX, corrVecY, corrVecZ);
 //    corrVec /= collData.size();
