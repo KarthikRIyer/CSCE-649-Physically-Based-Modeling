@@ -32,6 +32,7 @@ private:
 
     std::vector<std::pair<int, int>> collisionPairs;
     std::vector<int> collisionCount;
+    std::vector<Eigen::Vector3d> dx;
 };
 
 

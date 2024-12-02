@@ -30,6 +30,7 @@ public:
 	
 	double r; // radius
 	double m; // mass
+	double invM; // mass
 	int i;  // starting index
 	Eigen::Vector3d x0; // initial position
 	Eigen::Vector3d v0; // initial velocity
