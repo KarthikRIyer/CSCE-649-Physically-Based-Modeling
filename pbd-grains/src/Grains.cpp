@@ -14,7 +14,7 @@
 
 Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> shape) {
     int nx = 10;
-    int ny = 20;
+    int ny = 10;
     int nz = 10;
 
     Eigen::Vector3d startPos(-(nx * 2 * r)/2, 0.5, -(nz * 2 * r)/2);
@@ -45,6 +45,10 @@ Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> sh
             }
         }
     }
+
+    collisionCount.clear();
+    collisionPairs.reserve(particles.size() * particles.size());
+    collisionCount = std::vector<int>(particles.size(), 0);
     reset();
 }
 
@@ -90,6 +94,24 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
     }
 
     // find collisions and create constraints
+    collisionPairs.clear();
+    for (int i = 0; i < collisionCount.size(); ++i) {
+        collisionCount[i] = 0;
+    }
+    for (int i = 0; i < particles.size(); ++i) {
+        for (int j = i; j < particles.size(); ++j) {
+            std::shared_ptr<Particle> p0 = particles[i];
+            std::shared_ptr<Particle> p1 = particles[j];
+
+            Eigen::Vector3d r = p0->x - p1->x;
+            double d = r.norm() - (p0->r + p1->r);
+            if (d < 0.0) {
+                collisionPairs.push_back({i, j});
+                collisionCount[i]++;
+                collisionCount[j]++;
+            }
+        }
+    }
 
     // solve constraints
 

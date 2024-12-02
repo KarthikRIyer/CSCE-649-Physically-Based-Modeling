@@ -29,6 +29,9 @@ private:
     double ymax;
     double zmin;
     double zmax;
+
+    std::vector<std::pair<int, int>> collisionPairs;
+    std::vector<int> collisionCount;
 };
 
 
