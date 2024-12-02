@@ -26,7 +26,8 @@ Particle::Particle() :
 	v(0.0, 0.0, 0.0),
 	fixed(true)
 {
-	invM = 1/m;
+    if (m != 0.0)
+        invM = 1/m;
 }
 
 Particle::Particle(const shared_ptr<Shape> s, bool drawSphere) :
@@ -43,7 +44,8 @@ Particle::Particle(const shared_ptr<Shape> s, bool drawSphere) :
 	sphere(s),
 	drawSphere(drawSphere)
 {
-    invM = 1/m;
+    if (m != 0.0)
+        invM = 1/m;
 }
 
 Particle::~Particle()
