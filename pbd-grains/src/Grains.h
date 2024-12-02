@@ -23,6 +23,12 @@ public:
     void reset();
 private:
     std::vector<std::shared_ptr<Particle>> particles;
+    double xmin;
+    double xmax;
+    double ymin;
+    double ymax;
+    double zmin;
+    double zmax;
 };
 
 

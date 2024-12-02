@@ -75,7 +75,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
 {
 
 	gravity = std::make_shared<Gravity>(Eigen::Vector3d(0.0, -9.8, 0.0));
-	wind = std::make_shared<Wind>(5.0, Eigen::Vector3d(1.0, 0.0, 0.0));
+	wind = std::make_shared<Wind>(0.0, Eigen::Vector3d(1.0, 0.0, 0.0));
 	forceFields.push_back(gravity);
 	forceFields.push_back(wind);
 
@@ -132,6 +132,8 @@ void Scene::init()
         sphereShape->init();
     if (grains)
         grains->reset();
+    if (wind)
+        wind->setStrength(simParams.windStrength);
 }
 
 void Scene::cleanup() {

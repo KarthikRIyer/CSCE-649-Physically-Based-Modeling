@@ -34,6 +34,7 @@ public:
 	Eigen::Vector3d x0; // initial position
 	Eigen::Vector3d v0; // initial velocity
 	Eigen::Vector3d x;  // position
+	Eigen::Vector3d xTemp;  // position guess
 	Eigen::Vector3d xc;  // collision pos
 	Eigen::Vector3d nc;  // collision nor
 	Eigen::Vector3d v;  // velocity
