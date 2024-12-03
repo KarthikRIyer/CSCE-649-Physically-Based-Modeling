@@ -109,8 +109,8 @@ Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> sh
 
 Grains::Grains(std::vector<Eigen::Vector3d>& points, double r, double m, std::shared_ptr<Shape> shape) {
 
-    int nxs = 20;
-    int nzs = 20;
+    int nxs = 30;
+    int nzs = 30;
 
 //    Eigen::Vector3d startPos(-(nx * 2 * r)/2, 1.5, -(nz * 2 * r)/2);
     Eigen::Vector3d startPos2(-(nxs * 2 * r), 0.0, -(nzs * 2 * r));

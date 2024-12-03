@@ -3,4 +3,4 @@
 # - MESH <obj file> <texture file>
 TEXTURE grey.jpg
 MESH box.obj grey.jpg
-GRAINS K.txt
+GRAINS hi.txt

@@ -136,7 +136,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         sphereShape = make_shared<Shape>();
         sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
 
-        loadDataInputFile(DATA_DIR, "inputK.txt");
+        loadDataInputFile(DATA_DIR, "inputText.txt");
 
         // Create shapes
         for(const auto &mesh : meshData) {
