@@ -19,6 +19,7 @@ class Grains {
 public:
     Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> shape);
     Grains(std::vector<Eigen::Vector3d>& points, double r, double m, std::shared_ptr<Shape> shape);
+    Grains(std::vector<Eigen::Vector3d>& points, std::vector<Eigen::Vector3d>& staticPoints, double r, double m, std::shared_ptr<Shape> shape);
     void step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields,
               std::vector<std::shared_ptr<Shape> >& shapes, SimParams& simParams);
     void draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Program> p) const;

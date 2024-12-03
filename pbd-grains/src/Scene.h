@@ -65,6 +65,7 @@ private:
     std::vector<std::string> textureData;
     std::vector<std::vector<std::string>> meshData;
     std::vector<std::string> grainsData;
+    std::vector<std::string> staticGrainsData;
     int sceneIndex = 0;
 
     void loadDataInputFile(const std::string &DATA_DIR, const std::string &FILE_NAME);

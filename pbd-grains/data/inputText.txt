@@ -4,3 +4,4 @@
 TEXTURE grey.jpg
 MESH box.obj grey.jpg
 GRAINS hi.txt
+STATICGRAINS floor0_02.txt

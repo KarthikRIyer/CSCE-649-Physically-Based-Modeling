@@ -163,6 +163,46 @@ Grains::Grains(std::vector<Eigen::Vector3d>& points, double r, double m, std::sh
     spatialHash = SpatialHash(2 * r, particles.size());
 }
 
+Grains::Grains(std::vector<Eigen::Vector3d>& points, std::vector<Eigen::Vector3d>& staticPoints,
+               double r, double m, std::shared_ptr<Shape> shape) {
+    particles.reserve(points.size() + staticPoints.size());
+    int particleIndex = 0;
+    for (Eigen::Vector3d& pt: points) {
+        std::shared_ptr<Particle> p = std::make_shared<Particle>(shape, true);
+        p->x0 = pt;
+        p->x = p->x0;
+        p->v0 = Eigen::Vector3d(0, 0, 0);
+        p->v = p->v0;
+        p->r = r;
+        p->m = m;
+        p->fixed = false;
+        p->i = particleIndex++;
+        particles.push_back(p);
+    }
+
+
+    for (Eigen::Vector3d& pt: staticPoints) {
+        std::shared_ptr<Particle> p = std::make_shared<Particle>(shape, true);
+        p->x0 = pt;
+        p->x = p->x0;
+        p->v0 = Eigen::Vector3d(0, 0, 0);
+        p->v = p->v0;
+        p->r = r;
+        p->m = m;
+        p->fixed = true;
+        p->i = particleIndex++;
+        particles.push_back(p);
+    }
+
+    collisionCount.clear();
+    collisionPairs.reserve(particles.size() * particles.size());
+    collisionCount = std::vector<int>(particles.size(), 0);
+    dx = std::vector<Eigen::Vector3d>(particles.size(), Eigen::Vector3d(0, 0, 0));
+    reset();
+
+    spatialHash = SpatialHash(2 * r, particles.size());
+}
+
 void Grains::init() {
 
 }

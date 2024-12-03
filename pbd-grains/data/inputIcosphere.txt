@@ -1,5 +1,0 @@
-# Each line starts with a keyword:
-# - TEXTURE <texture file>
-# - MESH <obj file> <texture file>
-TEXTURE grey.jpg
-MESH icosphere.obj grey.jpg
