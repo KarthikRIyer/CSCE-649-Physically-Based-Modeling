@@ -86,22 +86,38 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
             double dist = dir.dot(n);
             Eigen::Vector3d xp = xTemp - (dist * n);
 
-//            double pn = p.points[0].dot(n);
-//            double d0 = (n.dot(x) - pn);
-//            double d1 = (n.dot(xNew) - pn);
-//
-//            if (sgn(d0) * sgn(d1) >= 0) continue;
-
-//            Eigen::Vector3d dir = xNew - x;
-//            dir.normalize();
-//            double t = (pn - n.dot(x))/(n.dot(dir));
-//            Eigen::Vector3d xColl = x + (t * dir);
+            Eigen::Vector3d P = p.points[0];
+            Eigen::Vector3d Q = p.points[1];
+            Eigen::Vector3d R = p.points[2];
+            Eigen::Vector3d Pproj, Qproj, Rproj, xCollProj;
+            if (std::abs(n.x()) >= std::max(std::abs(n.y()), std::abs(n.z()))) {
+                Pproj = Eigen::Vector3d(P.y(), P.z(), 0.0);
+                Qproj = Eigen::Vector3d(Q.y(), Q.z(), 0.0);
+                Rproj = Eigen::Vector3d(R.y(), R.z(), 0.0);
+                xCollProj = Eigen::Vector3d(xp.y(), xp.z(), 0.0);
+            } else if (std::abs(n.y()) >= std::max(std::abs(n.x()), std::abs(n.z()))) {
+                Pproj = Eigen::Vector3d(P.z(), P.x(), 0.0);
+                Qproj = Eigen::Vector3d(Q.z(), Q.x(), 0.0);
+                Rproj = Eigen::Vector3d(R.z(), R.x(), 0.0);
+                xCollProj = Eigen::Vector3d(xp.z(), xp.x(), 0.0);
+            } else {
+                Pproj = Eigen::Vector3d(P.x(), P.y(), 0.0);
+                Qproj = Eigen::Vector3d(Q.x(), Q.y(), 0.0);
+                Rproj = Eigen::Vector3d(R.x(), R.y(), 0.0);
+                xCollProj = Eigen::Vector3d(xp.x(), xp.y(), 0.0);
+            }
 
             // check if point is inside polygon
-            double S = 0.5 * u.cross(v).norm();
-            double Aa = 0.5 * (p.points[1] - xp).cross(p.points[2] - xp).norm();
-            double Ab = 0.5 * (p.points[2] - xp).cross(p.points[0] - xp).norm();
-            double Ac = 0.5 * (p.points[0] - xp).cross(p.points[1] - xp).norm();
+            Eigen::Vector3d edge1Proj = (Pproj - Qproj);
+            Eigen::Vector3d edge2Proj = (Pproj - Rproj);
+            Eigen::Vector3d areaProj = edge1Proj.cross(edge2Proj);
+            double S = 0.5 * areaProj.norm() * (areaProj.z() / std::abs(areaProj.z()));
+            Eigen::Vector3d AaVec = (Qproj - xCollProj).cross(Rproj - xCollProj);
+            double Aa = 0.5 * AaVec.norm() * (AaVec.z()/std::abs(AaVec.z()));
+            Eigen::Vector3d AbVec = (Rproj - xCollProj).cross(Pproj - xCollProj);
+            double Ab = 0.5 * AbVec.norm() * (AbVec.z()/std::abs(AbVec.z()));
+            Eigen::Vector3d AcVec = (Pproj - xCollProj).cross(Qproj - xCollProj);
+            double Ac = 0.5 * AcVec.norm() * (AcVec.z()/std::abs(AcVec.z()));
             double a = Aa/S;
             double b = Ab/S;
             double c = Ac/S;
@@ -145,59 +161,61 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
                 nc = (xTemp - xc).normalized();
                 double frac = (xTemp - xc).norm() / r;
                 return frac;
-            } else if (std::abs(dist) < r) {
-                // center of sphere is close to edges of triangle
-                Eigen::Vector3d A = p.points[0];
-                Eigen::Vector3d B = p.points[1];
-                Eigen::Vector3d C = x;
-
-                Eigen::Vector3d AB = (B - A);
-                Eigen::Vector3d AC = (C - A);
-                Eigen::Vector3d AD = AB * (AB.dot(AC))/(AB.dot(AB));
-                Eigen::Vector3d D = A + AD;
-                if (AD.norm() <= AB.norm() && AD.dot(AB) > 0) {
-                    didCollide = true;
-                    hasCollided = true;
-                    xc = D; // collision point is projection of center on edge
-                    nc = (xTemp - D).normalized(); // normal is from collision point to center of sphere
-                    double frac = (xTemp - xc).norm() / r;
-                    return frac;
-                }
-
-                A = p.points[1];
-                B = p.points[2];
-                C = xTemp;
-                AB = (B - A);
-                AC = (C - A);
-                AD = AB * (AB.dot(AC))/(AB.dot(AB));
-                D = A + AD;
-                if (AD.norm() <= AB.norm() && AD.dot(AB) > 0) {
-                    didCollide = true;
-                    hasCollided = true;
-                    xc = D; // collision point is projection of center on edge
-                    nc = (xTemp - D).normalized(); // normal is from collision point to center of sphere
-                    double frac = (xTemp - xc).norm() / r;
-                    return frac;
-                }
-
-                A = p.points[2];
-                B = p.points[0];
-                C = xTemp;
-                AB = (B - A);
-                AC = (C - A);
-                AD = AB * (AB.dot(AC))/(AB.dot(AB));
-                D = A + AD;
-                if (AD.norm() <= AB.norm() && AD.dot(AB) > 0) {
-                    didCollide = true;
-                    hasCollided = true;
-                    xc = D; // collision point is projection of center on edge
-                    nc = (xTemp - D).normalized(); // normal is from collision point to center of sphere
-                    double frac = (xTemp - xc).norm() / r;
-                    return frac;
-                }
-
-                continue;
-            } else {
+            }
+//            else if (std::abs(dist) < r) {
+//                // center of sphere is close to edges of triangle
+//                Eigen::Vector3d A = p.points[0];
+//                Eigen::Vector3d B = p.points[1];
+//                Eigen::Vector3d C = xTemp;
+//
+//                Eigen::Vector3d AB = (B - A);
+//                Eigen::Vector3d AC = (C - A);
+//                Eigen::Vector3d AD = AB * (AB.dot(AC))/(AB.dot(AB));
+//                Eigen::Vector3d D = A + AD;
+//                if (AD.norm() <= AB.norm() && AD.dot(AB) > 0) {
+//                    didCollide = true;
+//                    hasCollided = true;
+//                    xc = D; // collision point is projection of center on edge
+//                    nc = (xTemp - D).normalized(); // normal is from collision point to center of sphere
+//                    double frac = (xTemp - xc).norm() / r;
+//                    return frac;
+//                }
+//
+//                A = p.points[1];
+//                B = p.points[2];
+//                C = xTemp;
+//                AB = (B - A);
+//                AC = (C - A);
+//                AD = AB * (AB.dot(AC))/(AB.dot(AB));
+//                D = A + AD;
+//                if (AD.norm() <= AB.norm() && AD.dot(AB) > 0) {
+//                    didCollide = true;
+//                    hasCollided = true;
+//                    xc = D; // collision point is projection of center on edge
+//                    nc = (xTemp - D).normalized(); // normal is from collision point to center of sphere
+//                    double frac = (xTemp - xc).norm() / r;
+//                    return frac;
+//                }
+//
+//                A = p.points[2];
+//                B = p.points[0];
+//                C = xTemp;
+//                AB = (B - A);
+//                AC = (C - A);
+//                AD = AB * (AB.dot(AC))/(AB.dot(AB));
+//                D = A + AD;
+//                if (AD.norm() <= AB.norm() && AD.dot(AB) > 0) {
+//                    didCollide = true;
+//                    hasCollided = true;
+//                    xc = D; // collision point is projection of center on edge
+//                    nc = (xTemp - D).normalized(); // normal is from collision point to center of sphere
+//                    double frac = (xTemp - xc).norm() / r;
+//                    return frac;
+//                }
+//
+//                continue;
+//            }
+            else {
                 continue;
             }
         }
