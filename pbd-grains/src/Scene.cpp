@@ -192,7 +192,7 @@ void Scene::step()
     }
 
     if (grains)
-        grains->step(h, forceFields, simParams);
+        grains->step(h, forceFields, shapes, simParams);
 
     t += cf * h;
 

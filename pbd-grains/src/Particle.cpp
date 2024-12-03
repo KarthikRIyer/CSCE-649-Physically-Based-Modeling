@@ -82,9 +82,9 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
             if (n.norm() == 0) continue;
 
             // project center of sphere to triangle plane
-            Eigen::Vector3d dir = x - p.points[0];
+            Eigen::Vector3d dir = xTemp - p.points[0];
             double dist = dir.dot(n);
-            Eigen::Vector3d xp = x - (dist * n);
+            Eigen::Vector3d xp = xTemp - (dist * n);
 
 //            double pn = p.points[0].dot(n);
 //            double d0 = (n.dot(x) - pn);
@@ -124,8 +124,8 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
                 didCollide = true;
                 hasCollided = true;
                 xc = p.points[0];
-                nc = (x - xc).normalized();
-                double frac = (x - xc).norm() / r;
+                nc = (xTemp - xc).normalized();
+                double frac = (xTemp - xc).norm() / r;
                 return frac;
             } else if (std::abs(dist) < r && (xp - p.points[1]).norm() < r) {
                 // center of the sphere is outside the triangle but the
@@ -133,8 +133,8 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
                 didCollide = true;
                 hasCollided = true;
                 xc = p.points[1];
-                nc = (x - xc).normalized();
-                double frac = (x - xc).norm() / r;
+                nc = (xTemp - xc).normalized();
+                double frac = (xTemp - xc).norm() / r;
                 return frac;
             } else if (std::abs(dist) < r && (xp - p.points[2]).norm() < r) {
                 // center of the sphere is outside the triangle but the
@@ -142,8 +142,8 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
                 didCollide = true;
                 hasCollided = true;
                 xc = p.points[2];
-                nc = (x - xc).normalized();
-                double frac = (x - xc).norm() / r;
+                nc = (xTemp - xc).normalized();
+                double frac = (xTemp - xc).norm() / r;
                 return frac;
             } else if (std::abs(dist) < r) {
                 // center of sphere is close to edges of triangle
@@ -159,14 +159,14 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
                     didCollide = true;
                     hasCollided = true;
                     xc = D; // collision point is projection of center on edge
-                    nc = (x - D).normalized(); // normal is from collision point to center of sphere
-                    double frac = (x - xc).norm() / r;
+                    nc = (xTemp - D).normalized(); // normal is from collision point to center of sphere
+                    double frac = (xTemp - xc).norm() / r;
                     return frac;
                 }
 
                 A = p.points[1];
                 B = p.points[2];
-                C = x;
+                C = xTemp;
                 AB = (B - A);
                 AC = (C - A);
                 AD = AB * (AB.dot(AC))/(AB.dot(AB));
@@ -175,14 +175,14 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
                     didCollide = true;
                     hasCollided = true;
                     xc = D; // collision point is projection of center on edge
-                    nc = (x - D).normalized(); // normal is from collision point to center of sphere
-                    double frac = (x - xc).norm() / r;
+                    nc = (xTemp - D).normalized(); // normal is from collision point to center of sphere
+                    double frac = (xTemp - xc).norm() / r;
                     return frac;
                 }
 
                 A = p.points[2];
                 B = p.points[0];
-                C = x;
+                C = xTemp;
                 AB = (B - A);
                 AC = (C - A);
                 AD = AB * (AB.dot(AC))/(AB.dot(AB));
@@ -191,8 +191,8 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
                     didCollide = true;
                     hasCollided = true;
                     xc = D; // collision point is projection of center on edge
-                    nc = (x - D).normalized(); // normal is from collision point to center of sphere
-                    double frac = (x - xc).norm() / r;
+                    nc = (xTemp - D).normalized(); // normal is from collision point to center of sphere
+                    double frac = (xTemp - xc).norm() / r;
                     return frac;
                 }
 

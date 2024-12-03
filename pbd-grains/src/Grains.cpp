@@ -63,7 +63,7 @@ Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> sh
     for (int i = 0; i < nxs*2; i++) {
         for (int j = 0; j < nzs*2; j++) {
             double x = i * (2 * r);
-            double y = -r;
+            double y = 0;
             double z = j * (2 * r);
             std::shared_ptr<Particle> p = std::make_shared<Particle>(shape, true);
             p->x0 = startPos2 +Eigen::Vector3d(x, y, z);
@@ -116,7 +116,8 @@ void Grains::reset() {
     }
 }
 
-void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFields, SimParams &simParams) {
+void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFields,
+                  std::vector<std::shared_ptr<Shape> >& shapes, SimParams &simParams) {
     // apply external forces
     for (std::shared_ptr<Particle> p: particles) {
         p->xTemp = p->x;
@@ -140,27 +141,35 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
         assert(p->xTemp.z() == p->xTemp.z());
     }
     // boundary collisions
-    for (std::shared_ptr<Particle> p: particles) {
-        if (p->fixed) continue;
-        if (p->xTemp.x() < xmin + p->r) {
-            p->xTemp += Eigen::Vector3d(xmin + p->r - p->xTemp.x() + COLL_EPSILON, 0, 0);
-        }
-        if (p->xTemp.x() > xmax - p->r) {
-            p->xTemp -= Eigen::Vector3d( p->xTemp.x() - (xmax - p->r) - COLL_EPSILON, 0, 0);
-        }
-        if (p->xTemp.z() < zmin + p->r) {
-            p->xTemp += Eigen::Vector3d(0, 0, zmin + p->r - p->xTemp.z() + COLL_EPSILON);
-        }
-        if (p->xTemp.z() > zmax - p->r) {
-            p->xTemp -= Eigen::Vector3d(0, 0, p->xTemp.z() - (zmax - p->r) - COLL_EPSILON);
-        }
-//        if (p->xTemp.y() < ymin + p->r) {
-//            p->xTemp += Eigen::Vector3d(0, ymin + p->r - p->xTemp.y() + COLL_EPSILON, 0);
-////            p->v.y() *= -1;
+//    for (std::shared_ptr<Particle> p: particles) {
+//        if (p->fixed) continue;
+//        if (p->xTemp.x() < xmin + p->r) {
+//            p->xTemp += Eigen::Vector3d(xmin + p->r - p->xTemp.x() + COLL_EPSILON, 0, 0);
 //        }
-        assert(p->xTemp.x() == p->xTemp.x());
-        assert(p->xTemp.y() == p->xTemp.y());
-        assert(p->xTemp.z() == p->xTemp.z());
+//        if (p->xTemp.x() > xmax - p->r) {
+//            p->xTemp -= Eigen::Vector3d( p->xTemp.x() - (xmax - p->r) - COLL_EPSILON, 0, 0);
+//        }
+//        if (p->xTemp.z() < zmin + p->r) {
+//            p->xTemp += Eigen::Vector3d(0, 0, zmin + p->r - p->xTemp.z() + COLL_EPSILON);
+//        }
+//        if (p->xTemp.z() > zmax - p->r) {
+//            p->xTemp -= Eigen::Vector3d(0, 0, p->xTemp.z() - (zmax - p->r) - COLL_EPSILON);
+//        }
+////        if (p->xTemp.y() < ymin + p->r) {
+////            p->xTemp += Eigen::Vector3d(0, ymin + p->r - p->xTemp.y() + COLL_EPSILON, 0);
+//////            p->v.y() *= -1;
+////        }
+//        assert(p->xTemp.x() == p->xTemp.x());
+//        assert(p->xTemp.y() == p->xTemp.y());
+//        assert(p->xTemp.z() == p->xTemp.z());
+//    }
+    for (std::shared_ptr<Particle> p: particles) {
+        p->detectCollision(h, shapes);
+        if (p->didCollide) {
+            p->didCollide = false;
+            p->xTemp = p->xc + (p->nc * p->r);
+            p->xTemp += (COLL_EPSILON * p->nc);
+        }
     }
 
     for (int solverIter = 0; solverIter < SOLVER_ITERATIONS; ++solverIter) {
