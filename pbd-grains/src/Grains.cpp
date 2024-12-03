@@ -12,15 +12,16 @@
 #include "IForceField.h"
 
 #define COLL_EPSILON 1e-3
+#define LENGTH_EPSILON 1e-6
 #define SOLVER_ITERATIONS 2
 
 #define MU_K 0.35
 #define MU_S 0.3
 
 Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> shape) {
-    int nx = 20;
-    int ny = 20;
-    int nz = 20;
+    int nx = 10;
+    int ny = 10;
+    int nz = 10;
 
     int nxs = 20;
     int nzs = 20;
@@ -119,6 +120,9 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
     // apply external forces
     for (std::shared_ptr<Particle> p: particles) {
         p->xTemp = p->x;
+        assert(p->xTemp.x() == p->xTemp.x());
+        assert(p->xTemp.y() == p->xTemp.y());
+        assert(p->xTemp.z() == p->xTemp.z());
     }
     for (std::shared_ptr<Particle> p: particles) {
         if (p->fixed) continue;
@@ -131,6 +135,9 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
 //        p->xTemp = p->x;
         p->xTemp += (h * p->v);
 //        p->x += (h * p->v);
+        assert(p->xTemp.x() == p->xTemp.x());
+        assert(p->xTemp.y() == p->xTemp.y());
+        assert(p->xTemp.z() == p->xTemp.z());
     }
     // boundary collisions
     for (std::shared_ptr<Particle> p: particles) {
@@ -151,6 +158,9 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
 //            p->xTemp += Eigen::Vector3d(0, ymin + p->r - p->xTemp.y() + COLL_EPSILON, 0);
 ////            p->v.y() *= -1;
 //        }
+        assert(p->xTemp.x() == p->xTemp.x());
+        assert(p->xTemp.y() == p->xTemp.y());
+        assert(p->xTemp.z() == p->xTemp.z());
     }
 
     for (int solverIter = 0; solverIter < SOLVER_ITERATIONS; ++solverIter) {
@@ -184,9 +194,9 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
         }
 
         // solve constraints
-        tbb::parallel_for((size_t)0, collisionPairs.size(), [=](size_t i) {
-//        for (std::pair<int, int> collPair: collisionPairs) {
-            std::pair<int, int> collPair = collisionPairs[i];
+//        tbb::parallel_for((size_t)0, collisionPairs.size(), [=](size_t i) {
+        for (std::pair<int, int> collPair: collisionPairs) {
+//            std::pair<int, int> collPair = collisionPairs[i];
             std::shared_ptr<Particle> p0 = particles[collPair.first];
             std::shared_ptr<Particle> p1 = particles[collPair.second];
 
@@ -205,7 +215,9 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
                 Eigen::Vector3d normal = r.normalized();
 //                Eigen::Vector3d dx0 =  lambda * normal;
                 Eigen::Vector3d dx1 = lambda * normal;
-
+                assert(dx1.x() == dx1.x());
+                assert(dx1.y() == dx1.y());
+                assert(dx1.z() == dx1.z());
 //                dx0 /= collisionCount[collPair.first];
                 dx1 /= collisionCount[collPair.second];
 
@@ -219,6 +231,7 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
                 Eigen::Vector3d dpf = (p1->xTemp - p1->x) - (p0->xTemp - p0->x);
                 Eigen::Vector3d dpt = dpf - (dpf.dot(normal) * normal);
                 double ldpt = dpt.norm();
+                if (ldpt < LENGTH_EPSILON) continue;
 
                 if (ldpt < MU_S * -d) {
 //                    p0->xTemp += (dpt * (p0->invM / totalInvMass));
@@ -240,11 +253,28 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
                 Eigen::Vector3d dx0 = -p0->invM * lambda * normal;
                 Eigen::Vector3d dx1 = p1->invM * lambda * normal;
 
+                assert(collisionCount[collPair.first] != 0);
+                assert(collisionCount[collPair.second] != 0);
+
                 dx0 /= collisionCount[collPair.first];
                 dx1 /= collisionCount[collPair.second];
 
+                assert(dx0.x() == dx0.x());
+                assert(dx0.y() == dx0.y());
+                assert(dx0.z() == dx0.z());
+                assert(dx1.x() == dx1.x());
+                assert(dx1.y() == dx1.y());
+                assert(dx1.z() == dx1.z());
+
                 p0->xTemp += dx0;
                 p1->xTemp += dx1;
+
+                assert(p0->xTemp.x() == p0->xTemp.x());
+                assert(p0->xTemp.y() == p0->xTemp.y());
+                assert(p0->xTemp.z() == p0->xTemp.z());
+                assert(p1->xTemp.x() == p1->xTemp.x());
+                assert(p1->xTemp.y() == p1->xTemp.y());
+                assert(p1->xTemp.z() == p1->xTemp.z());
 
 //            dx[collPair.first] += dx0;
 //            dx[collPair.second] += dx1;
@@ -253,6 +283,7 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
                 Eigen::Vector3d dpf = (p1->xTemp - p1->x) - (p0->xTemp - p0->x);
                 Eigen::Vector3d dpt = dpf - (dpf.dot(normal) * normal);
                 double ldpt = dpt.norm();
+                if (ldpt < LENGTH_EPSILON) continue;
 
                 if (ldpt < MU_S * -d) {
                     p0->xTemp += (dpt * (p0->invM / totalInvMass));
@@ -264,9 +295,15 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
 //                p0->xTemp += (dpt * (p0->invM / totalInvMass));
 //                p1->xTemp -= (dpt * (p1->invM / totalInvMass));
                 }
+                assert(p0->xTemp.x() == p0->xTemp.x());
+                assert(p0->xTemp.y() == p0->xTemp.y());
+                assert(p0->xTemp.z() == p0->xTemp.z());
+                assert(p1->xTemp.x() == p1->xTemp.x());
+                assert(p1->xTemp.y() == p1->xTemp.y());
+                assert(p1->xTemp.z() == p1->xTemp.z());
             }
-//        }
-        });
+        }
+//        });
 //        for (int i = 0; i < particles.size(); ++i) {
 //            particles[i]->xTemp += dx[i];
 //        }
