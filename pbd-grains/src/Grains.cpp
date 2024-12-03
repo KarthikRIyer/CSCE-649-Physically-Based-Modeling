@@ -5,13 +5,14 @@
 #include "Grains.h"
 
 #include <iostream>
+#include <tbb/tbb.h>
 
 #include "Particle.h"
 #include "Shape.h"
 #include "IForceField.h"
 
 #define COLL_EPSILON 1e-3
-#define SOLVER_ITERATIONS 2
+#define SOLVER_ITERATIONS 1
 
 #define MU_K 0.35
 #define MU_S 0.3
@@ -35,7 +36,7 @@ Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> sh
     ymax = 1e10;
     zmin = -nzs * 2 * r;
     zmax = nzs * 2 * r;
-
+    int particleIndex = 0;
     for (int i = 0; i < nx; i++) {
         for (int j = 0; j < ny; j++) {
             for (int k = 0; k < nz; k++) {
@@ -53,6 +54,7 @@ Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> sh
                 p->r = r;
                 p->m = m;
                 p->fixed = false;
+                p->i = particleIndex++;
                 particles.push_back(p);
             }
         }
@@ -70,6 +72,7 @@ Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> sh
             p->r = r;
             p->m = m;
             p->fixed = true;
+            p->i = particleIndex++;
             particles.push_back(p);
         }
     }
@@ -98,6 +101,8 @@ Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> sh
     collisionCount = std::vector<int>(particles.size(), 0);
     dx = std::vector<Eigen::Vector3d>(particles.size(), Eigen::Vector3d(0, 0, 0));
     reset();
+
+    spatialHash = SpatialHash(2 * r, particles.size());
 }
 
 void Grains::init() {
@@ -157,12 +162,17 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
         for (int i = 0; i < dx.size(); ++i) {
             dx[i] = Eigen::Vector3d(0, 0, 0);
         }
+
+        // create spatial hash
+        spatialHash.create(particles);
+
         for (int i = 0; i < particles.size(); ++i) {
-            for (int j = i+1; j < particles.size(); ++j) {
+            spatialHash.query(particles, i, 2 * particles[i]->r);
+            for (int ni = 0; ni < spatialHash.getQuerySize(); ++ni) {
+                int j = spatialHash.getQueryIds()[ni];
                 std::shared_ptr<Particle> p0 = particles[i];
                 std::shared_ptr<Particle> p1 = particles[j];
                 if (p0->fixed && p1->fixed) continue;
-
                 Eigen::Vector3d r = p0->xTemp - p1->xTemp;
                 double d = r.norm() - (p0->r + p1->r);
                 if (d < 0.0) {
@@ -174,7 +184,9 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
         }
 
         // solve constraints
+//        tbb::parallel_for((size_t)0, collisionPairs.size(), [=](size_t i) {
         for (std::pair<int, int> collPair: collisionPairs) {
+//            std::pair<int, int> collPair = collisionPairs[i];
             std::shared_ptr<Particle> p0 = particles[collPair.first];
             std::shared_ptr<Particle> p1 = particles[collPair.second];
 
@@ -254,6 +266,7 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
                 }
             }
         }
+//        });
 //        for (int i = 0; i < particles.size(); ++i) {
 //            particles[i]->xTemp += dx[i];
 //        }

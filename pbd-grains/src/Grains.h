@@ -6,6 +6,7 @@
 #define PBD_GRAINS_GRAINS_H
 
 #include <Eigen/Dense>
+#include "SpatialHash.h"
 
 class Shape;
 class Program;
@@ -33,6 +34,8 @@ private:
     std::vector<std::pair<int, int>> collisionPairs;
     std::vector<int> collisionCount;
     std::vector<Eigen::Vector3d> dx;
+
+    SpatialHash spatialHash;
 };
 
 
