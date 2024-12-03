@@ -64,9 +64,11 @@ private:
 
     std::vector<std::string> textureData;
     std::vector<std::vector<std::string>> meshData;
+    std::vector<std::string> grainsData;
+    int sceneIndex = 0;
 
     void loadDataInputFile(const std::string &DATA_DIR, const std::string &FILE_NAME);
-    int sceneIndex = 0;
+    std::vector<Eigen::Vector3d> readGrainsFile(const std::string& filename);
 };
 
 #endif

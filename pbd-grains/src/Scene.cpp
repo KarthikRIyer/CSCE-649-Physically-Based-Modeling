@@ -54,6 +54,10 @@ void Scene::loadDataInputFile(const std::string &DATA_DIR, const std::string &FI
             ss >> value;
             mesh.push_back(value); // texture
             meshData.push_back(mesh);
+        } else if(key.compare("GRAINS") == 0) {
+            value.clear();
+            ss >> value; // point file
+            grainsData.push_back(value);
         } else {
             cout << "Unknown key word: " << key << endl;
         }
@@ -102,6 +106,7 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->init();
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
+        grains = std::make_shared<Grains>(30*30*30, 0.02, 1, sphereShape);
 
 	} else if (sceneIndex == 1) {
         sphereShape = make_shared<Shape>();
@@ -126,15 +131,86 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
             textureKd->init();
             textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
         }
+        grains = std::make_shared<Grains>(30*30*30, 0.02, 1, sphereShape);
+    } else if (sceneIndex == 2) {
+        sphereShape = make_shared<Shape>();
+        sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
+
+        loadDataInputFile(DATA_DIR, "inputK.txt");
+
+        // Create shapes
+        for(const auto &mesh : meshData) {
+            auto shape = make_shared<Shape>();
+            shapes.push_back(shape);
+            shape->loadMesh(DATA_DIR + mesh[0]);
+            shape->setTextureFilename(mesh[1]);
+            shape->init();
+        }
+
+        for(const auto &filename : textureData) {
+            auto textureKd = make_shared<Texture>();
+            textureMap[filename] = textureKd;
+            textureKd->setFilename(DATA_DIR + filename);
+            textureKd->setUnit(texUnit); // Bind to unit 1
+            textureKd->init();
+            textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
+        }
+
+        std::vector<Eigen::Vector3d> points;
+        for(const auto &filename : grainsData) {
+            std::string finalPath = DATA_DIR + filename;
+            std::vector<Eigen::Vector3d> p = readGrainsFile(finalPath);
+            points.insert(points.end(), p.begin(), p.end());
+        }
+
+        grains = std::make_shared<Grains>(points, 0.02, 1, sphereShape);
     }
 
-    sphereTexture = make_shared<Texture>();
+
+    sphereTexture = std::make_shared<Texture>();
     sphereTexture->setFilename(DATA_DIR + "white.png");
     sphereTexture->setUnit(texUnit); // Bind to unit 1
     sphereTexture->init();
     sphereTexture->setWrapModes(GL_REPEAT, GL_REPEAT);
+}
 
-    grains = std::make_shared<Grains>(30*30*30, 0.02, 1, sphereShape);
+std::vector<Eigen::Vector3d> Scene::readGrainsFile(const std::string& filename) {
+    ifstream in;
+    in.open(filename);
+    if(!in.good()) {
+        cout << "Cannot read " << filename << endl;
+        return std::vector<Eigen::Vector3d>();
+    }
+    cout << "Loading " << filename << endl;
+    std::vector<Eigen::Vector3d> points;
+    string line;
+    while(1) {
+        getline(in, line);
+        if(in.eof()) {
+            break;
+        }
+        if(line.empty()) {
+            continue;
+        }
+        // Skip comments
+        if(line.at(0) == '#') {
+            continue;
+        }
+        // Parse lines
+        string xstr, ystr, zstr;
+        stringstream ss(line);
+        // key
+        ss >> xstr;
+        ss >> ystr;
+        ss >> zstr;
+        double xVal = std::stod(xstr);
+        double yVal = std::stod(ystr);
+        double zVal = std::stod(zstr);
+        Eigen::Vector3d v(xVal, yVal, zVal);
+        points.push_back(v);
+    }
+    in.close();
+    return points;
 }
 
 void Scene::init()
