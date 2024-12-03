@@ -12,15 +12,15 @@
 #include "IForceField.h"
 
 #define COLL_EPSILON 1e-3
-#define SOLVER_ITERATIONS 1
+#define SOLVER_ITERATIONS 2
 
 #define MU_K 0.35
 #define MU_S 0.3
 
 Grains::Grains(int numberOfGrains, double r, double m, std::shared_ptr<Shape> shape) {
-    int nx = 10;
+    int nx = 20;
     int ny = 20;
-    int nz = 10;
+    int nz = 20;
 
     int nxs = 20;
     int nzs = 20;
@@ -184,9 +184,9 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
         }
 
         // solve constraints
-//        tbb::parallel_for((size_t)0, collisionPairs.size(), [=](size_t i) {
-        for (std::pair<int, int> collPair: collisionPairs) {
-//            std::pair<int, int> collPair = collisionPairs[i];
+        tbb::parallel_for((size_t)0, collisionPairs.size(), [=](size_t i) {
+//        for (std::pair<int, int> collPair: collisionPairs) {
+            std::pair<int, int> collPair = collisionPairs[i];
             std::shared_ptr<Particle> p0 = particles[collPair.first];
             std::shared_ptr<Particle> p1 = particles[collPair.second];
 
@@ -265,8 +265,8 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
 //                p1->xTemp -= (dpt * (p1->invM / totalInvMass));
                 }
             }
-        }
-//        });
+//        }
+        });
 //        for (int i = 0; i < particles.size(); ++i) {
 //            particles[i]->xTemp += dx[i];
 //        }
