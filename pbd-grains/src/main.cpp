@@ -205,11 +205,8 @@ void render()
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
     ImGui::Begin("Simulation params");
-    ImGui::SliderFloat("Wind strength", &simParams.windStrength, 0.0f, 5.0f);
-    ImGui::SliderFloat("Wind oscillation speed", &simParams.windOscilationSpeed, 0.0f, 10.0f);
-    ImGui::SliderFloat("Air Friction Factor", &simParams.airFrictionFactor, 0.0f, 5.0f);
-    ImGui::SliderFloat("Restitution Coefficient", &simParams.restitutionCoeff, 0.0f, 1.0f);
-    ImGui::SliderFloat("Friction Coefficient", &simParams.frictionCoeff, 0.0f, 5.0f);
+    ImGui::SliderFloat("Static Friction Coefficient", &simParams.staticFrictionCoeff, 0.0f, 1.0f);
+    ImGui::SliderFloat("Kinetic Friction Coefficient", &simParams.kineticFrictionCoeff, 0.0f, 1.0f);
     ImGui::SliderFloat("Timestep", &simParams.timestep, 1e-3, 5e-2);
 
     if (ImGui::BeginCombo("Choose scene", currentScene)) {

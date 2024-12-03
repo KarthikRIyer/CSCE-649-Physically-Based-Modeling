@@ -225,58 +225,6 @@ double Particle::detectCollision(double h, std::vector<std::shared_ptr<Shape> >&
 
 void Particle::step(double h, std::vector<std::shared_ptr<IForceField>>& forceFields, SimParams& simParams) {
 
-    Eigen::Vector3d vNew = v;
-    Eigen::Vector3d fNet(0, 0, 0);
-    for (auto forceField: forceFields) {
-        fNet += forceField->getForce(x);
-        vNew += (forceField->getForce(x) * h);
-    }
-    vNew -= (h * (simParams.airFrictionFactor / m) * v);
-//    std::cout<<"V: "<<v.norm()<<"\n";
-    if (v.norm() <= 0.08) { // if v is close to zero
-//        std::cout<<"dist: "<<(x - xc).norm()<<"\n";
-        if (hasCollided && (x - (r * nc) - xc).norm() <= 1e-2) { // position is on surface
-//            std::cout<<"fNet.dot(nc): "<<fNet.dot(nc)<<"\n";
-            if (fNet.dot(nc) < 0.0) { // acc towards the surface
-                Eigen::Vector3d an = fNet.dot(nc) * nc.normalized();
-                Eigen::Vector3d at = fNet - an;
-                if (simParams.frictionCoeff * an.norm() >= at.norm()) { // friction must overcome tangential acceleration
-//                    std::cout<<"Stopped\n";
-                    return;
-                }
-            }
-        }
-    }
-
-    Eigen::Vector3d xNew = x + (v * h);
-
-    x = xNew;
-    v = vNew;
-
-    if (didCollide) {
-        didCollide = false;
-        nc.normalize();
-        x = xc + (nc * r);
-        x += (1e-7 * nc); // to handle precision errors
-        Eigen::Vector3d vn = v.dot(nc) * nc;
-        Eigen::Vector3d vt = v - vn;
-//        std::cout<<"v: "<< v.transpose()<<"\n";
-//        std::cout<<"vt: "<< vt.transpose()<<"\n";
-//        std::cout<<"vn: "<< vn.transpose()<<"\n";
-//        std::cout<<"nc: "<< nc.transpose()<<"\n";
-//        std::cout<<"restitution coeff: "<< simParams.restitutionCoeff<<"\n";
-        vn *= -simParams.restitutionCoeff;
-
-        double fric = simParams.frictionCoeff * (fNet.dot(nc));
-        Eigen::Vector3d aFric = std::min(fric, (vt / h).norm()) * vt.normalized();
-//        std::cout<<"aFric: "<< aFric<<"\n";
-//        std::cout<<"vt after: "<< vt.transpose()<<"\n";
-//        std::cout<<"vn after: "<< vn.transpose()<<"\n";
-        vt += (aFric * h);
-
-        v = vn + vt;
-//        std::cout<<"v after: "<< v.transpose()<<"\n";
-    }
 }
 
 void Particle::draw(shared_ptr<MatrixStack> MV, const shared_ptr<Program> prog) const

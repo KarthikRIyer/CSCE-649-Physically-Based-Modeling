@@ -6,11 +6,8 @@
 #define A1_SIMPARAMS_H
 
 struct SimParams {
-    float windStrength = 0.0;
-    float windOscilationSpeed = 1.0;
-    float airFrictionFactor = 0.01;
-    float restitutionCoeff = 0.6;
-    float frictionCoeff = 0.5;
+    float staticFrictionCoeff = 0.3;
+    float kineticFrictionCoeff = 0.35;
     float timestep = 5e-3;
 };
 

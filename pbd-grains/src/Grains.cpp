@@ -10,6 +10,7 @@
 #include "Particle.h"
 #include "Shape.h"
 #include "IForceField.h"
+#include "SimParams.h"
 
 #define COLL_EPSILON 1e-3
 #define LENGTH_EPSILON 1e-6
@@ -242,11 +243,11 @@ void Grains::step(double h, std::vector<std::shared_ptr<IForceField>> &forceFiel
                 double ldpt = dpt.norm();
                 if (ldpt < LENGTH_EPSILON) continue;
 
-                if (ldpt < MU_S * -d) {
+                if (ldpt < simParams.staticFrictionCoeff * -d) {
 //                    p0->xTemp += (dpt * (p0->invM / totalInvMass));
                     p1->xTemp -= (dpt * 1);
                 } else {
-                    Eigen::Vector3d delta = dpt * std::min(MU_K * -d / ldpt, 1.0);
+                    Eigen::Vector3d delta = dpt * std::min(simParams.kineticFrictionCoeff * -d / ldpt, 1.0);
 //                    p0->xTemp += (delta * (p0->invM / totalInvMass));
                     p1->xTemp -= (delta * 1);
 //                p0->xTemp += (dpt * (p0->invM / totalInvMass));
