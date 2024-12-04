@@ -25,6 +25,7 @@ public:
     void draw(std::shared_ptr<MatrixStack> MV, const std::shared_ptr<Program> p) const;
     void init();
     void reset();
+    std::vector<std::shared_ptr<Particle>>& getParticles();
 private:
     std::vector<std::shared_ptr<Particle>> particles;
     double xmin;

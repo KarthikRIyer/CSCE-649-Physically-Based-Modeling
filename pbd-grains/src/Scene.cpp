@@ -217,6 +217,47 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         }
 
         grains = std::make_shared<Grains>(points, staticPoints, 0.01, 1, sphereShape);
+    } else if (sceneIndex == 4) {
+        sphereShape = make_shared<Shape>();
+        sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
+
+        loadDataInputFile(DATA_DIR, "inputMonkey.txt");
+
+        // Create shapes
+        for(const auto &mesh : meshData) {
+            auto shape = make_shared<Shape>();
+            shapes.push_back(shape);
+            shape->loadMesh(DATA_DIR + mesh[0]);
+            shape->setTextureFilename(mesh[1]);
+            shape->init();
+        }
+
+        for(const auto &filename : textureData) {
+            auto textureKd = make_shared<Texture>();
+            textureMap[filename] = textureKd;
+            textureKd->setFilename(DATA_DIR + filename);
+            textureKd->setUnit(texUnit); // Bind to unit 1
+            textureKd->init();
+            textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
+        }
+
+        std::vector<Eigen::Vector3d> points;
+        for(const auto &filename : grainsData) {
+            std::string finalPath = DATA_DIR + filename;
+            std::vector<Eigen::Vector3d> p = readGrainsFile(finalPath);
+            points.insert(points.end(), p.begin(), p.end());
+        }
+
+        double floorPos = -0.8;
+        std::vector<Eigen::Vector3d> staticPoints;
+        for(const auto &filename : staticGrainsData) {
+            std::string finalPath = DATA_DIR + filename;
+            std::vector<Eigen::Vector3d> p = readGrainsFile(finalPath);
+            for (Eigen::Vector3d& v: p) v += Eigen::Vector3d(0, floorPos, 0);
+            staticPoints.insert(staticPoints.end(), p.begin(), p.end());
+        }
+
+        grains = std::make_shared<Grains>(points, staticPoints, 0.01, 1, sphereShape);
     }
 
 
@@ -316,7 +357,7 @@ void Scene::reset()
         grains->reset();
 }
 
-void Scene::step()
+void Scene::step(std::ofstream &outputFile, bool writeToFile)
 {
 //    std::cout<<"timestep: "<<h<<"\n";
     double cf = 1.0;
@@ -335,8 +376,16 @@ void Scene::step()
         }
     }
 
-    if (grains)
+    if (grains) {
         grains->step(h, forceFields, shapes, simParams);
+        if (writeToFile) {
+            outputFile << "timestep\n";
+            for (const std::shared_ptr<Particle>& particle: grains->getParticles()) {
+                if (particle->fixed) continue;
+                outputFile << particle->x.x() << " " << particle->x.y() << " " << particle->x.z() << " \n";
+            }
+        }
+    }
 
     t += cf * h;
 

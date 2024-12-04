@@ -203,6 +203,10 @@ Grains::Grains(std::vector<Eigen::Vector3d>& points, std::vector<Eigen::Vector3d
     spatialHash = SpatialHash(2 * r, particles.size());
 }
 
+std::vector<std::shared_ptr<Particle>>& Grains::getParticles() {
+    return particles;
+}
+
 void Grains::init() {
 
 }

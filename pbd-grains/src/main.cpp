@@ -41,7 +41,7 @@ shared_ptr<Scene> scene;
 int texUnit = 1;
 
 SimParams simParams;
-const char* sceneNames[] = {"Drop", "Funnel", "Text", "Sandtower"};
+const char* sceneNames[] = {"Drop", "Funnel", "Text", "Sandtower", "Monkey"};
 int currSceneIndex = 0;
 static const char* currentScene = sceneNames[currSceneIndex];
 int prevSceneIndex = 0;
@@ -71,10 +71,11 @@ static void char_callback(GLFWwindow *window, unsigned int key)
     auto& io = ImGui::GetIO();
     if (io.WantCaptureKeyboard || io.WantTextInput) return;
 	keyToggles[key] = !keyToggles[key];
+    std::ofstream dummyOStream(nullptr);
 	switch(key) {
 		case 'h':
 		    scene->updateSimParams(simParams);
-			scene->step();
+			scene->step(dummyOStream, false);
 			break;
 		case 'r':
 			scene->reset();
@@ -258,12 +259,14 @@ void simLoop()
 {
 	double t = 0;
 	int n = 0;
+    std::ofstream outputFile("output.txt");
+    outputFile << scene->getTimestep() <<"\n";
 	while(!stop_flag) {
 	    if (run_sim) {
             auto t0 = std::chrono::system_clock::now();
             if(keyToggles[(unsigned)' ']) {
                 scene->updateSimParams(simParams);
-                scene->step();
+                scene->step(outputFile, keyToggles[(unsigned )'f']);
             }
             auto t1 = std::chrono::system_clock::now();
             double dt = std::chrono::duration_cast<std::chrono::microseconds>(t1 - t0).count();

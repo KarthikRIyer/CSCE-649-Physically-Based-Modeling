@@ -1,0 +1,7 @@
+# Each line starts with a keyword:
+# - TEXTURE <texture file>
+# - MESH <obj file> <texture file>
+TEXTURE grey.jpg
+MESH box.obj grey.jpg
+GRAINS monkey.txt
+STATICGRAINS floor0_01.txt
