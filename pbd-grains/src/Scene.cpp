@@ -258,6 +258,47 @@ void Scene::load(const string &RESOURCE_DIR, const string &DATA_DIR, int texUnit
         }
 
         grains = std::make_shared<Grains>(points, staticPoints, 0.01, 1, sphereShape);
+    } else if (sceneIndex == 5) {
+        sphereShape = make_shared<Shape>();
+        sphereShape->loadMesh(RESOURCE_DIR + "sphere2.obj");
+
+        loadDataInputFile(DATA_DIR, "inputCSCEText.txt");
+
+        // Create shapes
+        for(const auto &mesh : meshData) {
+            auto shape = make_shared<Shape>();
+            shapes.push_back(shape);
+            shape->loadMesh(DATA_DIR + mesh[0]);
+            shape->setTextureFilename(mesh[1]);
+            shape->init();
+        }
+
+        for(const auto &filename : textureData) {
+            auto textureKd = make_shared<Texture>();
+            textureMap[filename] = textureKd;
+            textureKd->setFilename(DATA_DIR + filename);
+            textureKd->setUnit(texUnit); // Bind to unit 1
+            textureKd->init();
+            textureKd->setWrapModes(GL_REPEAT, GL_REPEAT);
+        }
+
+        std::vector<Eigen::Vector3d> points;
+        for(const auto &filename : grainsData) {
+            std::string finalPath = DATA_DIR + filename;
+            std::vector<Eigen::Vector3d> p = readGrainsFile(finalPath);
+            points.insert(points.end(), p.begin(), p.end());
+        }
+
+        double floorPos = -0.8;
+        std::vector<Eigen::Vector3d> staticPoints;
+        for(const auto &filename : staticGrainsData) {
+            std::string finalPath = DATA_DIR + filename;
+            std::vector<Eigen::Vector3d> p = readGrainsFile(finalPath);
+            for (Eigen::Vector3d& v: p) v += Eigen::Vector3d(0, floorPos, 0);
+            staticPoints.insert(staticPoints.end(), p.begin(), p.end());
+        }
+
+        grains = std::make_shared<Grains>(points, staticPoints, 0.01, 1, sphereShape);
     }
 
 
