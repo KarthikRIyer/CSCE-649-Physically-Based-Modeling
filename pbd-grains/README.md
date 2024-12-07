@@ -37,6 +37,7 @@ To run the simulator:
 - The simulation and rendering loop are set up in main.cpp. The approach used is to run both threads in parallel and the simulation thread updates the state which is read by the rendering thread. The rendering thread does not wait for the simulation thread. If the timestep used is `h` and processing one timestep takes time `x`, the simulation loop waits for time = `max(h - x, 0)` before processing the next timestep. This makes sure that the simulation is displayed at the expected rate.
 - Grain physics is defined in Grains.h and Grains.cpp
 - Spatial Hashing is defined in SpatialHash.h and SpatialHash.cpp
+- Blender export/import scripts are in the `export-scripts` directory
 
 
 ## Credits
