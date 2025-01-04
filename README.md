@@ -2,7 +2,7 @@
 
 ![CSCE-649](screenshots/pbd-grains-render-csce.png)
 
-This is a collection of assignments done as part of the Physically Based Modeling course at Texas A&M University.
+This is a collection of assignments done as part of the Physically Based Modeling (CSCE-649 Fall 2024) course at Texas A&M University.
 Each assignment is in a self contained directory.
 
 ## How to build and run
